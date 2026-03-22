@@ -478,6 +478,16 @@
   </div>
 
   <div class="main">
+	  <div id="readonly-banner" style="
+  display:none;
+  background: var(--amber-light);
+  color: var(--amber-dark);
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--amber);">
+	</div>
     <!-- REPAS -->
     <div id="tab-repas" class="screen active">
       <div class="week-nav">
@@ -854,6 +864,16 @@ function setUser(who) {
   viewingPartner = who === 'partner';
   document.getElementById('pill-me').className = 'user-pill' + (!viewingPartner ? ' me' : '');
   document.getElementById('pill-partner').className = 'user-pill' + (viewingPartner ? ' partner' : '');
+
+  const banner = document.getElementById('readonly-banner');
+  if (viewingPartner) {
+    const partName = document.getElementById('pill-partner').textContent;
+    banner.textContent = `👁️ Vous consultez les données de ${partName} — lecture seule`;
+    banner.style.display = 'block';
+  } else {
+    banner.style.display = 'none';
+  }
+
   renderAll();
 }
 
