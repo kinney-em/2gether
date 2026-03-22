@@ -693,6 +693,7 @@ async function doPair() {
     if (snap.empty) { setError('pair-error','Code introuvable'); return; }
     const partnerDoc = snap.docs[0];
     if (partnerDoc.id === currentUid) { setError('pair-error','Ce code est le vôtre !'); return; }
+	  if (partnerUid) { setError('pair-error','Vous avez déjà un partenaire lié !'); return; }
     await db.collection('users').doc(currentUid).update({ partnerId: partnerDoc.id });
     await db.collection('users').doc(partnerDoc.id).update({ partnerId: currentUid });
     loadUserProfile();
@@ -1441,6 +1442,7 @@ async function doPairFromProfil() {
     if (snap.empty) { errEl.textContent = 'Code introuvable'; return; }
     const partnerDoc = snap.docs[0];
     if (partnerDoc.id === currentUid) { errEl.textContent = 'Ce code est le vôtre !'; return; }
+	  if (partnerUid) { errEl.textContent = 'Vous avez déjà un partenaire lié !'; return; }
     const now = firebase.firestore.FieldValue.serverTimestamp();
     await db.collection('users').doc(currentUid).update({ partnerId: partnerDoc.id, pairedAt: now });
     await db.collection('users').doc(partnerDoc.id).update({ partnerId: currentUid, pairedAt: now });
