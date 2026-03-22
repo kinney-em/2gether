@@ -1018,6 +1018,18 @@ function renderBadges() {
     </div>`).join('');
 }
 
+function getWeekKeyByOffset(offset) {
+  const now = new Date();
+  now.setDate(now.getDate() + offset * 7);
+  const jan4 = new Date(now.getFullYear(), 0, 4);
+  const startOfWeek1 = new Date(jan4);
+  startOfWeek1.setDate(jan4.getDate() - ((jan4.getDay() + 6) % 7));
+  const mondayOfNow = new Date(now);
+  mondayOfNow.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  const weekNum = Math.round((mondayOfNow - startOfWeek1) / 604800000) + 1;
+  return `${mondayOfNow.getFullYear()}-W${String(weekNum).padStart(2,'0')}`;
+}
+ 
 function renderChart() {
 const today = new Date();
   const last7 = Array.from({length:7}, (_,i) => {
@@ -1030,9 +1042,15 @@ const today = new Date();
     currentPeriod==='mois' ? ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'] :
     currentPeriod==='trim' ? ['T1','T2','T3','T4'] : ['Jan','Avr','Jul','Oct'];
 
-  const dataFood = labels.map(() => Math.floor(Math.random()*10)+3);
-  const dataSport = labels.map(() => Math.floor(Math.random()*5)+1);
-  const goalFood = Array(labels.length).fill(getData().goals.repas / (currentPeriod==='7j'?7:1));
+const dataFood = labels.map((_,i) => {
+    const wk = getWeekKeyByOffset(i - (labels.length - 1));
+    return countMeals(getData(), wk).sain;
+  });
+  const dataSport = labels.map((_,i) => {
+    const wk = getWeekKeyByOffset(i - (labels.length - 1));
+    return countSportDays(getData(), wk);
+  });
+  const goalFood = Array(labels.length).fill(getData().goals.repas);
   const goalSport = Array(labels.length).fill(getData().goals.sport);
 
   if (statsChart) statsChart.destroy();
