@@ -442,7 +442,8 @@
 <div style="display:flex;align-items:center;gap:8px;position:relative;z-index:101;">
   <div class="sync-bar"><span class="sync-dot" id="sync-dot"></span><span id="sync-label">Synchro</span></div>
   <div style="position:relative;">
-  <button class="logout-btn" onclick="toggleProfilMenu(event)" id="profil-menu-btn" style="
+  <button class="logout-btn" onclick="toggleProfilMenu(event); return false;" id="profil-menu-btn"
+	  style="
     padding: 6px 10px;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border);
