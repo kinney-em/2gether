@@ -631,7 +631,9 @@ async function loadUserProfile() {
   pairCode = d.pairCode;
   partnerUid = d.partnerId || null;
   myData.activities = d.activities || [...DEFAULT_ACTS];
-  myData.goals = d.goals || { repas: 14, sport: 3 };
+ // myData.goals = d.goals || { repas: 14, sport: 3 };
+ const earned = d.badges || [];
+  BADGES.forEach(b => { if (earned.includes(b.id)) b.earnedMe = true; });
 
   subscribeToData();
   if (partnerUid) loadPartnerProfile();
@@ -937,9 +939,16 @@ function hasStreak(data, n) {
   return best >= n;
 }
 
-function checkBadges() {
-  BADGES.forEach(b => { if (b.cond(myData)) b.earnedMe = true; });
-  BADGES.forEach(b => { if (b.cond(partnerData)) b.earnedPartner = true; });
+async function checkBadges() {
+  let changed = false;
+  BADGES.forEach(b => {
+    if (!b.earnedMe && b.cond(myData)) { b.earnedMe = true; changed = true; }
+    if (!b.earnedPartner && b.cond(partnerData)) b.earnedPartner = true;
+  });
+  if (changed && currentUid) {
+    const earned = BADGES.filter(b => b.earnedMe).map(b => b.id);
+    await db.collection('users').doc(currentUid).update({ badges: earned });
+  }
 }
 
 function setPeriod(p, btn) {
