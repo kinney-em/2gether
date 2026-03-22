@@ -406,6 +406,9 @@
     <div class="field"><label>Mot de passe</label><input type="password" id="login-pwd" placeholder="••••••••"/></div>
     <button class="btn btn-primary" onclick="doLogin()">Connexion</button>
     <div class="login-sep">— ou —</div>
+	  ////////////////////////////////////////// temp fix pour renvoyer l'email de confirmation
+	  <button class="btn btn-secondary" onclick="resendVerification()">Renvoyer l'email de confirmation</button>
+	  /////////////////////////////////////////////
     <button class="btn btn-secondary" onclick="showCard('register')">Créer un compte</button>
     <div id="login-error"></div>
   </div>
@@ -885,6 +888,22 @@ function setUser(who) {
   renderAll();
 }
 
+
+///////fonction pour confirmation de l'email
+async function resendVerification() {
+  const email = document.getElementById('login-email').value.trim();
+  const pwd = document.getElementById('login-pwd').value;
+  if (!email || !pwd) { setError('login-error', 'Entrez votre email et mot de passe d\'abord'); return; }
+  try {
+    const cred = await auth.signInWithEmailAndPassword(email, pwd);
+    await cred.user.sendEmailVerification();
+    await auth.signOut();
+    setError('login-error', '✅ Email envoyé ! Vérifiez votre boîte mail.');
+  } catch(e) {
+    setError('login-error', e.message);
+  }
+}
+/////////////////////////////////////////////////////	
 function showTab(name, btn) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
