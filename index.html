@@ -652,7 +652,13 @@ async function doLogin() {
   const email = document.getElementById('login-email').value.trim();
   const pwd = document.getElementById('login-pwd').value;
   try {
-    await auth.signInWithEmailAndPassword(email, pwd);
+   // await auth.signInWithEmailAndPassword(email, pwd);
+	  const cred = await auth.signInWithEmailAndPassword(email, pwd);
+    if (!cred.user.emailVerified) {
+      await auth.signOut();
+      setError('login-error', 'Veuillez confirmer votre email avant de vous connecter. Vérifiez votre boîte mail.');
+      return;
+    }
   } catch(e) {
     setError('login-error', 'Erreur : ' + (e.code === 'auth/wrong-password' ? 'Mot de passe incorrect' : e.message));
   }
