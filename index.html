@@ -635,19 +635,28 @@ async function loadUserProfile() {
  const earned = d.badges || [];
   BADGES.forEach(b => { if (earned.includes(b.id)) b.earnedMe = true; });
 
+	if (partnerUid) {
+    await loadPartnerProfile();
+  } else {
+    document.getElementById('pill-partner').textContent = 'Mon proche';
+  }
   subscribeToData();
-  if (partnerUid) loadPartnerProfile();
+
   setSyncStatus(true);
   renderAll();
 }
 
 async function loadPartnerProfile() {
+  if (!partnerUid) return;
   const doc = await db.collection('users').doc(partnerUid).get();
   if (!doc.exists) return;
   const d = doc.data();
   document.getElementById('pill-partner').textContent = d.name || 'Mon proche';
   partnerData.activities = d.activities || [...DEFAULT_ACTS];
   partnerData.goals = d.goals || { repas: 14, sport: 3 };
+  const earned = d.badges || [];
+  BADGES.forEach(b => { if (earned.includes(b.id)) b.earnedPartner = true; });
+  renderAll();
 }
 
 function subscribeToData() {
@@ -687,6 +696,21 @@ function subscribeToData() {
       });
       if (!viewingPartner) renderAll();
     });
+
+// Écoute du profil partenaire en temps réel
+  if (partnerUid) {
+    db.collection('users').doc(partnerUid).onSnapshot(doc => {
+      if (!doc.exists) return;
+      const d = doc.data();
+      document.getElementById('pill-partner').textContent = d.name || 'Mon proche';
+      partnerData.activities = d.activities || [...DEFAULT_ACTS];
+      partnerData.goals = d.goals || { repas: 14, sport: 3 };
+      const earned = d.badges || [];
+      BADGES.forEach(b => { if (earned.includes(b.id)) b.earnedPartner = true; });
+      if (viewingPartner) renderAll();
+    });
+  }
+
 }
 
 function setSyncStatus(ok) {
