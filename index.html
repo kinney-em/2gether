@@ -665,8 +665,11 @@ function subscribeToData() {
       setSyncStatus(true);
       renderAll();
     });
-
-  if (!partnerUid) return;
+////////////////////////////////////// we want the partner user id to be displayed
+ // if (!partnerUid) return;
+ //added 22/03 KMB
+ if (partnerUid) loadPartnerProfile();
+ //////////////////////////////////////////////
   if (unsubscribePartner) unsubscribePartner();
   unsubscribePartner = db.collection('users').doc(partnerUid).collection('entries')
     .onSnapshot(snap => {
