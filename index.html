@@ -673,7 +673,8 @@ async function doRegister() {
     });
     document.getElementById('pill-me').textContent = name;
     document.getElementById('my-pair-code').textContent = code;
-    showCard('pair');
+    await cred.user.sendEmailVerification();
+	  showCard('pair');
   } catch(e) {
     setError('reg-error', e.message);
   }
