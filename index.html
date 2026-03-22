@@ -710,24 +710,33 @@ async function saveProfile() {
 }
 
 // ---- HELPERS ----
-function getWeekKey() {
+
+////////////////////////////////////////////////////////////////////////////////panda
+ //changed on 22/03/2026 to add the actual date and week instead of 'Cette semaine)
+ function getWeekKey() {
   const now = new Date();
-  const d = new Date(now);
-  d.setDate(d.getDate() + weekOffset * 7);
-  const year = d.getFullYear();
-  const start = new Date(d);
-  start.setDate(d.getDate() - ((d.getDay() + 6) % 7));
-  const week = Math.ceil(((start - new Date(year,0,1)) / 86400000 + 1) / 7);
-  return `${year}-W${String(week).padStart(2,'0')}`;
+  now.setDate(now.getDate() + weekOffset * 7);
+  const jan4 = new Date(now.getFullYear(), 0, 4);
+  const startOfWeek1 = new Date(jan4);
+  startOfWeek1.setDate(jan4.getDate() - ((jan4.getDay() + 6) % 7));
+  const mondayOfNow = new Date(now);
+  mondayOfNow.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  const weekNum = Math.round((mondayOfNow - startOfWeek1) / 604800000) + 1;
+  return `${mondayOfNow.getFullYear()}-W${String(weekNum).padStart(2,'0')}`;
 }
 
 function getWeekLabel() {
-  if (weekOffset === 0) return 'Cette semaine';
-  if (weekOffset === -1) return 'Semaine dernière';
-  if (weekOffset === 1) return 'Semaine prochaine';
-  return weekOffset > 0 ? `+${weekOffset} semaines` : `${weekOffset} semaines`;
+  const now = new Date();
+  now.setDate(now.getDate() + weekOffset * 7);
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  const fmt = d => d.toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
+  const prefix = weekOffset === 0 ? 'Cette semaine · ' : weekOffset === -1 ? 'Semaine dernière · ' : weekOffset === 1 ? 'Semaine prochaine · ' : '';
+  return `${prefix}${fmt(monday)} – ${fmt(sunday)}`;
 }
-
+////////////////////////////////////////////////////////////////////////////////
 function getData() { return viewingPartner ? partnerData : myData; }
 
 function setUser(who) {
