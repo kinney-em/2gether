@@ -713,7 +713,7 @@ async function loadUserProfile() {
   pairCode = d.pairCode;
   partnerUid = d.partnerId || null;
   myData.activities = d.activities || [...DEFAULT_ACTS];
- // myData.goals = d.goals || { repas: 14, sport: 3 };
+ myData.goals = d.goals || { repas: 14, sport: 3 };
  const earned = d.badges || [];
   BADGES.forEach(b => { if (earned.includes(b.id)) b.earnedMe = true; });
 
