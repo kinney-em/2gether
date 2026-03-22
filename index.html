@@ -342,6 +342,48 @@
     background: rgba(0,0,0,0.08); border-radius: 4px;
     padding: 1px 5px; font-family: monospace; font-size: 12px;
   }
+.profil-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow);
+}
+.profil-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+}
+.profil-row:last-child { border-bottom: none; }
+.profil-row-label { color: var(--text-2); font-size: 12px; font-weight: 600; }
+.profil-row-val { font-weight: 600; color: var(--text); }
+.profil-avatar {
+  width: 48px; height: 48px; border-radius: 50%;
+  background: var(--teal-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 700; color: var(--teal-dark);
+  margin-bottom: 14px;
+}
+.pair-input-row { display: flex; gap: 8px; margin-top: 12px; }
+.pair-input-row input {
+  flex: 1; padding: 10px 12px; border-radius: var(--radius-sm);
+  border: 1px solid var(--border); background: var(--bg);
+  color: var(--text); font-family: 'Nunito', sans-serif;
+  font-size: 16px; text-align: center; letter-spacing: 4px; outline: none;
+}
+.pair-input-row input:focus { border-color: var(--teal); }
+.partner-linked {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 4px;
+}
+.partner-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--coral-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700; color: #4A1B0C; flex-shrink: 0;
+}
+	
 </style>
 </head>
 <body>
@@ -410,7 +452,8 @@
       <button class="tab active" onclick="showTab('repas',this)">🥗 Repas</button>
       <button class="tab" onclick="showTab('sport',this)">🏃 Sport</button>
       <button class="tab" onclick="showTab('stats',this)">📊 Stats</button>
-      <button class="tab" onclick="showTab('objectifs',this)">🎯 Objectifs</button>
+      <button class="tab" onclick="showTab('objectifs',this)">🎯 Objectifs</button>		
+	<button class="tab" onclick="showTab('profil',this)">👤 Profil</button>
     </div>
   </div>
 
@@ -464,6 +507,15 @@
       <div class="badge-grid" id="badge-grid"></div>
     </div>
 
+
+	<!-- PROFIL -->
+<div id="tab-profil" class="screen">
+  <div class="sec-label">Mon compte</div>
+  <div class="profil-card" id="profil-info"></div>
+  <div class="sec-label" style="margin-top:16px;">Mon partenaire</div>
+  <div class="profil-card" id="profil-partner"></div>
+</div>
+	  
     <!-- OBJECTIFS -->
     <div id="tab-objectifs" class="screen">
       <div class="sec-label">Mes objectifs hebdomadaires</div>
@@ -782,6 +834,7 @@ function showTab(name, btn) {
   btn.classList.add('active');
   if (name === 'stats') renderStats();
   if (name === 'objectifs') renderObjectifs();
+	if (name === 'profil') renderProfil();
 }
 
 function changeWeek(d) {
@@ -1191,6 +1244,94 @@ const dataFood = labels.map((_,i) => {
   });
 }
 
+//------PROFIL
+	async function renderProfil() {
+  const doc = await db.collection('users').doc(currentUid).get();
+  if (!doc.exists) return;
+  const d = doc.data();
+
+  const createdAt = doc.createTime?.toDate
+    ? doc.createTime.toDate().toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})
+    : 'Inconnue';
+
+  const initials = (d.name || '?').charAt(0).toUpperCase();
+
+  document.getElementById('profil-info').innerHTML = `
+    <div class="profil-avatar">${initials}</div>
+    <div class="profil-row">
+      <span class="profil-row-label">Pseudo</span>
+      <span class="profil-row-val">${d.name || '—'}</span>
+    </div>
+    <div class="profil-row">
+      <span class="profil-row-label">Email</span>
+      <span class="profil-row-val" style="font-size:13px;">${d.email || '—'}</span>
+    </div>
+    <div class="profil-row">
+      <span class="profil-row-label">Membre depuis</span>
+      <span class="profil-row-val">${createdAt}</span>
+    </div>
+    <div class="profil-row">
+      <span class="profil-row-label">Code de jumelage</span>
+      <span class="profil-row-val" style="letter-spacing:3px;color:var(--teal);">${d.pairCode || '—'}</span>
+    </div>`;
+
+  const partnerBox = document.getElementById('profil-partner');
+
+  if (!partnerUid) {
+    partnerBox.innerHTML = `
+      <p style="font-size:13px;color:var(--text-2);margin-bottom:4px;">
+        Aucun partenaire lié pour le moment.
+      </p>
+      <p style="font-size:12px;color:var(--text-3);margin-bottom:0;">
+        Entrez le code de jumelage de votre proche :
+      </p>
+      <div class="pair-input-row">
+        <input id="pair-code-profil" type="text" placeholder="ex: 4729" maxlength="6"/>
+        <button class="btn btn-primary" onclick="doPairFromProfil()">Lier</button>
+      </div>
+      <div id="pair-profil-error" style="font-size:12px;color:var(--red);margin-top:6px;"></div>`;
+  } else {
+    const partnerDoc = await db.collection('users').doc(partnerUid).get();
+    const pd = partnerDoc.exists ? partnerDoc.data() : {};
+    const partnerInitials = (pd.name || '?').charAt(0).toUpperCase();
+    const pairedAt = d.pairedAt?.toDate
+      ? d.pairedAt.toDate().toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})
+      : 'Date inconnue';
+
+    partnerBox.innerHTML = `
+      <div class="partner-linked">
+        <div class="partner-avatar">${partnerInitials}</div>
+        <div>
+          <div style="font-weight:700;font-size:15px;">${pd.name || 'Partenaire'}</div>
+          <div style="font-size:12px;color:var(--text-3);">${pd.email || ''}</div>
+        </div>
+      </div>
+      <div class="profil-row" style="margin-top:8px;">
+        <span class="profil-row-label">Lié depuis</span>
+        <span class="profil-row-val">${pairedAt}</span>
+      </div>`;
+  }
+}
+
+async function doPairFromProfil() {
+  const code = document.getElementById('pair-code-profil').value.trim();
+  const errEl = document.getElementById('pair-profil-error');
+  if (!code) { errEl.textContent = 'Entrez un code'; return; }
+  try {
+    const snap = await db.collection('users').where('pairCode','==',code).get();
+    if (snap.empty) { errEl.textContent = 'Code introuvable'; return; }
+    const partnerDoc = snap.docs[0];
+    if (partnerDoc.id === currentUid) { errEl.textContent = 'Ce code est le vôtre !'; return; }
+    const now = firebase.firestore.FieldValue.serverTimestamp();
+    await db.collection('users').doc(currentUid).update({ partnerId: partnerDoc.id, pairedAt: now });
+    await db.collection('users').doc(partnerDoc.id).update({ partnerId: currentUid, pairedAt: now });
+    partnerUid = partnerDoc.id;
+    await loadPartnerProfile();
+    subscribeToData();
+    renderProfil();
+  } catch(e) { errEl.textContent = e.message; }
+}
+	
 // ---- OBJECTIFS ----
 function renderObjectifs() {
   const data = getData();
