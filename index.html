@@ -1019,7 +1019,13 @@ function renderBadges() {
 }
 
 function renderChart() {
-  const labels = currentPeriod==='7j' ? DAYS :
+const today = new Date();
+  const last7 = Array.from({length:7}, (_,i) => {
+    const d = new Date(today);
+    d.setDate(today.getDate() - 6 + i);
+    return d.toLocaleDateString('fr-FR', {day:'numeric', month:'short'});
+  });
+  const labels = currentPeriod==='7j' ? last7 :
     currentPeriod==='sem' ? ['S-4','S-3','S-2','S-1','Cette sem.'] :
     currentPeriod==='mois' ? ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'] :
     currentPeriod==='trim' ? ['T1','T2','T3','T4'] : ['Jan','Avr','Jul','Oct'];
