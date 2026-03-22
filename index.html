@@ -1038,6 +1038,77 @@ function getWeekKeyByOffset(offset) {
   const weekNum = Math.round((mondayOfNow - startOfWeek1) / 604800000) + 1;
   return `${mondayOfNow.getFullYear()}-W${String(weekNum).padStart(2,'0')}`;
 }
+
+function getWeekKeyForDate(date) {
+  const jan4 = new Date(date.getFullYear(), 0, 4);
+  const startOfWeek1 = new Date(jan4);
+  startOfWeek1.setDate(jan4.getDate() - ((jan4.getDay() + 6) % 7));
+  const monday = new Date(date);
+  monday.setDate(date.getDate() - ((date.getDay() + 6) % 7));
+  const weekNum = Math.round((monday - startOfWeek1) / 604800000) + 1;
+  return `${monday.getFullYear()}-W${String(weekNum).padStart(2,'0')}`;
+}
+
+function countMealsForDate(data, date) {
+  const wk = getWeekKeyForDate(date);
+  const dayIdx = (date.getDay() + 6) % 7;
+  const day = data.meals[wk]?.[dayIdx] || {};
+  return Object.values(day).filter(s => s === 'sain').length;
+}
+
+function countSportForDate(data, date) {
+  const wk = getWeekKeyForDate(date);
+  const dayIdx = (date.getDay() + 6) % 7;
+  return (data.sports[wk]?.[dayIdx] || []).length > 0 ? 1 : 0;
+}
+
+function countMealsForMonth(data, monthIdx) {
+  const year = new Date().getFullYear();
+  let total = 0;
+  Object.entries(data.meals).forEach(([wk, days]) => {
+    const [y, w] = wk.split('-W').map(Number);
+    if (y === year) {
+      Object.entries(days).forEach(([dayIdx, meals]) => {
+        const date = getDateFromWeekDay(y, w, parseInt(dayIdx));
+        if (date.getMonth() === monthIdx)
+          Object.values(meals).forEach(s => { if (s === 'sain') total++; });
+      });
+    }
+  });
+  return total;
+}
+
+function countSportForMonth(data, monthIdx) {
+  const year = new Date().getFullYear();
+  let total = 0;
+  Object.entries(data.sports).forEach(([wk, days]) => {
+    const [y, w] = wk.split('-W').map(Number);
+    if (y === year) {
+      Object.entries(days).forEach(([dayIdx, acts]) => {
+        const date = getDateFromWeekDay(y, w, parseInt(dayIdx));
+        if (date.getMonth() === monthIdx && acts.length > 0) total++;
+      });
+    }
+  });
+  return total;
+}
+
+function countMealsForQuarter(data, qIdx) {
+  return [0,1,2].reduce((sum, m) => sum + countMealsForMonth(data, qIdx * 3 + m), 0);
+}
+
+function countSportForQuarter(data, qIdx) {
+  return [0,1,2].reduce((sum, m) => sum + countSportForMonth(data, qIdx * 3 + m), 0);
+}
+
+function getDateFromWeekDay(year, week, dayIdx) {
+  const jan4 = new Date(year, 0, 4);
+  const startOfWeek1 = new Date(jan4);
+  startOfWeek1.setDate(jan4.getDate() - ((jan4.getDay() + 6) % 7));
+  const date = new Date(startOfWeek1);
+  date.setDate(startOfWeek1.getDate() + (week - 1) * 7 + dayIdx);
+  return date;
+}
  
 function renderChart() {
 const today = new Date();
@@ -1052,13 +1123,24 @@ const today = new Date();
     currentPeriod==='trim' ? ['T1','T2','T3','T4'] : ['Jan','Avr','Jul','Oct'];
 
 const dataFood = labels.map((_,i) => {
-    const wk = getWeekKeyByOffset(i - (labels.length - 1));
-    return countMeals(getData(), wk).sain;
+    if (currentPeriod === '7j') {
+      const d = new Date(); d.setDate(d.getDate() - 6 + i);
+      const wk = getWeekKeyForDate(d);
+      return countMealsForDate(getData(), d);
+    }
+    if (currentPeriod === 'sem') return countMeals(getData(), getWeekKeyByOffset(i - 4)).sain;
+    if (currentPeriod === 'mois') return countMealsForMonth(getData(), i);
+    if (currentPeriod === 'trim') return countMealsForQuarter(getData(), i);
+    return countMealsForQuarter(getData(), i * 3);
   });
   const dataSport = labels.map((_,i) => {
-    const wk = getWeekKeyByOffset(i - (labels.length - 1));
-    return countSportDays(getData(), wk);
+    if (currentPeriod === '7j') { const d = new Date(); d.setDate(d.getDate() - 6 + i); return countSportForDate(getData(), d); }
+    if (currentPeriod === 'sem') return countSportDays(getData(), getWeekKeyByOffset(i - 4));
+    if (currentPeriod === 'mois') return countSportForMonth(getData(), i);
+    if (currentPeriod === 'trim') return countSportForQuarter(getData(), i);
+    return countSportForQuarter(getData(), i * 3);
   });
+ 
   const goalFood = Array(labels.length).fill(getData().goals.repas);
   const goalSport = Array(labels.length).fill(getData().goals.sport);
 
