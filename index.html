@@ -441,7 +441,17 @@
       <div class="header-title">🌱 Habitudes</div>
       <div style="display:flex;align-items:center;gap:8px;">
         <div class="sync-bar"><span class="sync-dot" id="sync-dot"></span><span id="sync-label">Synchro</span></div>
-        <button class="logout-btn" onclick="doLogout()">Déco.</button>
+        <div style="position:relative;">
+  <button class="logout-btn" onclick="toggleProfilMenu(event)" id="profil-menu-btn">👤 ▾</button>
+  <div id="profil-dropdown" style="
+    display:none; position:absolute; right:0; top:32px;
+    background:var(--surface); border-radius:var(--radius);
+    box-shadow:0 4px 20px rgba(0,0,0,0.12);
+    border:1px solid var(--border);
+    min-width:220px; z-index:100; overflow:hidden;">
+    <div id="profil-dropdown-content"></div>
+  </div>
+</div>
       </div>
     </div>
     <div class="user-pills">
@@ -453,7 +463,7 @@
       <button class="tab" onclick="showTab('sport',this)">🏃 Sport</button>
       <button class="tab" onclick="showTab('stats',this)">📊 Stats</button>
       <button class="tab" onclick="showTab('objectifs',this)">🎯 Objectifs</button>		
-	<button class="tab" onclick="showTab('profil',this)">👤 Profil</button>
+
     </div>
   </div>
 
@@ -508,12 +518,22 @@
     </div>
 
 
-	<!-- PROFIL -->
-<div id="tab-profil" class="screen">
-  <div class="sec-label">Mon compte</div>
-  <div class="profil-card" id="profil-info"></div>
-  <div class="sec-label" style="margin-top:16px;">Mon partenaire</div>
-  <div class="profil-card" id="profil-partner"></div>
+<!-- PROFIL PANEL -->
+<div id="profil-panel" style="
+  display:none; position:fixed; inset:0; z-index:90;
+  background:rgba(0,0,0,0.35);" onclick="closeProfilPanel(event)">
+  <div style="
+    position:absolute; right:0; top:0; bottom:0; width:min(320px, 100vw);
+    background:var(--bg); overflow-y:auto; padding:20px 16px 40px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <span style="font-size:16px; font-weight:700;">Mon profil</span>
+      <button onclick="closeProfilPanel()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-2);">✕</button>
+    </div>
+    <div class="sec-label">Mon compte</div>
+    <div class="profil-card" id="profil-info"></div>
+    <div class="sec-label" style="margin-top:16px;">Mon partenaire</div>
+    <div class="profil-card" id="profil-partner"></div>
+  </div>
 </div>
 	  
     <!-- OBJECTIFS -->
@@ -834,7 +854,79 @@ function showTab(name, btn) {
   btn.classList.add('active');
   if (name === 'stats') renderStats();
   if (name === 'objectifs') renderObjectifs();
-	if (name === 'profil') renderProfil();
+function toggleProfilMenu(e) {
+  e.stopPropagation();
+  const dd = document.getElementById('profil-dropdown');
+  const isOpen = dd.style.display === 'block';
+  if (isOpen) { dd.style.display = 'none'; return; }
+
+  const myName = document.getElementById('pill-me').textContent;
+  const partName = document.getElementById('pill-partner').textContent;
+  const initials = myName.charAt(0).toUpperCase();
+
+  document.getElementById('profil-dropdown-content').innerHTML = `
+    <div style="padding:14px 16px; border-bottom:1px solid var(--border);">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--teal-light);
+          display:flex;align-items:center;justify-content:center;
+          font-weight:700;color:var(--teal-dark);font-size:15px;">${initials}</div>
+        <div>
+          <div style="font-weight:700;font-size:14px;">${myName}</div>
+          <div style="font-size:11px;color:var(--text-3);">Mon compte</div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:10px 16px; border-bottom:1px solid var(--border);">
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Partenaire</div>
+      ${partnerUid
+        ? `<div style="display:flex;align-items:center;gap:8px;">
+            <div style="width:28px;height:28px;border-radius:50%;background:var(--coral-light);
+              display:flex;align-items:center;justify-content:center;
+              font-weight:700;color:#4A1B0C;font-size:12px;">${partName.charAt(0).toUpperCase()}</div>
+            <span style="font-size:13px;font-weight:600;">${partName}</span>
+          </div>`
+        : `<div style="font-size:12px;color:var(--text-3);">Aucun partenaire lié</div>`
+      }
+    </div>
+    <div style="padding:6px 8px;">
+      <button onclick="openProfilPanel()" style="
+        width:100%;padding:9px 12px;text-align:left;border:none;background:none;
+        cursor:pointer;font-family:'Nunito',sans-serif;font-size:13px;
+        color:var(--text);border-radius:var(--radius-sm);"
+        onmouseover="this.style.background='var(--gray-light)'"
+        onmouseout="this.style.background='none'">
+        ⚙️ Voir mon profil complet
+      </button>
+      <button onclick="doLogout()" style="
+        width:100%;padding:9px 12px;text-align:left;border:none;background:none;
+        cursor:pointer;font-family:'Nunito',sans-serif;font-size:13px;
+        color:var(--red);border-radius:var(--radius-sm);"
+        onmouseover="this.style.background='var(--red-light)'"
+        onmouseout="this.style.background='none'">
+        → Se déconnecter
+      </button>
+    </div>`;
+
+  dd.style.display = 'block';
+  setTimeout(() => document.addEventListener('click', closeDropdown), 0);
+}
+
+function closeDropdown() {
+  document.getElementById('profil-dropdown').style.display = 'none';
+  document.removeEventListener('click', closeDropdown);
+}
+
+function openProfilPanel() {
+  document.getElementById('profil-dropdown').style.display = 'none';
+  document.removeEventListener('click', closeDropdown);
+  document.getElementById('profil-panel').style.display = 'block';
+  renderProfil();
+}
+
+function closeProfilPanel(e) {
+  if (!e || e.target === document.getElementById('profil-panel'))
+    document.getElementById('profil-panel').style.display = 'none';
+}
 }
 
 function changeWeek(d) {
