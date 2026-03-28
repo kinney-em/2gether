@@ -1562,5 +1562,38 @@ function renderAll() {
   renderSportGrid(); renderSportScores();
 }
 </script>
+
+/////////contacter le support
+<a href="https://docs.google.com/forms/d/e/1FAIpQLSfH8v_aA-CHdZXKYIVWSl1phJCxirpgj-vifxHgoarmwqbN1Q/viewform" 
+   target="_blank" 
+   id="support-link">
+  💬 Contacter le support
+</a>
+
+<style>
+  #support-link {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 10px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-2);
+    text-decoration: none;
+    box-shadow: var(--shadow);
+    z-index: 40;
+  }
+
+  @media (max-width: 500px) {
+    #support-link {
+      right: 50%;
+      transform: translateX(50%);
+    }
+  }
+</style>	
+	
 </body>
 </html>
