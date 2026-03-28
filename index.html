@@ -673,7 +673,14 @@ async function doLogin() {
       return;
     }
   } catch(e) {
-    setError('login-error', 'Erreur : ' + (e.code === 'auth/wrong-password' ? 'Mot de passe incorrect' : e.message));
+    const msg = {
+  'auth/invalid-credential': 'Email ou mot de passe incorrect',
+  'auth/user-not-found': 'Aucun compte avec cet email',
+  'auth/wrong-password': 'Mot de passe incorrect',
+  'auth/too-many-requests': 'Trop de tentatives, réessayez plus tard',
+  'auth/user-disabled': 'Ce compte a été désactivé'
+};
+setError('login-error', msg[e.code] || 'Erreur de connexion, vérifiez vos identifiants');
   }
 }
 
