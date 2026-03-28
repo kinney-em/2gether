@@ -366,9 +366,9 @@
   font-size: 20px; font-weight: 700; color: var(--teal-dark);
   margin-bottom: 14px;
 }
-.pair-input-row { display: flex; gap: 8px; margin-top: 12px; }
+.pair-input-row { display: flex; gap: 8px; margin-top: 12px; width: 100%; overflow: hidden; }
 .pair-input-row input {
-  flex: 1; padding: 10px 12px; border-radius: var(--radius-sm);
+  flex: 1; min-width: 0; padding: 10px 12px; border-radius: var(--radius-sm);
   border: 1px solid var(--border); background: var(--bg);
   color: var(--text); font-family: 'Nunito', sans-serif;
   font-size: 16px; text-align: center; letter-spacing: 4px; outline: none;
@@ -449,6 +449,29 @@
 
 <!-- APP -->
 <div id="app" style="display:none;">
+
+	<!-- verification de l'email -->
+		<div id="verify-banner" style="
+		  display:none;
+		  background:var(--amber-light);
+		  border-bottom:1px solid var(--amber);
+		  padding:10px 16px;
+		  font-size:12px;
+		  font-weight:600;
+		  color:var(--amber-dark);
+		  align-items:center;
+		  justify-content:space-between;
+		  gap:8px;">
+		  <span>⚠️ Votre email n'est pas encore confirmé</span>
+		  <button onclick="resendVerif()" style="
+		    background:var(--amber);color:white;border:none;
+		    border-radius:99px;padding:4px 10px;
+		    font-size:11px;font-weight:700;cursor:pointer;
+		    font-family:'Nunito',sans-serif;">
+		    Renvoyer l'email
+		  </button>
+		</div>
+	
   <div class="header">
     <div class="header-top">
       <div class="header-title">🌱 HabituDEUX </div>
@@ -673,7 +696,14 @@ async function doLogin() {
       return;
     }
   } catch(e) {
-    setError('login-error', 'Erreur : ' + (e.code === 'auth/wrong-password' ? 'Mot de passe incorrect' : e.message));
+    const msg = {
+  'auth/invalid-credential': 'Email ou mot de passe incorrect',
+  'auth/user-not-found': 'Aucun compte avec cet email',
+  'auth/wrong-password': 'Mot de passe incorrect',
+  'auth/too-many-requests': 'Trop de tentatives, réessayez plus tard',
+  'auth/user-disabled': 'Ce compte a été désactivé'
+};
+setError('login-error', msg[e.code] || 'Erreur de connexion, vérifiez vos identifiants');
   }
 }
 
@@ -770,6 +800,13 @@ async function loadUserProfile() {
   }
   subscribeToData();
 
+	///////verification de l'email
+	const currentUser = auth.currentUser;
+  if (currentUser && !currentUser.emailVerified) {
+    const banner = document.getElementById('verify-banner');
+    if (banner) banner.style.display = 'flex';
+  }
+	///////
   setSyncStatus(true);
   renderAll();
 }
@@ -1551,6 +1588,19 @@ function adjustGoal(type, d) {
   saveProfile();
 }
 
+//-----verification de l'email
+	async function resendVerif() {
+  try {
+    await auth.currentUser.sendEmailVerification();
+    document.getElementById('verify-banner').innerHTML =
+      '<span style="width:100%;text-align:center;">✅ Email envoyé ! Vérifiez vos spams.</span>';
+  } catch(e) {
+    document.getElementById('verify-banner').innerHTML =
+      '<span style="width:100%;text-align:center;">Erreur lors de l\'envoi, réessayez plus tard.</span>';
+  }
+}
+//////////////////////
+	
 // ---- RENDER ALL ----
 function renderAll() {
   const lbl = getWeekLabel();
@@ -1563,7 +1613,7 @@ function renderAll() {
 }
 </script>
 
-<! màj 28/03 KMB: lien pour contacter le support>
+<!-- màj 28/03 KMB: lien pour contacter le support -->
 <a href="https://docs.google.com/forms/d/e/1FAIpQLSfH8v_aA-CHdZXKYIVWSl1phJCxirpgj-vifxHgoarmwqbN1Q/viewform" 
    target="_blank" 
    id="support-link">
