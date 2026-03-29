@@ -1108,6 +1108,30 @@ const { sain, mal, correct } = countMeals(getData(), wk);
       <div class="score-chip-label">Malbouffe</div>
       <div class="score-chip-val">${mal}</div>
     </div>`;
+
+	// Couleur dynamique de l'arrière-plan
+  const total = sain + correct + mal;
+  if (total === 0) {
+    document.getElementById('tab-repas').style.background = 'transparent';
+  } else {
+    const pctSain = sain / total;
+    const pctCorrect = correct / total;
+    const pctMal = mal / total;
+
+    // Mélange RGB entre vert (sain), amber (correct) et rouge (malbouffe)
+    const r = Math.round(pctSain * 0x27 + pctCorrect * 0x63 + pctMal * 0x50);
+    const g = Math.round(pctSain * 0x50 + pctCorrect * 0x38 + pctMal * 0x13);
+    const b = Math.round(pctSain * 0x0A + pctCorrect * 0x06 + pctMal * 0x13);
+
+    // Très pâle — on mélange avec le blanc à 92%
+    const blend = 0.06;
+    const rFinal = Math.round(255 + (r - 255) * blend);
+    const gFinal = Math.round(255 + (g - 255) * blend);
+    const bFinal = Math.round(255 + (b - 255) * blend);
+
+    document.getElementById('tab-repas').style.background =
+      `rgb(${rFinal}, ${gFinal}, ${bFinal})`;
+  }
 }
 
 // ---- SPORT ----
