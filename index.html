@@ -939,10 +939,14 @@ function setUser(who) {
   document.getElementById('pill-me').className = 'user-pill' + (!viewingPartner ? ' me' : '');
   document.getElementById('pill-partner').className = 'user-pill' + (viewingPartner ? ' partner' : '');
 
-  const banner = document.getElementById('readonly-banner');
+const banner = document.getElementById('readonly-banner');
   if (viewingPartner) {
-    const partName = document.getElementById('pill-partner').textContent;
-    banner.textContent = `👁️ Vous consultez les données de ${partName} — lecture seule`;
+    if (!partnerUid) {
+      banner.innerHTML = `🔗 Vous n'avez pas encore ajouté de partenaire. Votre code de jumelage est disponible sur votre <span onclick="openProfilPanel()" style="text-decoration:underline;cursor:pointer;">profil utilisateur</span>.`;
+    } else {
+      const partName = document.getElementById('pill-partner').textContent;
+      banner.innerHTML = `👁️ Vous consultez les données de ${partName} — lecture seule`;
+    }
     banner.style.display = 'block';
   } else {
     banner.style.display = 'none';
