@@ -1582,6 +1582,56 @@ async function chooseAvatar(emoji) {
   if (opt) opt.style.borderColor = 'var(--teal)';
   await db.collection('users').doc(currentUid).update({ avatar: emoji });
 }
+
+const EMOJIS = ['🌱','🌿','🍀','🌸','🌻','🌈','⭐','🔥','💪','🏃','🧘','🚴','🏊','🎯','🦁','🐯','🦊','🐻','🐼','🦋'];
+let selectedAvatar = null;
+
+function openEditProfil() {
+  const name = document.getElementById('pill-me').textContent;
+  document.getElementById('edit-name').value = name;
+  selectedAvatar = myData.avatar || '🌱';
+
+  document.getElementById('edit-emoji-grid').innerHTML = EMOJIS.map(e => `
+    <div onclick="selectEmoji('${e}')" id="emoji-opt-${e}" style="
+      font-size:22px;cursor:pointer;padding:4px;
+      border-radius:var(--radius-sm);
+      border:2px solid ${e === selectedAvatar ? 'var(--teal)' : 'transparent'};
+      transition:all .12s;">${e}</div>`).join('');
+
+  document.getElementById('edit-profil-overlay').style.display = 'flex';
+}
+
+function selectEmoji(emoji) {
+  selectedAvatar = emoji;
+  document.querySelectorAll('[id^="emoji-opt-"]').forEach(el => {
+    el.style.borderColor = 'transparent';
+  });
+  const opt = document.getElementById('emoji-opt-' + emoji);
+  if (opt) opt.style.borderColor = 'var(--teal)';
+}
+
+function closeEditProfil(e) {
+  if (!e || e.target === document.getElementById('edit-profil-overlay'))
+    document.getElementById('edit-profil-overlay').style.display = 'none';
+}
+
+async function saveEditProfil() {
+  const name = document.getElementById('edit-name').value.trim();
+  const errEl = document.getElementById('edit-profil-error');
+  if (!name) { errEl.textContent = 'Entrez un pseudo'; return; }
+  try {
+    await db.collection('users').doc(currentUid).update({
+      name,
+      avatar: selectedAvatar
+    });
+    myData.avatar = selectedAvatar;
+    document.getElementById('pill-me').textContent = name;
+    closeEditProfil();
+    renderProfil();
+  } catch(e) {
+    errEl.textContent = 'Erreur : ' + e.message;
+  }
+}
 	
 	async function renderProfil() {
   const doc = await db.collection('users').doc(currentUid).get();
@@ -1599,18 +1649,36 @@ const avatar = d.avatar || '🌱';
   const emojis = ['🌱','🌿','🍀','🌸','🌻','🌈','⭐','🔥','💪','🏃','🧘','🚴','🏊','🎯','🦁','🐯','🦊','🐻','🐼','🦋'];
 
   document.getElementById('profil-info').innerHTML = `
-    <div style="margin-bottom:14px;">
-      <div style="font-size:48px;text-align:center;margin-bottom:8px;" id="avatar-display">${avatar}</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;">
-        ${emojis.map(e => `
-          <div onclick="chooseAvatar('${e}')" style="
-            font-size:22px;cursor:pointer;padding:4px;
-            border-radius:var(--radius-sm);
-            border:2px solid ${e === avatar ? 'var(--teal)' : 'transparent'};
-            transition:all .12s;"
-            id="avatar-opt-${e}">${e}</div>`).join('')}
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+      <div style="font-size:36px;">${avatar}</div>
+      <div style="flex:1;">
+        <div style="font-weight:700;font-size:16px;">${d.name || '—'}</div>
+        <div style="font-size:12px;color:var(--text-3);">${d.email || '—'}</div>
       </div>
+      <button onclick="openEditProfil()" style="
+        padding:6px 12px;border-radius:var(--radius-sm);
+        border:1px solid var(--border);background:var(--bg);
+        cursor:pointer;font-size:12px;font-weight:600;
+        color:var(--text-2);font-family:'Nunito',sans-serif;">
+        ✏️ Modifier
+      </button>
     </div>
+    <div class="profil-row">
+      <span class="profil-row-label">Membre depuis</span>
+      <span class="profil-row-val">${createdAt}</span>
+    </div>
+    <div class="profil-row">
+      <span class="profil-row-label">Code de jumelage</span>
+      <span class="profil-row-val" style="letter-spacing:3px;color:var(--teal);">${d.pairCode || '—'}</span>
+    </div>
+    <div class="profil-row">
+      <span class="profil-row-label">Synchronisation</span>
+      <span id="sync-label" style="font-size:12px;font-weight:600;">
+        <span id="sync-dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;
+          background:var(--green);margin-right:4px;vertical-align:middle;"></span>
+        Synchro ✓
+      </span>
+    </div>`;
     <div class="profil-row">
       <span class="profil-row-label">Pseudo</span>
       <span class="profil-row-val">${d.name || '—'}</span>
@@ -1796,6 +1864,29 @@ function renderAll() {
     }
   }
 </style>	
+
+<div id="edit-profil-overlay" onclick="closeEditProfil(event)" style="
+  display:none; position:fixed; inset:0; z-index:300;
+  background:rgba(0,0,0,0.4);
+  align-items:center; justify-content:center;">
+  <div onclick="event.stopPropagation()" style="
+    background:var(--surface); border-radius:var(--radius);
+    padding:24px 20px; width:min(320px, 90vw);
+    box-shadow:var(--shadow);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <span style="font-size:15px;font-weight:700;">Modifier le profil</span>
+      <button onclick="closeEditProfil()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-2);">✕</button>
+    </div>
+    <div class="field" style="margin-bottom:12px;">
+      <label>Pseudo</label>
+      <input type="text" id="edit-name" placeholder="Votre prénom"/>
+    </div>
+    <div class="sec-label" style="margin-bottom:8px;">Avatar</div>
+    <div id="edit-emoji-grid" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;"></div>
+    <button class="btn btn-primary" style="width:100%;" onclick="saveEditProfil()">Enregistrer</button>
+    <div id="edit-profil-error" style="font-size:12px;color:var(--red);text-align:center;margin-top:6px;"></div>
+  </div>
+</div>
 	
 </body>
 </html>
