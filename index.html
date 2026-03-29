@@ -820,8 +820,7 @@ async function loadPartnerProfile() {
   partnerData.activities = d.activities || [...DEFAULT_ACTS];
   partnerData.goals = d.goals || { repas: 14, sport: 3 };
   const earned = d.badges || [];
-  BADGES.forEach(b => { if (earned.includes(b.id)) b.earnedPartner = true; });
-  renderAll();
+
 }
 
 function subscribeToData() {
