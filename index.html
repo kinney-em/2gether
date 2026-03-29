@@ -732,8 +732,9 @@ async function doRegister() {
 }
 
 async function doLogout() {
-  if(unsubscribeMe) unsubscribeMe();
-  if(unsubscribePartner) unsubscribePartner();
+  if (unsubscribeMe) unsubscribeMe();
+  Object.values(unsubscribePartners).forEach(fn => fn());
+  unsubscribePartners = {};
   await auth.signOut();
 }
 
@@ -1064,18 +1065,42 @@ function toggleProfilMenu(e) {
         </div>
       </div>
     </div>
-    <div style="padding:10px 16px; border-bottom:1px solid var(--border);">
-      <div style="font-size:11px;color:var(--text-3);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Partenaire</div>
-      ${partnerUid
-        ? `<div style="display:flex;align-items:center;gap:8px;">
-            <div style="width:28px;height:28px;border-radius:50%;background:var(--coral-light);
-              display:flex;align-items:center;justify-content:center;
-              font-weight:700;color:#4A1B0C;font-size:12px;">${partName.charAt(0).toUpperCase()}</div>
-            <span style="font-size:13px;font-weight:600;">${partName}</span>
-          </div>`
-        : `<div style="font-size:12px;color:var(--text-3);">Aucun partenaire lié</div>`
+
+<div style="padding:10px 16px; border-bottom:1px solid var(--border);">
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Partenaires (${partnerUids.length}/5)</div>
+      ${partnerUids.length === 0
+        ? `<div style="font-size:12px;color:var(--text-3);">Aucun partenaire lié</div>`
+        : partnerUids.map(uid => {
+            const p = partnersData[uid] || {};
+            const initial = (p.name || '?').charAt(0).toUpperCase();
+            const isActive = activePartnerUid === uid && viewingPartner;
+            return `<div onclick="setUser('partner','${uid}');closeDropdown();" style="
+              display:flex;align-items:center;gap:8px;padding:6px 4px;
+              border-radius:var(--radius-sm);cursor:pointer;
+              background:${isActive ? 'var(--coral-light)' : 'none'};"
+              onmouseover="this.style.background='var(--gray-light)'"
+              onmouseout="this.style.background='${isActive ? 'var(--coral-light)' : 'none'}'">
+              <div style="width:26px;height:26px;border-radius:50%;background:var(--coral-light);
+                display:flex;align-items:center;justify-content:center;
+                font-weight:700;color:#4A1B0C;font-size:11px;flex-shrink:0;">${initial}</div>
+              <span style="font-size:13px;font-weight:600;">${p.name || 'Partenaire'}</span>
+              ${isActive ? '<span style="margin-left:auto;font-size:10px;color:var(--coral);">● actif</span>' : ''}
+            </div>`;
+          }).join('')
       }
+      <div onclick="setUser('me');closeDropdown();" style="
+        display:flex;align-items:center;gap:8px;padding:6px 4px;
+        border-radius:var(--radius-sm);cursor:pointer;margin-top:4px;"
+        onmouseover="this.style.background='var(--gray-light)'"
+        onmouseout="this.style.background='none'">
+        <div style="width:26px;height:26px;border-radius:50%;background:var(--teal-light);
+          display:flex;align-items:center;justify-content:center;
+          font-weight:700;color:var(--teal-dark);font-size:11px;flex-shrink:0;">${myName.charAt(0).toUpperCase()}</div>
+        <span style="font-size:13px;font-weight:600;">Mes données</span>
+        ${!viewingPartner ? '<span style="margin-left:auto;font-size:10px;color:var(--teal);">● actif</span>' : ''}
+      </div>
     </div>
+	
     <div style="padding:6px 8px;">
       <div onclick="openProfilPanel()" style="padding:9px 12px;cursor:pointer;font-size:13px;
         border-radius:var(--radius-sm);color:var(--text);"
@@ -1365,38 +1390,40 @@ function renderStats() {
 }
 
 function renderCompare() {
-  const mySain = countTotalSain(myData);
-  const partSain = countTotalSain(partnerData);
-  const mySport = countSportDays(myData, getWeekKey());
-  const partSport = countSportDays(partnerData, getWeekKey());
-  const maxSain = Math.max(mySain, partSain, 1);
-  const maxSport = Math.max(mySport, partSport, 1);
   const myName = document.getElementById('pill-me').textContent;
-  const partName = document.getElementById('pill-partner').textContent;
+  const mySain = countTotalSain(myData);
+  const mySport = countSportDays(myData, getWeekKey());
+
+  if (partnerUids.length === 0) {
+    document.getElementById('compare-section').innerHTML =
+      '<p style="font-size:13px;color:var(--text-3);">Aucun partenaire lié.</p>';
+    return;
+  }
+
+  const allSain = [mySain, ...partnerUids.map(uid => countTotalSain(partnersData[uid] || {}))];
+  const allSport = [mySport, ...partnerUids.map(uid => countSportDays(partnersData[uid] || {}, getWeekKey()))];
+  const maxSain = Math.max(...allSain, 1);
+  const maxSport = Math.max(...allSport, 1);
+
+  const rows = (data, values, max, color) => [
+    { name: myName, val: values[0], color: 'var(--teal)' },
+    ...partnerUids.map((uid, i) => ({
+      name: partnersData[uid]?.name || 'Partenaire',
+      val: values[i + 1],
+      color
+    }))
+  ].map(r => `
+    <div class="compare-row">
+      <div class="compare-name">${r.name}</div>
+      <div class="compare-bar-wrap"><div class="compare-bar-fill" style="width:${Math.round(r.val/max*100)}%;background:${r.color};"></div></div>
+      <div class="compare-val" style="color:${r.color};">${r.val}</div>
+    </div>`).join('');
 
   document.getElementById('compare-section').innerHTML = `
     <p style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Repas sains (total)</p>
-    <div class="compare-row">
-      <div class="compare-name">${myName}</div>
-      <div class="compare-bar-wrap"><div class="compare-bar-fill" style="width:${Math.round(mySain/maxSain*100)}%;background:var(--teal);"></div></div>
-      <div class="compare-val" style="color:var(--teal);">${mySain}</div>
-    </div>
-    <div class="compare-row">
-      <div class="compare-name">${partName}</div>
-      <div class="compare-bar-wrap"><div class="compare-bar-fill" style="width:${Math.round(partSain/maxSain*100)}%;background:#7ddaf8;"></div></div>
-      <div class="compare-val" style="color:#7ddaf8;">${partSain}</div>
-    </div>
+    ${rows(null, allSain, maxSain, '#97C459')}
     <p style="font-size:12px;color:var(--text-3);margin-bottom:8px;margin-top:12px;">Jours de sport (semaine en cours)</p>
-    <div class="compare-row">
-      <div class="compare-name">${myName}</div>
-      <div class="compare-bar-wrap"><div class="compare-bar-fill" style="width:${Math.round(mySport/maxSport*100)}%;background:var(--teal);"></div></div>
-      <div class="compare-val" style="color:var(--teal);">${mySport}</div>
-    </div>
-    <div class="compare-row">
-      <div class="compare-name">${partName}</div>
-      <div class="compare-bar-wrap"><div class="compare-bar-fill" style="width:${Math.round(partSport/maxSport*100)}%;background:#7ddaf8;"></div></div>
-      <div class="compare-val" style="color:#7ddaf8;">${partSport}</div>
-    </div>`;
+    ${rows(null, allSport, maxSport, '#52B788')}`;
 }
 
 function renderBadges() {
@@ -1732,41 +1759,60 @@ async function renderProfil() {
 
   const partnerBox = document.getElementById('profil-partner');
 
-  if (!partnerUid) {
+const partnerBox = document.getElementById('profil-partner');
+
+  if (partnerUids.length === 0) {
     partnerBox.innerHTML = `
-      <p style="font-size:13px;color:var(--text-2);margin-bottom:4px;">
-        Aucun partenaire lié pour le moment.
-      </p>
-      <p style="font-size:12px;color:var(--text-3);margin-bottom:0;">
-        Entrez le code de jumelage de votre proche :
-      </p>
+      <p style="font-size:13px;color:var(--text-2);margin-bottom:4px;">Aucun partenaire lié pour le moment.</p>
+      <p style="font-size:12px;color:var(--text-3);margin-bottom:0;">Entrez le code de jumelage de votre proche :</p>
       <div class="pair-input-row">
         <input id="pair-code-profil" type="text" placeholder="ex: 4729" maxlength="6"/>
         <button class="btn btn-primary" onclick="doPairFromProfil()">Lier</button>
       </div>
       <div id="pair-profil-error" style="font-size:12px;color:var(--red);margin-top:6px;"></div>`;
   } else {
-    const partnerDoc = await db.collection('users').doc(partnerUid).get();
-    const pd = partnerDoc.exists ? partnerDoc.data() : {};
-    const partnerInitials = (pd.name || '?').charAt(0).toUpperCase();
-    const pairedAt = d.pairedAt?.toDate
-      ? d.pairedAt.toDate().toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})
-      : 'Date inconnue';
+    const partnersHtml = await Promise.all(partnerUids.map(async uid => {
+      const pd = partnersData[uid] || {};
+      const partnerInitials = (pd.name || '?').charAt(0).toUpperCase();
+      const partnerDoc = await db.collection('users').doc(uid).get();
+      const pdd = partnerDoc.exists ? partnerDoc.data() : {};
+      const pairedAt = d.pairedAt?.toDate
+        ? d.pairedAt.toDate().toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})
+        : 'Date inconnue';
+      return `
+        <div style="border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:12px;">
+          <div class="partner-linked">
+            <div class="partner-avatar">${partnerInitials}</div>
+            <div>
+              <div style="font-weight:700;font-size:15px;">${pd.name || 'Partenaire'}</div>
+              <div style="font-size:12px;color:var(--text-3);">${pdd.email || ''}</div>
+            </div>
+          </div>
+          <div class="profil-row">
+            <span class="profil-row-label">Lié depuis</span>
+            <span class="profil-row-val">${pairedAt}</span>
+          </div>
+          <button onclick="confirmUnpair('${uid}')" class="btn" style="
+            width:100%;margin-top:8px;
+            background:var(--red-light);color:var(--red-dark);
+            border:1px solid var(--red);font-size:12px;">
+            🔗 Dissocier ${pd.name || 'ce partenaire'}
+          </button>
+        </div>`;
+    }));
 
-    partnerBox.innerHTML = `
-      <div class="partner-linked">
-        <div class="partner-avatar">${partnerInitials}</div>
-        <div>
-          <div style="font-weight:700;font-size:15px;">${pd.name || 'Partenaire'}</div>
-          <div style="font-size:12px;color:var(--text-3);">${pd.email || ''}</div>
+    partnerBox.innerHTML = partnersHtml.join('');
+
+    if (partnerUids.length < 5) {
+      partnerBox.innerHTML += `
+        <p style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Ajouter un partenaire (${partnerUids.length}/5) :</p>
+        <div class="pair-input-row">
+          <input id="pair-code-profil" type="text" placeholder="ex: 4729" maxlength="6"/>
+          <button class="btn btn-primary" onclick="doPairFromProfil()">Lier</button>
         </div>
-      </div>
-      <div class="profil-row" style="margin-top:8px;">
-        <span class="profil-row-label">Lié depuis</span>
-        <span class="profil-row-val">${pairedAt}</span>
-      </div>`;
+        <div id="pair-profil-error" style="font-size:12px;color:var(--red);margin-top:6px;"></div>`;
+    }
   }
-}
 	
 async function doPairFromProfil() {
   const code = document.getElementById('pair-code-profil').value.trim();
@@ -1777,15 +1823,86 @@ async function doPairFromProfil() {
     if (snap.empty) { errEl.textContent = 'Code introuvable'; return; }
     const partnerDoc = snap.docs[0];
     if (partnerDoc.id === currentUid) { errEl.textContent = 'Ce code est le vôtre !'; return; }
-	  if (partnerUid) { errEl.textContent = 'Vous avez déjà un partenaire lié !'; return; }
+	  
+	  if (partnerUids.length >= 5) { errEl.textContent = 'Maximum 5 partenaires atteint'; return; }
+    if (partnerUids.includes(partnerDoc.id)) { errEl.textContent = 'Ce partenaire est déjà lié !'; return; }
+	  
     const now = firebase.firestore.FieldValue.serverTimestamp();
-    await db.collection('users').doc(currentUid).update({ partnerId: partnerDoc.id, pairedAt: now });
-    await db.collection('users').doc(partnerDoc.id).update({ partnerId: currentUid, pairedAt: now });
-    partnerUid = partnerDoc.id;
-    await loadPartnerProfile();
-    subscribeToData();
+	const newPartnerUids = [...partnerUids, partnerDoc.id];
+    const partnerCurrentUids = (partnerDoc.data().partnerIds) || (partnerDoc.data().partnerId ? [partnerDoc.data().partnerId] : []);
+    const newPartnerCurrentUids = [...partnerCurrentUids, currentUid];
+
+    await db.collection('users').doc(currentUid).update({ partnerIds: newPartnerUids, pairedAt: now });
+    await db.collection('users').doc(partnerDoc.id).update({ partnerIds: newPartnerCurrentUids, pairedAt: now });
+
+    partnerUids = newPartnerUids;
+    partnersData[partnerDoc.id] = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
+    await loadPartnerProfile(partnerDoc.id);
+    subscribeToPartner(partnerDoc.id);
+    activePartnerUid = activePartnerUid || partnerDoc.id;
+    updatePartnerPill();
     renderProfil();
+	  
   } catch(e) { errEl.textContent = e.message; }
+}
+
+
+function confirmUnpair(uid) {
+  const name = partnersData[uid]?.name || 'ce partenaire';
+  const confirmed = window.confirm(
+    `Voulez-vous vraiment dissocier ${name} ?\n\nVos données restent sauvegardées, mais vous ne verrez plus les siennes et vice-versa.`
+  );
+  if (confirmed) doUnpair(uid);
+}
+
+/*async function doUnpair() {
+  try {
+    await db.collection('users').doc(currentUid).update({
+      partnerId: null,
+      pairedAt: null
+    });
+    if (partnerUid) {
+      await db.collection('users').doc(partnerUid).update({
+        partnerId: null,
+        pairedAt: null
+      });
+    }
+    if (unsubscribePartner) { unsubscribePartner(); unsubscribePartner = null; }
+    partnerUid = null;
+    partnerData = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
+    document.getElementById('pill-partner').textContent = 'Mon proche';
+    if (viewingPartner) setUser('me');
+    renderProfil();
+  } catch(e) {
+    const errEl = document.getElementById('unpair-error');
+    if (errEl) errEl.textContent = 'Erreur : ' + e.message;
+  }
+}*/
+
+async function doUnpair(uid) {
+  try {
+    const newMyUids = partnerUids.filter(id => id !== uid);
+    await db.collection('users').doc(currentUid).update({ partnerIds: newMyUids });
+
+    const partnerDoc = await db.collection('users').doc(uid).get();
+    if (partnerDoc.exists) {
+      const theirUids = (partnerDoc.data().partnerIds || []).filter(id => id !== currentUid);
+      await db.collection('users').doc(uid).update({ partnerIds: theirUids });
+    }
+
+    if (unsubscribePartners[uid]) { unsubscribePartners[uid](); delete unsubscribePartners[uid]; }
+    delete partnersData[uid];
+    partnerUids = newMyUids;
+
+    if (activePartnerUid === uid) {
+      activePartnerUid = partnerUids[0] || null;
+      if (!activePartnerUid) setUser('me');
+    }
+    updatePartnerPill();
+    renderProfil();
+  } catch(e) {
+    console.error(e);
+  }
 }
 	
 // ---- OBJECTIFS ----
