@@ -1343,6 +1343,7 @@ function renderBadges() {
 
 function getWeekKeyByOffset(offset) {
   const now = new Date();
+    const totalOffset = weekOffset + offset; ////correcting stats on past week
   now.setDate(now.getDate() + offset * 7);
   const jan4 = new Date(now.getFullYear(), 0, 4);
   const startOfWeek1 = new Date(jan4);
