@@ -106,16 +106,25 @@
   #login-error { font-size: 12px; color: var(--red); text-align: center; min-height: 16px; }
 
   /* --- HEADER --- */
-  .header {
-    position: sticky;
-    top: 0;
-    z-index: 30;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 12px 16px 8px;
-  }
-  .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
-  .header-title { font-size: 17px; font-weight: 700; }
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.header-top { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  margin-bottom: 0;
+  width: 100%;
+}
+.header-title { font-size: 17px; font-weight: 700; }
   .user-pills { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
   .user-pill {
     padding: 5px 12px;
