@@ -814,21 +814,32 @@ partnerUids = d.partnerIds || (d.partnerId ? [d.partnerId] : []);
   renderAll();
 }
 
-async function loadPartnerProfile() {
-  if (!partnerUid) return;
-  const doc = await db.collection('users').doc(partnerUid).get();
+async function loadPartnerProfile(uid) {
+  if (!uid) return;
+  const doc = await db.collection('users').doc(uid).get();
   if (!doc.exists) return;
   const d = doc.data();
-  document.getElementById('pill-partner').textContent = d.name || 'Mon proche';
-  partnerData.activities = d.activities || [...DEFAULT_ACTS];
-  partnerData.goals = d.goals || { repas: 14, sport: 3 };
+  if (!partnersData[uid]) partnersData[uid] = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
+  partnersData[uid].name = d.name || 'Partenaire';
+  partnersData[uid].email = d.email || '';
+  partnersData[uid].activities = d.activities || [...DEFAULT_ACTS];
+  partnersData[uid].goals = d.goals || { repas: 14, sport: 3 };
   const earned = d.badges || [];
-
+  BADGES.forEach(b => { if (earned.includes(b.id)) { if(!b.earnedPartners) b.earnedPartners={}; b.earnedPartners[uid]=true; } });
 }
 
+function updatePartnerPill() {
+  const pill = document.getElementById('pill-partner');
+  if (activePartnerUid && partnersData[activePartnerUid]) {
+    pill.textContent = partnersData[activePartnerUid].name;
+  } else {
+    pill.textContent = 'Partenaires';
+  }
+}	
+	
 function subscribeToData() {
   if (unsubscribeMe) unsubscribeMe();
-unsubscribeMe = db.collection('users').doc(currentUid).collection('entries')
+  unsubscribeMe = db.collection('users').doc(currentUid).collection('entries')
     .onSnapshot(snap => {
       snap.docChanges().forEach(change => {
         const d = change.doc.data();
@@ -843,6 +854,43 @@ unsubscribeMe = db.collection('users').doc(currentUid).collection('entries')
       setSyncStatus(true);
       renderAll();
     });
+
+  for (const uid of partnerUids) {
+    subscribeToPartner(uid);
+  }
+}
+
+function subscribeToPartner(uid) {
+  if (unsubscribePartners[uid]) unsubscribePartners[uid]();
+
+  unsubscribePartners[uid] = db.collection('users').doc(uid).collection('entries')
+    .onSnapshot(snap => {
+      if (!partnersData[uid]) partnersData[uid] = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
+      snap.docChanges().forEach(change => {
+        const d = change.doc.data();
+        if (change.type === 'removed') {
+          delete partnersData[uid].meals[change.doc.id];
+          delete partnersData[uid].sports[change.doc.id];
+        } else {
+          if (d.meals) partnersData[uid].meals[change.doc.id] = d.meals;
+          if (d.sports) partnersData[uid].sports[change.doc.id] = d.sports;
+        }
+      });
+      if (viewingPartner && activePartnerUid === uid) renderAll();
+    });
+
+  db.collection('users').doc(uid).onSnapshot(doc => {
+    if (!doc.exists) return;
+    const d = doc.data();
+    if (!partnersData[uid]) partnersData[uid] = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
+    partnersData[uid].name = d.name || 'Partenaire';
+    partnersData[uid].email = d.email || '';
+    partnersData[uid].activities = d.activities || [...DEFAULT_ACTS];
+    partnersData[uid].goals = d.goals || { repas: 14, sport: 3 };
+    updatePartnerPill();
+    if (viewingPartner && activePartnerUid === uid) renderAll();
+  });
+}
 ////////////////////////////////////// we want the partner user id to be displayed
  // if (!partnerUid) return;
  //added 22/03 KMB
@@ -947,24 +995,24 @@ function getWeekLabel() {
 ////////////////////////////////////////////////////////////////////////////////
 function getData() { return viewingPartner ? partnerData : myData; }
 
-function setUser(who) {
-  viewingPartner = who === 'partner';
-  document.getElementById('pill-me').className = 'user-pill' + (!viewingPartner ? ' me' : '');
-  document.getElementById('pill-partner').className = 'user-pill' + (viewingPartner ? ' partner' : '');
-
-const banner = document.getElementById('readonly-banner');
-  if (viewingPartner) {
-    if (!partnerUid) {
-      banner.innerHTML = `🔗 Vous n'avez pas encore ajouté de partenaire. Votre code de jumelage est disponible sur votre <span onclick="openProfilPanel()" style="text-decoration:underline;cursor:pointer;">profil utilisateur</span>.`;
-    } else {
-      const partName = document.getElementById('pill-partner').textContent;
-      banner.innerHTML = `👁️ Vous consultez les données de ${partName} — lecture seule`;
-    }
-    banner.style.display = 'block';
+function setUser(who, uid) {
+  if (who === 'me') {
+    viewingPartner = false;
+    activePartnerUid = null;
+    document.getElementById('pill-me').className = 'user-pill me';
+    document.getElementById('pill-partner').className = 'user-pill';
+    document.getElementById('readonly-banner').style.display = 'none';
   } else {
-    banner.style.display = 'none';
+    viewingPartner = true;
+    activePartnerUid = uid;
+    document.getElementById('pill-me').className = 'user-pill';
+    document.getElementById('pill-partner').className = 'user-pill partner';
+    updatePartnerPill();
+    const name = partnersData[uid]?.name || 'ce partenaire';
+    const banner = document.getElementById('readonly-banner');
+    banner.textContent = `👁️ Vous consultez les données de ${name} — lecture seule`;
+    banner.style.display = 'block';
   }
-
   renderAll();
 }
 
