@@ -825,7 +825,7 @@ async function loadPartnerProfile() {
 
 function subscribeToData() {
   if (unsubscribeMe) unsubscribeMe();
-  unsubscribeMe = db.collection('users').doc(currentUid).collection('entries')
+unsubscribeMe = db.collection('users').doc(currentUid).collection('entries')
     .onSnapshot(snap => {
       snap.docChanges().forEach(change => {
         const d = change.doc.data();
@@ -843,7 +843,7 @@ function subscribeToData() {
 ////////////////////////////////////// we want the partner user id to be displayed
  // if (!partnerUid) return;
  //added 22/03 KMB
- if (partnerUid) loadPartnerProfile();
+// if (partnerUid) loadPartnerProfile(); plus nécessaire et déjà géré proprement dans loadUserProfile() avec le await. Le double appel créait une interférence qui vidait l'affichage.
  //////////////////////////////////////////////
   if (unsubscribePartner) unsubscribePartner();
   unsubscribePartner = db.collection('users').doc(partnerUid).collection('entries')
