@@ -218,6 +218,7 @@
   }
   .meal-btn:active, .sport-btn:active { transform: scale(0.92); }
   .meal-btn.sain { background: var(--green-light); border-color: var(--green); color: var(--green-dark); }
+	.meal-btn.correct { background: var(--amber-light); border-color: var(--amber); color: var(--amber-dark); }
   .meal-btn.malbouffe { background: var(--red-light); border-color: var(--red); color: var(--red-dark); }
   .meal-btn.skip { background: var(--gray-light); border-color: var(--gray); color: var(--text-3); opacity: .6; }
   .sport-btn.done { background: var(--teal-light); border-color: var(--teal); color: var(--teal-dark); }
@@ -540,7 +541,7 @@
       <div class="week-grid" id="grid-din"></div>
       <div class="sec-label">Snacks</div>
       <div class="week-grid" id="grid-snack"></div>
-      <p style="font-size:11px;color:var(--text-3);margin-top:8px;">Tapez pour cycler : vide → ✓ sain → ✗ malbouffe → — ignoré</p>
+      <p style="font-size:11px;color:var(--text-3);margin-top:8px;">Tapez pour cycler : vide → ✓ sain → ~ correct → ✗ malbouffe → — ignoré</p>
     </div>
 
     <!-- SPORT -->
@@ -1062,8 +1063,7 @@ function cycleMeal(type, day) {
   if (!myData.meals[wk]) myData.meals[wk] = {};
   if (!myData.meals[wk][day]) myData.meals[wk][day] = {};
   const cur = myData.meals[wk][day][type] || 'none';
-  myData.meals[wk][day][type] = cur === 'none' ? 'sain' : cur === 'sain' ? 'malbouffe' : 'none';
-  renderMeals(); renderFoodScores();
+myData.meals[wk][day][type] = cur === 'none' ? 'sain' : cur === 'sain' ? 'correct' : cur === 'correct' ? 'malbouffe' : 'none';	renderMeals(); renderFoodScores();
   saveEntry(); checkBadges();
 }
 
@@ -1071,8 +1071,8 @@ function renderMeals() {
   MEALS.forEach(type => {
     const g = document.getElementById('grid-' + type);
     if (!g) return;
-    const icons = { none:'·', sain:'✓', malbouffe:'✗', skip:'—' };
-    g.innerHTML = DAYS.map((d,i) => `
+const icons = { none:'·', sain:'✓', correct:'~', malbouffe:'✗', skip:'—' };
+	      g.innerHTML = DAYS.map((d,i) => `
       <div class="day-col">
         <div class="day-lbl">${d}</div>
         <div class="meal-btn ${getMeal(type,i)}" onclick="cycleMeal('${type}',${i})">${icons[getMeal(type,i)]}</div>
@@ -1081,17 +1081,17 @@ function renderMeals() {
 }
 
 function countMeals(data, wk) {
-  let sain=0, mal=0;
+  let sain=0, mal=0, correct=0;
   Object.values(data.meals[wk] || {}).forEach(day =>
-    Object.values(day).forEach(s => { if(s==='sain') sain++; else if(s==='malbouffe') mal++; })
+    Object.values(day).forEach(s => { if(s==='sain') sain++; else if(s==='malbouffe') mal++; else if(s==='correct') correct++; })
   );
-  return { sain, mal };
+  return { sain, mal, correct };
 }
 
 function renderFoodScores() {
   const wk = getWeekKey();
-  const { sain, mal } = countMeals(getData(), wk);
-  const goal = getData().goals.repas;
+const { sain, mal, correct } = countMeals(getData(), wk);
+	  const goal = getData().goals.repas;
   const pct = Math.min(100, Math.round(sain / goal * 100));
   document.getElementById('food-scores').innerHTML = `
     <div class="score-chip food">
@@ -1099,10 +1099,39 @@ function renderFoodScores() {
       <div class="score-chip-val">${sain}</div>
       <div class="pbar"><div class="pbar-fill" style="width:${pct}%;background:var(--green);"></div></div>
     </div>
+	<div class="score-chip" style="background:var(--amber-light);">
+      <div class="score-chip-label" style="color:var(--amber);">Corrects</div>
+      <div class="score-chip-val" style="color:var(--amber-dark);">${correct}</div>
+    </div>
+	
     <div class="score-chip bad">
       <div class="score-chip-label">Malbouffe</div>
       <div class="score-chip-val">${mal}</div>
     </div>`;
+
+	// Couleur dynamique de l'arrière-plan
+  const total = sain + correct + mal;
+  if (total === 0) {
+    document.getElementById('tab-repas').style.background = 'transparent';
+  } else {
+    const pctSain = sain / total;
+    const pctCorrect = correct / total;
+    const pctMal = mal / total;
+
+    // Mélange RGB entre vert (sain), amber (correct) et rouge (malbouffe)
+    const r = Math.round(pctSain * 0x27 + pctCorrect * 0x63 + pctMal * 0x50);
+    const g = Math.round(pctSain * 0x50 + pctCorrect * 0x38 + pctMal * 0x13);
+    const b = Math.round(pctSain * 0x0A + pctCorrect * 0x06 + pctMal * 0x13);
+
+    // Très pâle — on mélange avec le blanc à 55%
+    const blend = 0.15;
+    const rFinal = Math.round(255 + (r - 255) * blend);
+    const gFinal = Math.round(255 + (g - 255) * blend);
+    const bFinal = Math.round(255 + (b - 255) * blend);
+
+    document.getElementById('tab-repas').style.background =
+      `rgb(${rFinal}, ${gFinal}, ${bFinal})`;
+  }
 }
 
 // ---- SPORT ----
