@@ -1714,7 +1714,16 @@ async function renderProfil() {
       <div class="profil-row" style="margin-top:8px;">
         <span class="profil-row-label">Lié depuis</span>
         <span class="profil-row-val">${pairedAt}</span>
-      </div>`;
+      </div>
+      <div id="unpair-error" style="font-size:12px;color:var(--red);margin-top:6px;"></div>
+      <button onclick="confirmUnpair()" class="btn" style="
+        width:100%;margin-top:12px;
+        background:var(--red-light);
+        color:var(--red-dark);
+        border:1px solid var(--red);">
+        🔗 Dissocier ce partenaire
+      </button>`;
+
   }
 }
 	
@@ -1737,6 +1746,38 @@ async function doPairFromProfil() {
     renderProfil();
   } catch(e) { errEl.textContent = e.message; }
 }
+
+function confirmUnpair() {
+  const partName = document.getElementById('pill-partner').textContent;
+  const confirmed = window.confirm(
+    `Voulez-vous vraiment dissocier ${partName} ?\n\nVos données restent sauvegardées, mais vous ne verrez plus les siennes et vice-versa.`
+  );
+  if (confirmed) doUnpair();
+}
+async function doUnpair() {
+  try {
+    await db.collection('users').doc(currentUid).update({
+      partnerId: null,
+      pairedAt: null
+    });
+    if (partnerUid) {
+      await db.collection('users').doc(partnerUid).update({
+        partnerId: null,
+        pairedAt: null
+      });
+    }
+    if (unsubscribePartner) { unsubscribePartner(); unsubscribePartner = null; }
+    partnerUid = null;
+    partnerData = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
+    document.getElementById('pill-partner').textContent = 'Mon proche';
+    if (viewingPartner) setUser('me');
+    renderProfil();
+  } catch(e) {
+    const errEl = document.getElementById('unpair-error');
+    if (errEl) errEl.textContent = 'Erreur : ' + e.message;
+  }
+}
+
 	
 // ---- OBJECTIFS ----
 function renderObjectifs() {
