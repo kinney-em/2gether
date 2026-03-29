@@ -790,6 +790,7 @@ async function loadUserProfile() {
   partnerUid = d.partnerId || null;
   myData.activities = d.activities || [...DEFAULT_ACTS];
  myData.goals = d.goals || { repas: 14, sport: 3 };
+	  myData.avatar = d.avatar || '🌱';
  const earned = d.badges || [];
   BADGES.forEach(b => { if (earned.includes(b.id)) b.earnedMe = true; });
 
@@ -869,6 +870,7 @@ unsubscribeMe = db.collection('users').doc(currentUid).collection('entries')
       document.getElementById('pill-partner').textContent = d.name || 'Mon proche';
       partnerData.activities = d.activities || [...DEFAULT_ACTS];
       partnerData.goals = d.goals || { repas: 14, sport: 3 };
+		  partnerData.avatar = d.avatar || '🌿';
       const earned = d.badges || [];
       BADGES.forEach(b => { if (earned.includes(b.id)) b.earnedPartner = true; });
       if (viewingPartner) renderAll();
@@ -998,13 +1000,14 @@ function toggleProfilMenu(e) {
   const myName = document.getElementById('pill-me').textContent || 'Moi';
   const partName = document.getElementById('pill-partner').textContent || 'Mon proche';
   const initials = myName.charAt(0).toUpperCase();
+    const myAvatar = myData.avatar || '🌱';
 
   document.getElementById('profil-dropdown-content').innerHTML = `
     <div style="padding:14px 16px; border-bottom:1px solid var(--border);">
       <div style="display:flex;align-items:center;gap:10px;">
-        <div style="width:36px;height:36px;border-radius:50%;background:var(--teal-light);
+<div style="width:36px;height:36px;border-radius:50%;background:var(--teal-light);
           display:flex;align-items:center;justify-content:center;
-          font-weight:700;color:var(--teal-dark);font-size:15px;">${initials}</div>
+          font-size:20px;">${myAvatar}</div>
         <div>
           <div style="font-weight:700;font-size:14px;">${myName}</div>
           <div style="font-size:11px;color:var(--text-3);">Mon compte</div>
@@ -1569,40 +1572,110 @@ const dataFood = labels.map((_,i) => {
 }
 
 //------PROFIL
-	async function renderProfil() {
+
+async function chooseAvatar(emoji) {
+  document.getElementById('avatar-display').textContent = emoji;
+  document.querySelectorAll('[id^="avatar-opt-"]').forEach(el => {
+    el.style.borderColor = 'transparent';
+  });
+  const opt = document.getElementById('avatar-opt-' + emoji);
+  if (opt) opt.style.borderColor = 'var(--teal)';
+  await db.collection('users').doc(currentUid).update({ avatar: emoji });
+}
+
+const EMOJIS = ['🌱','🌿','🍀','🌴','🫀','🫁','🌈','💜','🔥','🎸','☕','🍵','🥑','🍉','🦁','🐨','🦝','🐻','🐼','🙀'];
+let selectedAvatar = null;
+
+function openEditProfil() {
+  const name = document.getElementById('pill-me').textContent;
+  document.getElementById('edit-name').value = name;
+	document.getElementById('edit-email').value = auth.currentUser?.email || '—';
+  selectedAvatar = myData.avatar || '🌱';
+const userEmail = auth.currentUser?.email || '—';
+  document.getElementById('edit-emoji-grid').innerHTML = EMOJIS.map(e => `
+    <div onclick="selectEmoji('${e}')" id="emoji-opt-${e}" style="
+      font-size:22px;cursor:pointer;padding:4px;
+      border-radius:var(--radius-sm);
+      border:2px solid ${e === selectedAvatar ? 'var(--teal)' : 'transparent'};
+      transition:all .12s;">${e}</div>`).join('');
+
+  document.getElementById('edit-profil-overlay').style.display = 'flex';
+}
+
+function selectEmoji(emoji) {
+  selectedAvatar = emoji;
+  document.querySelectorAll('[id^="emoji-opt-"]').forEach(el => {
+    el.style.borderColor = 'transparent';
+  });
+  const opt = document.getElementById('emoji-opt-' + emoji);
+  if (opt) opt.style.borderColor = 'var(--teal)';
+}
+
+function closeEditProfil(e) {
+  if (!e || e.target === document.getElementById('edit-profil-overlay'))
+    document.getElementById('edit-profil-overlay').style.display = 'none';
+}
+
+async function saveEditProfil() {
+  const name = document.getElementById('edit-name').value.trim();
+  const errEl = document.getElementById('edit-profil-error');
+  if (!name) { errEl.textContent = 'Entrez un pseudo'; return; }
+  try {
+    await db.collection('users').doc(currentUid).update({
+      name,
+      avatar: selectedAvatar
+    });
+    myData.avatar = selectedAvatar;
+    document.getElementById('pill-me').textContent = name;
+    closeEditProfil();
+    renderProfil();
+  } catch(e) {
+    errEl.textContent = 'Erreur : ' + e.message;
+  }
+}
+	
+async function renderProfil() {
   const doc = await db.collection('users').doc(currentUid).get();
   if (!doc.exists) return;
   const d = doc.data();
 
-const authUser = auth.currentUser;
-const createdAt = authUser?.metadata?.creationTime
-  ? new Date(authUser.metadata.creationTime).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})
-  : 'Non disponible';
+  const authUser = auth.currentUser;
+  const createdAt = authUser?.metadata?.creationTime
+    ? new Date(authUser.metadata.creationTime).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})
+    : 'Non disponible';
 
-  const initials = (d.name || '?').charAt(0).toUpperCase();
+  const avatar = d.avatar || '🌱';
 
   document.getElementById('profil-info').innerHTML = `
-    <div class="profil-avatar">${initials}</div>
-    <div class="profil-row">
-      <span class="profil-row-label">Pseudo</span>
-      <span class="profil-row-val">${d.name || '—'}</span>
-    </div>
-    <div class="profil-row">
-      <span class="profil-row-label">Email</span>
-      <span class="profil-row-val" style="font-size:13px;">${d.email || '—'}</span>
+<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;width:100%;overflow:hidden;">
+      <div style="font-size:32px;flex-shrink:0;">${avatar}</div>
+      <div style="flex:1;min-width:0;overflow:hidden;">
+        <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.name || '—'}</div>
+        <div style="font-size:11px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.email || '—'}</div>
+      </div>
+      <!-- bouton modifier le profil -->
+	  <button onclick="openEditProfil()" style="
+        flex-shrink:0;
+        padding:5px 10px;border-radius:var(--radius-sm);
+        border:1px solid var(--border);background:var(--bg);
+        cursor:pointer;font-size:11px;font-weight:600;
+        color:var(--text-2);font-family:'Nunito',sans-serif;">
+        ✏️
+      </button>
     </div>
     <div class="profil-row">
       <span class="profil-row-label">Membre depuis</span>
       <span class="profil-row-val">${createdAt}</span>
     </div>
-<div class="profil-row">
+    <div class="profil-row">
       <span class="profil-row-label">Code de jumelage</span>
       <span class="profil-row-val" style="letter-spacing:3px;color:var(--teal);">${d.pairCode || '—'}</span>
     </div>
     <div class="profil-row">
       <span class="profil-row-label">Synchronisation</span>
       <span id="sync-label" style="font-size:12px;font-weight:600;">
-        <span id="sync-dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:4px;vertical-align:middle;"></span>
+        <span id="sync-dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;
+          background:var(--green);margin-right:4px;vertical-align:middle;"></span>
         Synchro ✓
       </span>
     </div>`;
@@ -1644,7 +1717,7 @@ const createdAt = authUser?.metadata?.creationTime
       </div>`;
   }
 }
-
+	
 async function doPairFromProfil() {
   const code = document.getElementById('pair-code-profil').value.trim();
   const errEl = document.getElementById('pair-profil-error');
@@ -1768,6 +1841,34 @@ function renderAll() {
     }
   }
 </style>	
+
+<div id="edit-profil-overlay" onclick="closeEditProfil(event)" style="
+  display:none; position:fixed; inset:0; z-index:300;
+  background:rgba(0,0,0,0.4);
+  align-items:center; justify-content:center;">
+  <div onclick="event.stopPropagation()" style="
+    background:var(--surface); border-radius:var(--radius);
+    padding:24px 20px; width:min(320px, 90vw);
+    box-shadow:var(--shadow);">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <span style="font-size:15px;font-weight:700;">Modifier le profil</span>
+      <button onclick="closeEditProfil()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-2);">✕</button>
+    </div>
+    <div class="field" style="margin-bottom:12px;">
+      <label>Pseudo</label>
+      <input type="text" id="edit-name" placeholder="Votre prénom"/>
+    </div>
+	  <!-- champ email en lecture seule -->
+    <div class="field" style="margin-bottom:12px;">
+      <label>Email</label>
+      <input type="email" id="edit-email" readonly style="opacity:0.6;cursor:not-allowed;"/>
+    </div> 
+    <div class="sec-label" style="margin-bottom:8px;">Avatar</div>
+    <div id="edit-emoji-grid" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;"></div>
+    <button class="btn btn-primary" style="width:100%;" onclick="saveEditProfil()">Enregistrer</button>
+    <div id="edit-profil-error" style="font-size:12px;color:var(--red);text-align:center;margin-top:6px;"></div>
+  </div>
+</div>
 	
 </body>
 </html>
