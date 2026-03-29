@@ -1392,6 +1392,27 @@ function countMealsForMonth(data, monthIdx) {
   return total;
 }
 
+////--- count malbouffe for month
+function countMalForMonth(data, monthIdx) {
+  const year = new Date().getFullYear();
+  let total = 0;
+  Object.entries(data.meals).forEach(([wk, days]) => {
+    const [y, w] = wk.split('-W').map(Number);
+    if (y === year) {
+      Object.entries(days).forEach(([dayIdx, meals]) => {
+        const date = getDateFromWeekDay(y, w, parseInt(dayIdx));
+        if (date.getMonth() === monthIdx)
+          Object.values(meals).forEach(s => { if (s === 'malbouffe') total++; });
+      });
+    }
+  });
+  return total;
+}
+
+function countMalForQuarter(data, qIdx) {
+  return [0,1,2].reduce((sum, m) => sum + countMalForMonth(data, qIdx * 3 + m), 0);
+}
+	
 function countSportForMonth(data, monthIdx) {
   const year = new Date().getFullYear();
   let total = 0;
@@ -1423,7 +1444,51 @@ function getDateFromWeekDay(year, week, dayIdx) {
   date.setDate(startOfWeek1.getDate() + (week - 1) * 7 + dayIdx);
   return date;
 }
- 
+
+/////----couleur du bar chart en fonction des couleurs de repas
+function getFoodBarColor(barIdx) {
+  let sain = 0, correct = 0, mal = 0;
+
+  if (currentPeriod === '7j') {
+    const d = new Date(); d.setDate(d.getDate() - 6 + barIdx);
+    const wk = getWeekKeyForDate(d);
+    const dayIdx = (d.getDay() + 6) % 7;
+    const day = getData().meals[wk]?.[dayIdx] || {};
+    Object.values(day).forEach(s => { if(s==='sain') sain++; else if(s==='correct') correct++; else if(s==='malbouffe') mal++; });
+  } else if (currentPeriod === 'sem') {
+    const wk = getWeekKeyByOffset(barIdx - 4);
+    const counts = countMeals(getData(), wk);
+    sain = counts.sain; correct = counts.correct || 0; mal = counts.mal;
+  } else if (currentPeriod === 'mois') {
+    sain = countMealsForMonth(getData(), barIdx);
+    mal = countMalForMonth(getData(), barIdx);
+  } else if (currentPeriod === 'trim') {
+    sain = countMealsForQuarter(getData(), barIdx);
+    mal = countMalForQuarter(getData(), barIdx);
+  } else {
+    sain = countMealsForQuarter(getData(), barIdx * 3);
+    mal = countMalForQuarter(getData(), barIdx * 3);
+  }
+
+  const total = sain + correct + mal;
+  if (total === 0) return 'rgba(136,135,128,0.2)';
+
+  const pctSain = sain / total;
+  const pctCorrect = correct / total;
+  const pctMal = mal / total;
+
+  const r = Math.round(pctSain * 0x27 + pctCorrect * 0x63 + pctMal * 0x50);
+  const g = Math.round(pctSain * 0x50 + pctCorrect * 0x38 + pctMal * 0x13);
+  const b = Math.round(pctSain * 0x0A + pctCorrect * 0x06 + pctMal * 0x13);
+
+  const blend = 0.5;
+  const rF = Math.round(255 + (r - 255) * blend);
+  const gF = Math.round(255 + (g - 255) * blend);
+  const bF = Math.round(255 + (b - 255) * blend);
+
+  return `rgb(${rF}, ${gF}, ${bF})`;
+}
+	
 function renderChart() {
 const today = new Date();
   const last7 = Array.from({length:7}, (_,i) => {
@@ -1464,7 +1529,7 @@ const dataFood = labels.map((_,i) => {
     data: {
       labels,
       datasets: [
-        { label:'Repas sains', data:dataFood, backgroundColor:'rgba(29,158,117,0.25)', borderColor:'#1D9E75', borderWidth:1.5, borderRadius:4 },
+       { label:'Repas sains', data:dataFood, backgroundColor:dataFood.map((_,i) => getFoodBarColor(i)), borderColor:'#1D9E75', borderWidth:1.5, borderRadius:4 },		  
         { label:'Jours sport', data:dataSport, backgroundColor:'rgba(99,153,34,0.25)', borderColor:'#639922', borderWidth:1.5, borderRadius:4 },
         { label:'Objectif repas', data:goalFood, type:'line', borderColor:'#1D9E75', borderDash:[4,4], pointRadius:0, fill:false },
         { label:'Objectif sport', data:goalSport, type:'line', borderColor:'#639922', borderDash:[4,4], pointRadius:0, fill:false },
