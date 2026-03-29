@@ -1343,6 +1343,7 @@ function renderBadges() {
 
 function getWeekKeyByOffset(offset) {
   const now = new Date();
+    const totalOffset = weekOffset + offset; ////correcting stats on past week
   now.setDate(now.getDate() + offset * 7);
   const jan4 = new Date(now.getFullYear(), 0, 4);
   const startOfWeek1 = new Date(jan4);
@@ -1376,7 +1377,7 @@ function countSportForDate(data, date) {
   return (data.sports[wk]?.[dayIdx] || []).length > 0 ? 1 : 0;
 }
 
-function countMealsForMonth(data, monthIdx) {
+function countMealsForMonthByType(data, monthIdx, type) {
   const year = new Date().getFullYear();
   let total = 0;
   Object.entries(data.meals).forEach(([wk, days]) => {
@@ -1385,14 +1386,22 @@ function countMealsForMonth(data, monthIdx) {
       Object.entries(days).forEach(([dayIdx, meals]) => {
         const date = getDateFromWeekDay(y, w, parseInt(dayIdx));
         if (date.getMonth() === monthIdx)
-          Object.values(meals).forEach(s => { if (s === 'sain') total++; });
+          Object.values(meals).forEach(s => { if (s === type) total++; });
       });
     }
   });
   return total;
 }
 
-////--- count malbouffe for month
+function countMealsForMonth(data, monthIdx) {
+  return countMealsForMonthByType(data, monthIdx, 'sain');
+}
+
+function countMalForMonth(data, monthIdx) {
+  return countMealsForMonthByType(data, monthIdx, 'malbouffe');
+}
+
+////--- count malbouffe for month  
 function countMalForMonth(data, monthIdx) {
   const year = new Date().getFullYear();
   let total = 0;
@@ -1508,7 +1517,7 @@ const dataFood = labels.map((_,i) => {
       return countMealsForDate(getData(), d);
     }
     if (currentPeriod === 'sem') return countMeals(getData(), getWeekKeyByOffset(i - 4)).sain;
-    if (currentPeriod === 'mois') return countMealsForMonth(getData(), i);
+  if (currentPeriod === 'mois') return countMealsForMonth(getData(), i);
     if (currentPeriod === 'trim') return countMealsForQuarter(getData(), i);
     return countMealsForQuarter(getData(), i * 3);
   });
