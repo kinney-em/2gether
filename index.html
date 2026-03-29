@@ -502,8 +502,18 @@
     </div>
     <div class="user-pills">
       <div class="user-pill me" onclick="setUser('me')" id="pill-me">Moi</div>
-      <div class="user-pill" onclick="setUser('partner')" id="pill-partner">Mon proche</div>
-    </div>
+ <div style="position:relative;">
+  <div class="user-pill" onclick="togglePartnerPill(event)" id="pill-partner">
+    <span id="pill-partner-avatar">🌿</span> <span id="pill-partner-name">Partenaires</span>
+  </div>
+  <div id="partner-pill-dropdown" style="
+    display:none; position:absolute; left:0; top:36px;
+    background:var(--surface); border-radius:var(--radius);
+    box-shadow:0 4px 20px rgba(0,0,0,0.12);
+    border:1px solid var(--border);
+    min-width:180px; z-index:100; overflow:hidden;">
+  </div>
+</div>
     <div class="tab-bar">
       <button class="tab active" onclick="showTab('repas',this)">🥗 Repas</button>
       <button class="tab" onclick="showTab('sport',this)">🏃 Sport</button>
@@ -958,7 +968,12 @@ function getWeekLabel() {
   return `${prefix}${fmt(monday)} – ${fmt(sunday)}`;
 }
 ////////////////////////////////////////////////////////////////////////////////
-function getData() { return viewingPartner ? partnerData : myData; }
+function getData() {
+  if (viewingPartner && activePartnerUid && partnersData[activePartnerUid]) {
+    return partnersData[activePartnerUid];
+  }
+  return myData;
+}
 
 function setUser(who, uid) {
   if (who === 'me') {
@@ -1777,6 +1792,58 @@ const partnerBox = document.getElementById('profil-partner');
     }
   }
 }	
+
+function togglePartnerPill(e) {
+  e.stopPropagation();
+  if (partnerUids.length === 0) {
+    setUser('partner', null);
+    return;
+  }
+  const dd = document.getElementById('partner-pill-dropdown');
+  if (dd.style.display === 'block') { dd.style.display = 'none'; return; }
+
+  dd.innerHTML = partnerUids.map(uid => {
+    const p = partnersData[uid] || {};
+    const isActive = activePartnerUid === uid && viewingPartner;
+    return `<div onclick="selectPartner('${uid}')" style="
+      display:flex;align-items:center;gap:8px;
+      padding:10px 14px;cursor:pointer;font-size:13px;
+      background:${isActive ? 'var(--coral-light)' : 'none'};"
+      onmouseover="this.style.background='var(--gray-light)'"
+      onmouseout="this.style.background='${isActive ? 'var(--coral-light)' : 'none'}'">
+      <span style="font-size:18px;">${p.avatar || '🌿'}</span>
+      <span style="font-weight:600;">${p.name || 'Partenaire'}</span>
+      ${isActive ? '<span style="margin-left:auto;font-size:10px;color:var(--coral);">●</span>' : ''}
+    </div>`;
+  }).join('') + `
+    <div onclick="setUser('me');closePartnerPillDropdown();" style="
+      display:flex;align-items:center;gap:8px;
+      padding:10px 14px;cursor:pointer;font-size:13px;
+      border-top:1px solid var(--border);"
+      onmouseover="this.style.background='var(--gray-light)'"
+      onmouseout="this.style.background='none'">
+      <span style="font-size:18px;">${myData.avatar || '🌱'}</span>
+      <span style="font-weight:600;">Mes données</span>
+      ${!viewingPartner ? '<span style="margin-left:auto;font-size:10px;color:var(--teal);">●</span>' : ''}
+    </div>`;
+
+  dd.style.display = 'block';
+  setTimeout(() => {
+    document.addEventListener('click', closePartnerPillDropdown, { once: true });
+  }, 100);
+}
+
+function selectPartner(uid) {
+  closePartnerPillDropdown();
+  setUser('partner', uid);
+}
+
+function closePartnerPillDropdown() {
+  const dd = document.getElementById('partner-pill-dropdown');
+  if (dd) dd.style.display = 'none';
+}
+	
+	
 async function doPairFromProfil() {
   const code = document.getElementById('pair-code-profil').value.trim();
   const errEl = document.getElementById('pair-profil-error');
