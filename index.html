@@ -477,7 +477,6 @@
     <div class="header-top">
       <div class="header-title">🌱 HabituDEUX </div>
 <div style="display:flex;align-items:center;gap:8px;position:relative;z-index:101;">
-  <div class="sync-bar"><span class="sync-dot" id="sync-dot"></span><span id="sync-label">Synchro</span></div>
   <div style="position:relative;">
   <button class="logout-btn" onclick="toggleProfilMenu(event); return false;" id="profil-menu-btn"
 	  style="
@@ -1586,9 +1585,16 @@ const createdAt = authUser?.metadata?.creationTime
       <span class="profil-row-label">Membre depuis</span>
       <span class="profil-row-val">${createdAt}</span>
     </div>
-    <div class="profil-row">
+<div class="profil-row">
       <span class="profil-row-label">Code de jumelage</span>
       <span class="profil-row-val" style="letter-spacing:3px;color:var(--teal);">${d.pairCode || '—'}</span>
+    </div>
+    <div class="profil-row">
+      <span class="profil-row-label">Synchronisation</span>
+      <span id="sync-label" style="font-size:12px;font-weight:600;">
+        <span id="sync-dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:4px;vertical-align:middle;"></span>
+        Synchro ✓
+      </span>
     </div>`;
 
   const partnerBox = document.getElementById('profil-partner');
