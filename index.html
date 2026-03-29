@@ -1123,8 +1123,8 @@ const { sain, mal, correct } = countMeals(getData(), wk);
     const g = Math.round(pctSain * 0x50 + pctCorrect * 0x38 + pctMal * 0x13);
     const b = Math.round(pctSain * 0x0A + pctCorrect * 0x06 + pctMal * 0x13);
 
-    // Très pâle — on mélange avec le blanc à 92%
-    const blend = 0.06;
+    // Très pâle — on mélange avec le blanc à 55%
+    const blend = 0.15;
     const rFinal = Math.round(255 + (r - 255) * blend);
     const gFinal = Math.round(255 + (g - 255) * blend);
     const bFinal = Math.round(255 + (b - 255) * blend);
