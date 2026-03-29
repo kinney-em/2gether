@@ -1561,9 +1561,10 @@ const dataFood = labels.map((_,i) => {
   if (!doc.exists) return;
   const d = doc.data();
 
-  const createdAt = doc.createTime?.toDate
-    ? doc.createTime.toDate().toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})
-    : 'Inconnue';
+const authUser = auth.currentUser;
+const createdAt = authUser?.metadata?.creationTime
+  ? new Date(authUser.metadata.creationTime).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})
+  : 'Non disponible';
 
   const initials = (d.name || '?').charAt(0).toUpperCase();
 
