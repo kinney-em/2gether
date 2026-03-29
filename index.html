@@ -1633,20 +1633,17 @@ async function saveEditProfil() {
   }
 }
 	
-	async function renderProfil() {
+async function renderProfil() {
   const doc = await db.collection('users').doc(currentUid).get();
   if (!doc.exists) return;
   const d = doc.data();
 
-const authUser = auth.currentUser;
-const createdAt = authUser?.metadata?.creationTime
-  ? new Date(authUser.metadata.creationTime).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})
-  : 'Non disponible';
+  const authUser = auth.currentUser;
+  const createdAt = authUser?.metadata?.creationTime
+    ? new Date(authUser.metadata.creationTime).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})
+    : 'Non disponible';
 
-  const initials = (d.name || '?').charAt(0).toUpperCase();
-
-const avatar = d.avatar || '🌱';
-  const emojis = ['🌱','🌿','🍀','🌸','🌻','🌈','⭐','🔥','💪','🏃','🧘','🚴','🏊','🎯','🦁','🐯','🦊','🐻','🐼','🦋'];
+  const avatar = d.avatar || '🌱';
 
   document.getElementById('profil-info').innerHTML = `
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
@@ -1676,29 +1673,6 @@ const avatar = d.avatar || '🌱';
       <span id="sync-label" style="font-size:12px;font-weight:600;">
         <span id="sync-dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;
           background:var(--green);margin-right:4px;vertical-align:middle;"></span>
-        Synchro ✓
-      </span>
-    </div>`;
-    <div class="profil-row">
-      <span class="profil-row-label">Pseudo</span>
-      <span class="profil-row-val">${d.name || '—'}</span>
-    </div>
-    <div class="profil-row">
-      <span class="profil-row-label">Email</span>
-      <span class="profil-row-val" style="font-size:13px;">${d.email || '—'}</span>
-    </div>
-    <div class="profil-row">
-      <span class="profil-row-label">Membre depuis</span>
-      <span class="profil-row-val">${createdAt}</span>
-    </div>
-<div class="profil-row">
-      <span class="profil-row-label">Code de jumelage</span>
-      <span class="profil-row-val" style="letter-spacing:3px;color:var(--teal);">${d.pairCode || '—'}</span>
-    </div>
-    <div class="profil-row">
-      <span class="profil-row-label">Synchronisation</span>
-      <span id="sync-label" style="font-size:12px;font-weight:600;">
-        <span id="sync-dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:4px;vertical-align:middle;"></span>
         Synchro ✓
       </span>
     </div>`;
@@ -1740,7 +1714,7 @@ const avatar = d.avatar || '🌱';
       </div>`;
   }
 }
-
+	
 async function doPairFromProfil() {
   const code = document.getElementById('pair-code-profil').value.trim();
   const errEl = document.getElementById('pair-profil-error');
