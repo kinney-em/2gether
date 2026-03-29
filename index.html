@@ -650,15 +650,17 @@ const MEALS = ['pdj','dej','din','snack'];
 const DEFAULT_ACTS = ['Vélo appart.','Fitness','Natation','Course à pied','Yoga','Tennis','Marche rapide'];
 
 let currentUid = null;
-let partnerUid = null;
-let pairCode = null;
+let partnerUids = [];let pairCode = null;
+let partnersData = {};
+let activePartnerUid = null;
+let unsubscribePartners = {};
 let viewingPartner = false;
 let weekOffset = 0;
 let activeDayIdx = null;
 let currentPeriod = '7j';
 let statsChart = null;
 let myData = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
-let partnerData = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
+
 let unsubscribeMe = null;
 let unsubscribePartner = null;
 
@@ -787,19 +789,19 @@ async function loadUserProfile() {
   const d = doc.data();
   document.getElementById('pill-me').textContent = d.name || 'Moi';
   pairCode = d.pairCode;
-  partnerUid = d.partnerId || null;
+partnerUids = d.partnerIds || (d.partnerId ? [d.partnerId] : []);
   myData.activities = d.activities || [...DEFAULT_ACTS];
- myData.goals = d.goals || { repas: 14, sport: 3 };
-	  myData.avatar = d.avatar || '🌱';
- const earned = d.badges || [];
+  myData.goals = d.goals || { repas: 14, sport: 3 };
+  const earned = d.badges || [];
   BADGES.forEach(b => { if (earned.includes(b.id)) b.earnedMe = true; });
 
-	if (partnerUid) {
-    await loadPartnerProfile();
-  } else {
-    document.getElementById('pill-partner').textContent = 'Mon proche';
+  for (const uid of partnerUids) {
+    partnersData[uid] = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
+    await loadPartnerProfile(uid);
   }
+  activePartnerUid = partnerUids[0] || null;
   subscribeToData();
+  updatePartnerPill();
 
 	///////verification de l'email
 	const currentUser = auth.currentUser;
