@@ -125,8 +125,8 @@
   width: 100%;
 }
 .header-title { font-size: 17px; font-weight: 700; }
-  .user-pills { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
-  .user-pill {
+.user-pills { display: flex; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; }
+	.user-pill {
     padding: 5px 12px;
     border-radius: 99px;
     font-size: 12px;
@@ -142,13 +142,14 @@
   .logout-btn { font-size: 12px; color: var(--text-3); cursor: pointer; background: none; border: none; font-family: 'Nunito', sans-serif; }
 
   /* --- TABS --- */
-  .tab-bar {
-    display: flex;
-    gap: 0;
-    padding: 0 16px;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
+.tab-bar {
+  display: flex;
+  gap: 0;
+  padding: 0 16px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  width: 100%;
+}
   .tab-bar::-webkit-scrollbar { display: none; }
   .tab {
     flex: 1;
@@ -510,26 +511,28 @@
       </div>
     </div>
     <div class="user-pills">
-      <div class="user-pill me" onclick="setUser('me')" id="pill-me">Moi</div>
- <div style="position:relative;">
-  <div class="user-pill" onclick="togglePartnerPill(event)" id="pill-partner">
-    <span id="pill-partner-avatar">🌿</span> <span id="pill-partner-name">Partenaires</span>
-  </div>
-  <div id="partner-pill-dropdown" style="
-    display:none; position:absolute; left:0; top:36px;
-    background:var(--surface); border-radius:var(--radius);
-    box-shadow:0 4px 20px rgba(0,0,0,0.12);
-    border:1px solid var(--border);
-    min-width:180px; z-index:100; overflow:hidden;">
-  </div>
-</div>
-    <div class="tab-bar">
-      <button class="tab active" onclick="showTab('repas',this)">🥗 Repas</button>
-      <button class="tab" onclick="showTab('sport',this)">🏃 Sport</button>
-      <button class="tab" onclick="showTab('stats',this)">📊 Stats</button>
-      <button class="tab" onclick="showTab('objectifs',this)">🎯 Objectifs</button>		
-
-    </div>
+	  <div class="user-pill me" onclick="setUser('me')" id="pill-me">
+	    <span id="pill-me-avatar">🌱</span> <span id="pill-me-name">Moi</span>
+	  </div>
+	  <div style="position:relative;">
+	    <div class="user-pill" onclick="togglePartnerPill(event)" id="pill-partner">
+	      <span id="pill-partner-avatar">🌿</span> <span id="pill-partner-name">Partenaires</span>
+	    </div>
+	    <div id="partner-pill-dropdown" style="
+	      display:none; position:absolute; left:0; top:36px;
+	      background:var(--surface); border-radius:var(--radius);
+	      box-shadow:0 4px 20px rgba(0,0,0,0.12);
+	      border:1px solid var(--border);
+	      min-width:180px; z-index:200; overflow:hidden;">
+	    </div>
+	  </div>
+	</div>
+	<div class="tab-bar">
+	  <button class="tab active" onclick="showTab('repas',this)">🥗 Repas</button>
+	  <button class="tab" onclick="showTab('sport',this)">🏃 Sport</button>
+	  <button class="tab" onclick="showTab('stats',this)">📊 Stats</button>
+	  <button class="tab" onclick="showTab('objectifs',this)">🎯 Objectifs</button>
+	</div>
   </div>
 
   <div class="main">
