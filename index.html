@@ -1079,17 +1079,8 @@ function toggleProfilMenu(e) {
             </div>`;
           }).join('')
       }
-      <div onclick="setUser('me');closeDropdown();" style="
-        display:flex;align-items:center;gap:8px;padding:6px 4px;
-        border-radius:var(--radius-sm);cursor:pointer;margin-top:4px;"
-        onmouseover="this.style.background='var(--gray-light)'"
-        onmouseout="this.style.background='none'">
-        <div style="width:26px;height:26px;border-radius:50%;background:var(--teal-light);
-          display:flex;align-items:center;justify-content:center;
-          font-weight:700;color:var(--teal-dark);font-size:11px;flex-shrink:0;">${myName.charAt(0).toUpperCase()}</div>
-        <span style="font-size:13px;font-weight:600;">Mes données</span>
-        ${!viewingPartner ? '<span style="margin-left:auto;font-size:10px;color:var(--teal);">● actif</span>' : ''}
-      </div>
+
+	  
     </div>
 	
     <div style="padding:6px 8px;">
@@ -1827,17 +1818,7 @@ function togglePartnerPill(e) {
       <span style="font-weight:600;">${p.name || 'Partenaire'}</span>
       ${isActive ? '<span style="margin-left:auto;font-size:10px;color:var(--coral);">●</span>' : ''}
     </div>`;
-  }).join('') + `
-    <div onclick="setUser('me');closePartnerPillDropdown();" style="
-      display:flex;align-items:center;gap:8px;
-      padding:10px 14px;cursor:pointer;font-size:13px;
-      border-top:1px solid var(--border);"
-      onmouseover="this.style.background='var(--gray-light)'"
-      onmouseout="this.style.background='none'">
-      <span style="font-size:18px;">${myData.avatar || '🌱'}</span>
-      <span style="font-weight:600;">Mes données</span>
-      ${!viewingPartner ? '<span style="margin-left:auto;font-size:10px;color:var(--teal);">●</span>' : ''}
-    </div>`;
+  }).join('');
 
   dd.style.display = 'block';
   setTimeout(() => {
