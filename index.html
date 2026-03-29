@@ -790,6 +790,7 @@ async function loadUserProfile() {
   partnerUid = d.partnerId || null;
   myData.activities = d.activities || [...DEFAULT_ACTS];
  myData.goals = d.goals || { repas: 14, sport: 3 };
+	  myData.avatar = d.avatar || '🌱';
  const earned = d.badges || [];
   BADGES.forEach(b => { if (earned.includes(b.id)) b.earnedMe = true; });
 
@@ -869,6 +870,7 @@ unsubscribeMe = db.collection('users').doc(currentUid).collection('entries')
       document.getElementById('pill-partner').textContent = d.name || 'Mon proche';
       partnerData.activities = d.activities || [...DEFAULT_ACTS];
       partnerData.goals = d.goals || { repas: 14, sport: 3 };
+		  partnerData.avatar = d.avatar || '🌿';
       const earned = d.badges || [];
       BADGES.forEach(b => { if (earned.includes(b.id)) b.earnedPartner = true; });
       if (viewingPartner) renderAll();
@@ -998,13 +1000,14 @@ function toggleProfilMenu(e) {
   const myName = document.getElementById('pill-me').textContent || 'Moi';
   const partName = document.getElementById('pill-partner').textContent || 'Mon proche';
   const initials = myName.charAt(0).toUpperCase();
+    const myAvatar = myData.avatar || '🌱';
 
   document.getElementById('profil-dropdown-content').innerHTML = `
     <div style="padding:14px 16px; border-bottom:1px solid var(--border);">
       <div style="display:flex;align-items:center;gap:10px;">
-        <div style="width:36px;height:36px;border-radius:50%;background:var(--teal-light);
+<div style="width:36px;height:36px;border-radius:50%;background:var(--teal-light);
           display:flex;align-items:center;justify-content:center;
-          font-weight:700;color:var(--teal-dark);font-size:15px;">${initials}</div>
+          font-size:20px;">${myAvatar}</div>
         <div>
           <div style="font-weight:700;font-size:14px;">${myName}</div>
           <div style="font-size:11px;color:var(--text-3);">Mon compte</div>
@@ -1569,6 +1572,17 @@ const dataFood = labels.map((_,i) => {
 }
 
 //------PROFIL
+
+async function chooseAvatar(emoji) {
+  document.getElementById('avatar-display').textContent = emoji;
+  document.querySelectorAll('[id^="avatar-opt-"]').forEach(el => {
+    el.style.borderColor = 'transparent';
+  });
+  const opt = document.getElementById('avatar-opt-' + emoji);
+  if (opt) opt.style.borderColor = 'var(--teal)';
+  await db.collection('users').doc(currentUid).update({ avatar: emoji });
+}
+	
 	async function renderProfil() {
   const doc = await db.collection('users').doc(currentUid).get();
   if (!doc.exists) return;
@@ -1581,8 +1595,22 @@ const createdAt = authUser?.metadata?.creationTime
 
   const initials = (d.name || '?').charAt(0).toUpperCase();
 
+const avatar = d.avatar || '🌱';
+  const emojis = ['🌱','🌿','🍀','🌸','🌻','🌈','⭐','🔥','💪','🏃','🧘','🚴','🏊','🎯','🦁','🐯','🦊','🐻','🐼','🦋'];
+
   document.getElementById('profil-info').innerHTML = `
-    <div class="profil-avatar">${initials}</div>
+    <div style="margin-bottom:14px;">
+      <div style="font-size:48px;text-align:center;margin-bottom:8px;" id="avatar-display">${avatar}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;">
+        ${emojis.map(e => `
+          <div onclick="chooseAvatar('${e}')" style="
+            font-size:22px;cursor:pointer;padding:4px;
+            border-radius:var(--radius-sm);
+            border:2px solid ${e === avatar ? 'var(--teal)' : 'transparent'};
+            transition:all .12s;"
+            id="avatar-opt-${e}">${e}</div>`).join('')}
+      </div>
+    </div>
     <div class="profil-row">
       <span class="profil-row-label">Pseudo</span>
       <span class="profil-row-val">${d.name || '—'}</span>
