@@ -1589,8 +1589,9 @@ let selectedAvatar = null;
 function openEditProfil() {
   const name = document.getElementById('pill-me').textContent;
   document.getElementById('edit-name').value = name;
+	document.getElementById('edit-email').value = auth.currentUser?.email || '—';
   selectedAvatar = myData.avatar || '🌱';
-
+const userEmail = auth.currentUser?.email || '—';
   document.getElementById('edit-emoji-grid').innerHTML = EMOJIS.map(e => `
     <div onclick="selectEmoji('${e}')" id="emoji-opt-${e}" style="
       font-size:22px;cursor:pointer;padding:4px;
@@ -1652,13 +1653,14 @@ async function renderProfil() {
         <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.name || '—'}</div>
         <div style="font-size:11px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.email || '—'}</div>
       </div>
-      <button onclick="openEditProfil()" style="
+      <!-- bouton modifier le profil -->
+	  <button onclick="openEditProfil()" style="
         flex-shrink:0;
         padding:5px 10px;border-radius:var(--radius-sm);
         border:1px solid var(--border);background:var(--bg);
         cursor:pointer;font-size:11px;font-weight:600;
         color:var(--text-2);font-family:'Nunito',sans-serif;">
-        ✏️ Modifier
+        ✏️
       </button>
     </div>
     <div class="profil-row">
@@ -1856,6 +1858,11 @@ function renderAll() {
       <label>Pseudo</label>
       <input type="text" id="edit-name" placeholder="Votre prénom"/>
     </div>
+	  <!-- champ email en lecture seule -->
+    <div class="field" style="margin-bottom:12px;">
+      <label>Email</label>
+      <input type="email" id="edit-email" readonly style="opacity:0.6;cursor:not-allowed;"/>
+    </div> 
     <div class="sec-label" style="margin-bottom:8px;">Avatar</div>
     <div id="edit-emoji-grid" style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;"></div>
     <button class="btn btn-primary" style="width:100%;" onclick="saveEditProfil()">Enregistrer</button>
