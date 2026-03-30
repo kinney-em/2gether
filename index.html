@@ -611,7 +611,7 @@
 	  
     <!-- OBJECTIFS -->
     <div id="tab-objectifs" class="screen">
-      <div class="sec-label">Mes objectifs hebdomadaires</div>
+      <div class="sec-label" id="goals-label">Mes objectifs hebdomadaires</div>
       <div id="goals-list"></div>
       <div class="sec-label">Progression (7 jours glissants)</div>
       <div id="goal-progress"></div>
@@ -1422,16 +1422,21 @@ function renderCompare() {
     return;
   }
 
-  const allSain = [mySain, ...partnerUids.map(uid => countTotalSain(partnersData[uid] || { meals:{}, sports:{} }))];
-  const allSport = [mySport, ...partnerUids.map(uid => countSportDays(partnersData[uid] || { meals:{}, sports:{} }, getWeekKey()))];
+  const colors = ['var(--teal)', '#7ddaf8', '#97C459', '#F4A261', '#9B7FD4'];
+
+  // Si un partenaire est sélectionné, on ne compare qu'avec lui
+  const uidsToShow = (viewingPartner && activePartnerUid)
+    ? [activePartnerUid]
+    : partnerUids;
+
+  const allSain = [mySain, ...uidsToShow.map(uid => countTotalSain(partnersData[uid] || { meals:{}, sports:{} }))];
+  const allSport = [mySport, ...uidsToShow.map(uid => countSportDays(partnersData[uid] || { meals:{}, sports:{} }, getWeekKey()))];
   const maxSain = Math.max(...allSain, 1);
   const maxSport = Math.max(...allSport, 1);
 
-  const colors = ['var(--teal)', '#7ddaf8', '#97C459', '#F4A261', '#9B7FD4'];
-
   const makeRows = (values, max) => [
     { name: myName, val: values[0], color: colors[0] },
-    ...partnerUids.map((uid, i) => ({
+    ...uidsToShow.map((uid, i) => ({
       name: partnersData[uid]?.name || 'Partenaire',
       val: values[i + 1],
       color: colors[i + 1] || colors[colors.length - 1]
@@ -1904,7 +1909,15 @@ async function doUnpair(uid) {
 // ---- OBJECTIFS ----
 function renderObjectifs() {
   const data = getData();
-  document.getElementById('goals-list').innerHTML = `
+  const partnerName = viewingPartner && activePartnerUid ? (partnersData[activePartnerUid]?.name || 'Partenaire') : null;
+  document.getElementById('goals-label').textContent = partnerName
+    ? `Objectifs hebdomadaires de ${partnerName}`
+    : 'Mes objectifs hebdomadaires';
+  const goalsList = document.getElementById('goals-list');
+  if (viewingPartner) {
+    goalsList.innerHTML = '';
+  } else {
+    goalsList.innerHTML = `
     <div class="goal-row">
       <span class="goal-label">🥗 Repas sains / semaine</span>
       <div class="goal-ctrl">
@@ -1921,6 +1934,7 @@ function renderObjectifs() {
         <button onclick="adjustGoal('sport',1)">+</button>
       </div>
     </div>`;
+  }
 
   const wk = getWeekKey();
   const sainWk = countMeals(data, wk).sain;
