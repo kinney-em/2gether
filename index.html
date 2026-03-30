@@ -843,7 +843,7 @@ unsubscribeMe = db.collection('users').doc(currentUid).collection('entries')
     });
 ////////////////////////////////////// we want the partner user id to be displayed
  // if (!partnerUid) return;
- //added 22/03 KMB
+ //added 22/03 
 // if (partnerUid) loadPartnerProfile(); plus nécessaire et déjà géré proprement dans loadUserProfile() avec le await. Le double appel créait une interférence qui vidait l'affichage.
  //////////////////////////////////////////////
   if (unsubscribePartner) unsubscribePartner();
@@ -1851,7 +1851,7 @@ function renderAll() {
 }
 </script>
 
-<!-- màj 28/03 KMB: lien pour contacter le support -->
+<!-- màj 28/03 : lien pour contacter le support -->
 <a href="https://docs.google.com/forms/d/e/1FAIpQLSfH8v_aA-CHdZXKYIVWSl1phJCxirpgj-vifxHgoarmwqbN1Q/viewform" 
    target="_blank" 
    id="support-link">
