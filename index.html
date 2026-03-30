@@ -106,17 +106,21 @@
   #login-error { font-size: 12px; color: var(--red); text-align: center; min-height: 16px; }
 
   /* --- HEADER --- */
-  .header {
-    position: sticky;
-    top: 0;
-    z-index: 30;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    padding: 12px 16px 8px;
-  }
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.header-top { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 0; }
   .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
   .header-title { font-size: 17px; font-weight: 700; }
-  .user-pills { display: flex; gap: 6px; }
+  .user-pills { display: flex; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; width: 100%; }
   .user-pill {
     padding: 5px 12px;
     border-radius: 99px;
@@ -501,8 +505,21 @@
       </div>
     </div>
     <div class="user-pills">
-      <div class="user-pill me" onclick="setUser('me')" id="pill-me">Moi</div>
-      <div class="user-pill" onclick="setUser('partner')" id="pill-partner">Mon proche</div>
+      <div class="user-pill me" onclick="setUser('me')" id="pill-me">
+        <span id="pill-me-avatar">🌱</span> <span id="pill-me-name">Moi</span>
+      </div>
+      <div style="position:relative;">
+        <div class="user-pill" onclick="togglePartnerPill(event)" id="pill-partner">
+          <span id="pill-partner-avatar">🌿</span> <span id="pill-partner-name">Partenaires</span>
+        </div>
+        <div id="partner-pill-dropdown" style="
+          display:none; position:absolute; left:0; top:36px;
+          background:var(--surface); border-radius:var(--radius);
+          box-shadow:0 4px 20px rgba(0,0,0,0.15);
+          border:1px solid var(--border);
+          min-width:180px; z-index:200; overflow:hidden;">
+        </div>
+      </div>
     </div>
     <div class="tab-bar">
       <button class="tab active" onclick="showTab('repas',this)">🥗 Repas</button>
@@ -650,7 +667,6 @@ const MEALS = ['pdj','dej','din','snack'];
 const DEFAULT_ACTS = ['Vélo appart.','Fitness','Natation','Course à pied','Yoga','Tennis','Marche rapide'];
 
 let currentUid = null;
-let partnerUid = null;
 let pairCode = null;
 let viewingPartner = false;
 let weekOffset = 0;
@@ -658,9 +674,11 @@ let activeDayIdx = null;
 let currentPeriod = '7j';
 let statsChart = null;
 let myData = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
-let partnerData = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
 let unsubscribeMe = null;
-let unsubscribePartner = null;
+let partnerUids = [];
+let partnersData = {};
+let activePartnerUid = null;
+let unsubscribePartners = {};
 
 // ---- AUTH ----
 auth.onAuthStateChanged(user => {
@@ -716,7 +734,7 @@ async function doRegister() {
     const cred = await auth.createUserWithEmailAndPassword(email, pwd);
     const code = Math.floor(1000 + Math.random() * 9000).toString();
     await db.collection('users').doc(cred.user.uid).set({
-      name, email, pairCode: code, partnerId: null,
+      name, email, pairCode: code, partnerIds: [],
       activities: DEFAULT_ACTS,
       goals: { repas: 14, sport: 3 }
     });
@@ -730,8 +748,9 @@ async function doRegister() {
 }
 
 async function doLogout() {
-  if(unsubscribeMe) unsubscribeMe();
-  if(unsubscribePartner) unsubscribePartner();
+  if (unsubscribeMe) unsubscribeMe();
+  Object.values(unsubscribePartners).forEach(fn => { if(fn) fn(); });
+  unsubscribePartners = {};
   await auth.signOut();
 }
 
@@ -743,9 +762,14 @@ async function doPair() {
     if (snap.empty) { setError('pair-error','Code introuvable'); return; }
     const partnerDoc = snap.docs[0];
     if (partnerDoc.id === currentUid) { setError('pair-error','Ce code est le vôtre !'); return; }
-	  if (partnerUid) { setError('pair-error','Vous avez déjà un partenaire lié !'); return; }
-    await db.collection('users').doc(currentUid).update({ partnerId: partnerDoc.id });
-    await db.collection('users').doc(partnerDoc.id).update({ partnerId: currentUid });
+    if (partnerUids.includes(partnerDoc.id)) { setError('pair-error','Ce partenaire est déjà lié !'); return; }
+    const newMyUids = [...partnerUids, partnerDoc.id];
+    const theirData = partnerDoc.data();
+    const theirUids = theirData.partnerIds || (theirData.partnerId ? [theirData.partnerId] : []);
+    await db.collection('users').doc(currentUid).update({ partnerIds: newMyUids });
+    await db.collection('users').doc(partnerDoc.id).update({ partnerIds: [...theirUids, currentUid] });
+    partnerUids = newMyUids;
+    
     loadUserProfile();
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
@@ -785,20 +809,22 @@ async function loadUserProfile() {
     return;
   }
   const d = doc.data();
-  document.getElementById('pill-me').textContent = d.name || 'Moi';
+  document.getElementById('pill-me-name').textContent = d.name || 'Moi';
+  document.getElementById('pill-me-avatar').textContent = d.avatar || '🌱';
   pairCode = d.pairCode;
-  partnerUid = d.partnerId || null;
+  partnerUids = d.partnerIds || (d.partnerId ? [d.partnerId] : []);
   myData.activities = d.activities || [...DEFAULT_ACTS];
- myData.goals = d.goals || { repas: 14, sport: 3 };
-	  myData.avatar = d.avatar || '🌱';
- const earned = d.badges || [];
+  myData.goals = d.goals || { repas: 14, sport: 3 };
+  myData.avatar = d.avatar || '🌱';
+  const earned = d.badges || [];
   BADGES.forEach(b => { if (earned.includes(b.id)) b.earnedMe = true; });
 
-	if (partnerUid) {
-    await loadPartnerProfile();
-  } else {
-    document.getElementById('pill-partner').textContent = 'Mon proche';
+  for (const uid of partnerUids) {
+    partnersData[uid] = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
+    await loadPartnerProfile(uid);
   }
+  activePartnerUid = partnerUids[0] || null;
+  updatePartnerPill();
   subscribeToData();
 
 	///////verification de l'email
@@ -812,21 +838,80 @@ async function loadUserProfile() {
   renderAll();
 }
 
-async function loadPartnerProfile() {
-  if (!partnerUid) return;
-  const doc = await db.collection('users').doc(partnerUid).get();
+async function loadPartnerProfile(uid) {
+  if (!uid) return;
+  const doc = await db.collection('users').doc(uid).get();
   if (!doc.exists) return;
   const d = doc.data();
-  document.getElementById('pill-partner').textContent = d.name || 'Mon proche';
-  partnerData.activities = d.activities || [...DEFAULT_ACTS];
-  partnerData.goals = d.goals || { repas: 14, sport: 3 };
+  if (!partnersData[uid]) partnersData[uid] = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
+  partnersData[uid].name = d.name || 'Partenaire';
+  partnersData[uid].email = d.email || '';
+  partnersData[uid].avatar = d.avatar || '🌿';
+  partnersData[uid].activities = d.activities || [...DEFAULT_ACTS];
+  partnersData[uid].goals = d.goals || { repas: 14, sport: 3 };
   const earned = d.badges || [];
-
+  BADGES.forEach(b => { if (earned.includes(b.id)) { if(!b.earnedPartners) b.earnedPartners={}; b.earnedPartners[uid]=true; } });
 }
+
+function updatePartnerPill() {
+  const avatarEl = document.getElementById('pill-partner-avatar');
+  const nameEl = document.getElementById('pill-partner-name');
+  if (partnerUids.length === 0) {
+    if (avatarEl) avatarEl.textContent = '🌿';
+    if (nameEl) nameEl.textContent = 'Partenaires';
+  } else if (activePartnerUid && partnersData[activePartnerUid]) {
+    if (avatarEl) avatarEl.textContent = partnersData[activePartnerUid].avatar || '🌿';
+    if (nameEl) nameEl.textContent = partnersData[activePartnerUid].name || 'Partenaire';
+  } else {
+    if (avatarEl) avatarEl.textContent = '🌿';
+    if (nameEl) nameEl.textContent = `${partnerUids.length} partenaire${partnerUids.length > 1 ? 's' : ''}`;
+  }
+}
+
+function togglePartnerPill(e) {
+  e.stopPropagation();
+  if (partnerUids.length === 0) {
+    setUser('partner', null);
+    return;
+  }
+  const dd = document.getElementById('partner-pill-dropdown');
+  if (dd.style.display === 'block') { dd.style.display = 'none'; return; }
+
+  dd.innerHTML = partnerUids.map(uid => {
+    const p = partnersData[uid] || {};
+    const isActive = activePartnerUid === uid && viewingPartner;
+    return `<div onclick="selectPartner('${uid}')" style="
+      display:flex;align-items:center;gap:8px;
+      padding:10px 14px;cursor:pointer;font-size:13px;
+      background:${isActive ? 'var(--coral-light)' : 'none'};"
+      onmouseover="this.style.background='var(--gray-light)'"
+      onmouseout="this.style.background='${isActive ? 'var(--coral-light)' : 'none'}'">
+      <span style="font-size:18px;">${p.avatar || '🌿'}</span>
+      <span style="font-weight:600;flex:1;">${p.name || 'Partenaire'}</span>
+      ${isActive ? '<span style="font-size:10px;color:var(--coral);">●</span>' : ''}
+    </div>`;
+  }).join('');
+
+  dd.style.display = 'block';
+  setTimeout(() => {
+    document.addEventListener('click', closePartnerPillDropdown, { once: true });
+  }, 100);
+}
+
+function selectPartner(uid) {
+  closePartnerPillDropdown();
+  setUser('partner', uid);
+}
+
+function closePartnerPillDropdown() {
+  const dd = document.getElementById('partner-pill-dropdown');
+  if (dd) dd.style.display = 'none';
+}
+
 
 function subscribeToData() {
   if (unsubscribeMe) unsubscribeMe();
-unsubscribeMe = db.collection('users').doc(currentUid).collection('entries')
+  unsubscribeMe = db.collection('users').doc(currentUid).collection('entries')
     .onSnapshot(snap => {
       snap.docChanges().forEach(change => {
         const d = change.doc.data();
@@ -841,48 +926,43 @@ unsubscribeMe = db.collection('users').doc(currentUid).collection('entries')
       setSyncStatus(true);
       renderAll();
     });
-////////////////////////////////////// we want the partner user id to be displayed
- // if (!partnerUid) return;
- //added 22/03 
-// if (partnerUid) loadPartnerProfile(); plus nécessaire et déjà géré proprement dans loadUserProfile() avec le await. Le double appel créait une interférence qui vidait l'affichage.
- //////////////////////////////////////////////
-  if (unsubscribePartner) unsubscribePartner();
-  unsubscribePartner = db.collection('users').doc(partnerUid).collection('entries')
+
+  for (const uid of partnerUids) {
+    subscribeToPartner(uid);
+  }
+}
+
+function subscribeToPartner(uid) {
+  if (unsubscribePartners[uid]) unsubscribePartners[uid]();
+  unsubscribePartners[uid] = db.collection('users').doc(uid).collection('entries')
     .onSnapshot(snap => {
+      if (!partnersData[uid]) partnersData[uid] = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
       snap.docChanges().forEach(change => {
         const d = change.doc.data();
         if (change.type === 'removed') {
-          delete partnerData.meals[change.doc.id];
-          delete partnerData.sports[change.doc.id];
+          delete partnersData[uid].meals[change.doc.id];
+          delete partnersData[uid].sports[change.doc.id];
         } else {
-          if (d.meals) partnerData.meals[change.doc.id] = d.meals;
-          if (d.sports) partnerData.sports[change.doc.id] = d.sports;
+          if (d.meals) partnersData[uid].meals[change.doc.id] = d.meals;
+          if (d.sports) partnersData[uid].sports[change.doc.id] = d.sports;
         }
       });
-      if (!viewingPartner) renderAll();
+      if (viewingPartner && activePartnerUid === uid) renderAll();
     });
 
-// Écoute du profil partenaire en temps réel
-  if (partnerUid) {
-    db.collection('users').doc(partnerUid).onSnapshot(doc => {
-      if (!doc.exists) return;
-      const d = doc.data();
-      document.getElementById('pill-partner').textContent = d.name || 'Mon proche';
-      partnerData.activities = d.activities || [...DEFAULT_ACTS];
-      partnerData.goals = d.goals || { repas: 14, sport: 3 };
-		  partnerData.avatar = d.avatar || '🌿';
-      const earned = d.badges || [];
-      BADGES.forEach(b => { if (earned.includes(b.id)) b.earnedPartner = true; });
-      if (viewingPartner) renderAll();
-    });
-  }
-
+  db.collection('users').doc(uid).onSnapshot(doc => {
+    if (!doc.exists) return;
+    const d = doc.data();
+    if (!partnersData[uid]) partnersData[uid] = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
+    partnersData[uid].name = d.name || 'Partenaire';
+    partnersData[uid].email = d.email || '';
+    partnersData[uid].avatar = d.avatar || '🌿';
+    partnersData[uid].activities = d.activities || [...DEFAULT_ACTS];
+    partnersData[uid].goals = d.goals || { repas: 14, sport: 3 };
+    updatePartnerPill();
+    if (viewingPartner && activePartnerUid === uid) renderAll();
+  });
 }
-
-/*function setSyncStatus(ok) {  //// on change cette fonction car le rechargement ne se passe pas bien depuis que le voyant de synchro a été déplacé
-//  document.getElementById('sync-dot').className = 'sync-dot' + (ok ? '' : ' off');
-//  document.getElementById('sync-label').textContent = ok ? 'Synchro ✓' : 'Hors ligne';
-}*/
 
 function setSyncStatus(ok) {
   const dot = document.getElementById('sync-dot');
@@ -943,26 +1023,36 @@ function getWeekLabel() {
   return `${prefix}${fmt(monday)} – ${fmt(sunday)}`;
 }
 ////////////////////////////////////////////////////////////////////////////////
-function getData() { return viewingPartner ? partnerData : myData; }
+function getData() {
+  if (viewingPartner && activePartnerUid && partnersData[activePartnerUid]) {
+    return partnersData[activePartnerUid];
+  }
+  return myData;
+}
 
-function setUser(who) {
-  viewingPartner = who === 'partner';
-  document.getElementById('pill-me').className = 'user-pill' + (!viewingPartner ? ' me' : '');
-  document.getElementById('pill-partner').className = 'user-pill' + (viewingPartner ? ' partner' : '');
 
-const banner = document.getElementById('readonly-banner');
-  if (viewingPartner) {
-    if (!partnerUid) {
+function setUser(who, uid) {
+  const banner = document.getElementById('readonly-banner');
+  if (who === 'me') {
+    viewingPartner = false;
+    activePartnerUid = null;
+    document.getElementById('pill-me').className = 'user-pill me';
+    document.getElementById('pill-partner').className = 'user-pill';
+    banner.style.display = 'none';
+  } else {
+    viewingPartner = true;
+    activePartnerUid = uid || partnerUids[0] || null;
+    document.getElementById('pill-me').className = 'user-pill';
+    document.getElementById('pill-partner').className = 'user-pill partner';
+    updatePartnerPill();
+    if (!activePartnerUid) {
       banner.innerHTML = `🔗 Vous n'avez pas encore ajouté de partenaire. Votre code de jumelage est disponible sur votre <span onclick="openProfilPanel()" style="text-decoration:underline;cursor:pointer;">profil utilisateur</span>.`;
     } else {
-      const partName = document.getElementById('pill-partner').textContent;
-      banner.innerHTML = `👁️ Vous consultez les données de ${partName} — lecture seule`;
+      const name = partnersData[activePartnerUid]?.name || 'ce partenaire';
+      banner.innerHTML = `👁️ Vous consultez les données de ${name} — lecture seule`;
     }
     banner.style.display = 'block';
-  } else {
-    banner.style.display = 'none';
   }
-
   renderAll();
 }
 
@@ -1014,18 +1104,20 @@ function toggleProfilMenu(e) {
         </div>
       </div>
     </div>
-    <div style="padding:10px 16px; border-bottom:1px solid var(--border);">
-      <div style="font-size:11px;color:var(--text-3);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Partenaire</div>
-      ${partnerUid
-        ? `<div style="display:flex;align-items:center;gap:8px;">
-            <div style="width:28px;height:28px;border-radius:50%;background:var(--coral-light);
-              display:flex;align-items:center;justify-content:center;
-              font-weight:700;color:#4A1B0C;font-size:12px;">${partName.charAt(0).toUpperCase()}</div>
-            <span style="font-size:13px;font-weight:600;">${partName}</span>
-          </div>`
-        : `<div style="font-size:12px;color:var(--text-3);">Aucun partenaire lié</div>`
+
+     <div style="padding:10px 16px; border-bottom:1px solid var(--border);">
+      <div style="font-size:11px;color:var(--text-3);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Partenaires (${partnerUids.length}/5)</div>
+      ${partnerUids.length === 0
+        ? `<div style="font-size:12px;color:var(--text-3);">Aucun partenaire lié</div>`
+        : partnerUids.map(uid => {
+            const p = partnersData[uid] || {};
+            return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
+              <span style="font-size:16px;">${p.avatar || '🌿'}</span>
+              <span style="font-size:13px;font-weight:600;">${p.name || 'Partenaire'}</span>
+            </div>`;
+          }).join('')
       }
-    </div>
+    </div>  
     <div style="padding:6px 8px;">
       <div onclick="openProfilPanel()" style="padding:9px 12px;cursor:pointer;font-size:13px;
         border-radius:var(--radius-sm);color:var(--text);"
@@ -1273,7 +1365,12 @@ async function checkBadges() {
   let changed = false;
   BADGES.forEach(b => {
     if (!b.earnedMe && b.cond(myData)) { b.earnedMe = true; changed = true; }
-    if (!b.earnedPartner && b.cond(partnerData)) b.earnedPartner = true;
+    partnerUids.forEach(uid => {
+      if (b.cond(partnersData[uid] || { meals:{}, sports:{} })) {
+        if (!b.earnedPartners) b.earnedPartners = {};
+        b.earnedPartners[uid] = true;
+      }
+    });
   });
   if (changed && currentUid) {
     const earned = BADGES.filter(b => b.earnedMe).map(b => b.id);
@@ -1315,38 +1412,42 @@ function renderStats() {
 }
 
 function renderCompare() {
+  const myName = document.getElementById('pill-me-name')?.textContent || 'Moi';
   const mySain = countTotalSain(myData);
-  const partSain = countTotalSain(partnerData);
   const mySport = countSportDays(myData, getWeekKey());
-  const partSport = countSportDays(partnerData, getWeekKey());
-  const maxSain = Math.max(mySain, partSain, 1);
-  const maxSport = Math.max(mySport, partSport, 1);
-  const myName = document.getElementById('pill-me').textContent;
-  const partName = document.getElementById('pill-partner').textContent;
+
+  if (partnerUids.length === 0) {
+    document.getElementById('compare-section').innerHTML =
+      '<p style="font-size:13px;color:var(--text-3);">Aucun partenaire lié.</p>';
+    return;
+  }
+
+  const allSain = [mySain, ...partnerUids.map(uid => countTotalSain(partnersData[uid] || { meals:{}, sports:{} }))];
+  const allSport = [mySport, ...partnerUids.map(uid => countSportDays(partnersData[uid] || { meals:{}, sports:{} }, getWeekKey()))];
+  const maxSain = Math.max(...allSain, 1);
+  const maxSport = Math.max(...allSport, 1);
+
+  const colors = ['var(--teal)', '#7ddaf8', '#97C459', '#F4A261', '#9B7FD4'];
+
+  const makeRows = (values, max) => [
+    { name: myName, val: values[0], color: colors[0] },
+    ...partnerUids.map((uid, i) => ({
+      name: partnersData[uid]?.name || 'Partenaire',
+      val: values[i + 1],
+      color: colors[i + 1] || colors[colors.length - 1]
+    }))
+  ].map(r => `
+    <div class="compare-row">
+      <div class="compare-name">${r.name}</div>
+      <div class="compare-bar-wrap"><div class="compare-bar-fill" style="width:${Math.round(r.val/max*100)}%;background:${r.color};"></div></div>
+      <div class="compare-val" style="color:${r.color};">${r.val}</div>
+    </div>`).join('');
 
   document.getElementById('compare-section').innerHTML = `
     <p style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Repas sains (total)</p>
-    <div class="compare-row">
-      <div class="compare-name">${myName}</div>
-      <div class="compare-bar-wrap"><div class="compare-bar-fill" style="width:${Math.round(mySain/maxSain*100)}%;background:var(--teal);"></div></div>
-      <div class="compare-val" style="color:var(--teal);">${mySain}</div>
-    </div>
-    <div class="compare-row">
-      <div class="compare-name">${partName}</div>
-      <div class="compare-bar-wrap"><div class="compare-bar-fill" style="width:${Math.round(partSain/maxSain*100)}%;background:#7ddaf8;"></div></div>
-      <div class="compare-val" style="color:#7ddaf8;">${partSain}</div>
-    </div>
+    ${makeRows(allSain, maxSain)}
     <p style="font-size:12px;color:var(--text-3);margin-bottom:8px;margin-top:12px;">Jours de sport (semaine en cours)</p>
-    <div class="compare-row">
-      <div class="compare-name">${myName}</div>
-      <div class="compare-bar-wrap"><div class="compare-bar-fill" style="width:${Math.round(mySport/maxSport*100)}%;background:var(--teal);"></div></div>
-      <div class="compare-val" style="color:var(--teal);">${mySport}</div>
-    </div>
-    <div class="compare-row">
-      <div class="compare-name">${partName}</div>
-      <div class="compare-bar-wrap"><div class="compare-bar-fill" style="width:${Math.round(partSport/maxSport*100)}%;background:#7ddaf8;"></div></div>
-      <div class="compare-val" style="color:#7ddaf8;">${partSport}</div>
-    </div>`;
+    ${makeRows(allSport, maxSport)}`;
 }
 
 function renderBadges() {
@@ -1626,7 +1727,8 @@ async function saveEditProfil() {
       avatar: selectedAvatar
     });
     myData.avatar = selectedAvatar;
-    document.getElementById('pill-me').textContent = name;
+        document.getElementById('pill-me-name').textContent = name;
+    document.getElementById('pill-me-avatar').textContent = selectedAvatar;
     closeEditProfil();
     renderProfil();
   } catch(e) {
@@ -1680,53 +1782,62 @@ async function renderProfil() {
       </span>
     </div>`;
 
-  const partnerBox = document.getElementById('profil-partner');
+ const partnerBox = document.getElementById('profil-partner');
 
-  if (!partnerUid) {
+  if (partnerUids.length === 0) {
     partnerBox.innerHTML = `
-      <p style="font-size:13px;color:var(--text-2);margin-bottom:4px;">
-        Aucun partenaire lié pour le moment.
-      </p>
-      <p style="font-size:12px;color:var(--text-3);margin-bottom:0;">
-        Entrez le code de jumelage de votre proche :
-      </p>
+      <p style="font-size:13px;color:var(--text-2);margin-bottom:4px;">Aucun partenaire lié pour le moment.</p>
+      <p style="font-size:12px;color:var(--text-3);margin-bottom:0;">Entrez le code de jumelage de votre proche :</p>
       <div class="pair-input-row">
         <input id="pair-code-profil" type="text" placeholder="ex: 4729" maxlength="6"/>
         <button class="btn btn-primary" onclick="doPairFromProfil()">Lier</button>
       </div>
       <div id="pair-profil-error" style="font-size:12px;color:var(--red);margin-top:6px;"></div>`;
   } else {
-    const partnerDoc = await db.collection('users').doc(partnerUid).get();
-    const pd = partnerDoc.exists ? partnerDoc.data() : {};
-    const partnerInitials = (pd.name || '?').charAt(0).toUpperCase();
-    const pairedAt = d.pairedAt?.toDate
-      ? d.pairedAt.toDate().toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})
-      : 'Date inconnue';
+    const partnersHtml = await Promise.all(partnerUids.map(async uid => {
+      const pd = partnersData[uid] || {};
+      const partnerDoc = await db.collection('users').doc(uid).get();
+      const pdd = partnerDoc.exists ? partnerDoc.data() : {};
+      const pairedAt = d.pairedAt?.toDate
+        ? d.pairedAt.toDate().toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})
+        : 'Date inconnue';
+      return `
+        <div style="border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:12px;">
+          <div class="partner-linked">
+            <div style="font-size:28px;">${pd.avatar || '🌿'}</div>
+            <div>
+              <div style="font-weight:700;font-size:15px;">${pd.name || 'Partenaire'}</div>
+              <div style="font-size:12px;color:var(--text-3);">${pdd.email || ''}</div>
+            </div>
+          </div>
+          <div class="profil-row">
+            <span class="profil-row-label">Lié depuis</span>
+            <span class="profil-row-val">${pairedAt}</span>
+          </div>
+          <button onclick="confirmUnpair('${uid}')" class="btn" style="
+            width:100%;margin-top:8px;font-size:12px;
+            background:var(--red-light);color:var(--red-dark);
+            border:1px solid var(--red);">
+            🔗 Dissocier ${pd.name || 'ce partenaire'}
+          </button>
+        </div>`;
+    }));
 
-    partnerBox.innerHTML = `
-      <div class="partner-linked">
-        <div class="partner-avatar">${partnerInitials}</div>
-        <div>
-          <div style="font-weight:700;font-size:15px;">${pd.name || 'Partenaire'}</div>
-          <div style="font-size:12px;color:var(--text-3);">${pd.email || ''}</div>
+    partnerBox.innerHTML = partnersHtml.join('');
+
+    if (partnerUids.length < 5) {
+      partnerBox.innerHTML += `
+        <p style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Ajouter un partenaire (${partnerUids.length}/5) :</p>
+        <div class="pair-input-row">
+          <input id="pair-code-profil" type="text" placeholder="ex: 4729" maxlength="6"/>
+          <button class="btn btn-primary" onclick="doPairFromProfil()">Lier</button>
         </div>
-      </div>
-      <div class="profil-row" style="margin-top:8px;">
-        <span class="profil-row-label">Lié depuis</span>
-        <span class="profil-row-val">${pairedAt}</span>
-      </div>
-      <div id="unpair-error" style="font-size:12px;color:var(--red);margin-top:6px;"></div>
-      <button onclick="confirmUnpair()" class="btn" style="
-        width:100%;margin-top:12px;
-        background:var(--red-light);
-        color:var(--red-dark);
-        border:1px solid var(--red);">
-        🔗 Dissocier ce partenaire
-      </button>`;
-
+        <div id="pair-profil-error" style="font-size:12px;color:var(--red);margin-top:6px;"></div>`;
+    }
   }
 }
-	
+
+
 async function doPairFromProfil() {
   const code = document.getElementById('pair-code-profil').value.trim();
   const errEl = document.getElementById('pair-profil-error');
@@ -1736,43 +1847,54 @@ async function doPairFromProfil() {
     if (snap.empty) { errEl.textContent = 'Code introuvable'; return; }
     const partnerDoc = snap.docs[0];
     if (partnerDoc.id === currentUid) { errEl.textContent = 'Ce code est le vôtre !'; return; }
-	  if (partnerUid) { errEl.textContent = 'Vous avez déjà un partenaire lié !'; return; }
+    if (partnerUids.length >= 5) { errEl.textContent = 'Maximum 5 partenaires atteint'; return; }
+    if (partnerUids.includes(partnerDoc.id)) { errEl.textContent = 'Ce partenaire est déjà lié !'; return; }
     const now = firebase.firestore.FieldValue.serverTimestamp();
-    await db.collection('users').doc(currentUid).update({ partnerId: partnerDoc.id, pairedAt: now });
-    await db.collection('users').doc(partnerDoc.id).update({ partnerId: currentUid, pairedAt: now });
-    partnerUid = partnerDoc.id;
-    await loadPartnerProfile();
-    subscribeToData();
+    const newMyUids = [...partnerUids, partnerDoc.id];
+    const theirData = partnerDoc.data();
+    const theirUids = theirData.partnerIds || (theirData.partnerId ? [theirData.partnerId] : []);
+    const newTheirUids = [...theirUids, currentUid];
+    await db.collection('users').doc(currentUid).update({ partnerIds: newMyUids, pairedAt: now });
+    await db.collection('users').doc(partnerDoc.id).update({ partnerIds: newTheirUids, pairedAt: now });
+    partnerUids = newMyUids;
+    partnersData[partnerDoc.id] = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
+    await loadPartnerProfile(partnerDoc.id);
+    subscribeToPartner(partnerDoc.id);
+    activePartnerUid = activePartnerUid || partnerDoc.id;
+    updatePartnerPill();
     renderProfil();
+    
   } catch(e) { errEl.textContent = e.message; }
 }
 
-function confirmUnpair() {
-  const partName = document.getElementById('pill-partner').textContent;
+function confirmUnpair(uid) {
+  const name = partnersData[uid]?.name || 'ce partenaire';
   const confirmed = window.confirm(
-    `Voulez-vous vraiment dissocier ${partName} ?\n\nVos données restent sauvegardées, mais vous ne verrez plus les siennes et vice-versa.`
+    `Voulez-vous vraiment dissocier ${name} ?\n\nVos données restent sauvegardées, mais vous ne verrez plus les siennes et vice-versa.`
   );
-  if (confirmed) doUnpair();
+  if (confirmed) doUnpair(uid);
 }
-async function doUnpair() {
+
+async function doUnpair(uid) {
   try {
-    await db.collection('users').doc(currentUid).update({
-      partnerId: null,
-      pairedAt: null
-    });
-    if (partnerUid) {
-      await db.collection('users').doc(partnerUid).update({
-        partnerId: null,
-        pairedAt: null
-      });
+    const newMyUids = partnerUids.filter(id => id !== uid);
+    await db.collection('users').doc(currentUid).update({ partnerIds: newMyUids });
+    const partnerDoc = await db.collection('users').doc(uid).get();
+    if (partnerDoc.exists) {
+      const theirUids = (partnerDoc.data().partnerIds || []).filter(id => id !== currentUid);
+      await db.collection('users').doc(uid).update({ partnerIds: theirUids });
     }
-    if (unsubscribePartner) { unsubscribePartner(); unsubscribePartner = null; }
-    partnerUid = null;
-    partnerData = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
-    document.getElementById('pill-partner').textContent = 'Mon proche';
-    if (viewingPartner) setUser('me');
+    if (unsubscribePartners[uid]) { unsubscribePartners[uid](); delete unsubscribePartners[uid]; }
+    delete partnersData[uid];
+    partnerUids = newMyUids;
+    if (activePartnerUid === uid) {
+      activePartnerUid = partnerUids[0] || null;
+      if (!activePartnerUid) setUser('me');
+    }
+    updatePartnerPill();
     renderProfil();
   } catch(e) {
+    console.error(e);
     const errEl = document.getElementById('unpair-error');
     if (errEl) errEl.textContent = 'Erreur : ' + e.message;
   }
