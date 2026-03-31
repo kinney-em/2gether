@@ -644,7 +644,7 @@
       </div>
       <div class="stat-cards" id="stat-cards"></div>
       <div class="chart-wrap"><canvas id="statsChart"></canvas></div>
-      <div class="sec-label">Comparaison avec votre proche</div>
+      <div class="sec-label" id="compare-label">Comparaison avec votre proche</div>
       <div id="compare-section"></div>
       <div class="sec-label">Badges</div>
       <div class="badge-grid" id="badge-grid"></div>
@@ -1455,6 +1455,8 @@ function renderStats() {
       <div style="font-size:11px;color:var(--text-3);margin-top:2px;">${sain} repas sains au total</div>
     </div>`;
 
+  const partnerName = activePartnerUid ? (partnersData[activePartnerUid]?.name || 'votre proche') : 'votre proche';
+  document.getElementById('compare-label').textContent = `Comparaison avec ${partnerName}`;
   renderCompare();
   renderBadges();
   renderChart();
