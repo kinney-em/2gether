@@ -1308,7 +1308,8 @@ function closeSportModal(e) {
 function renderActList() {
   const acts = getData().activities;
   const sel = getSport(activeDayIdx);
-  document.getElementById('sport-act-list').innerHTML = acts.map(a => `
+  const list = viewingPartner ? sel : acts;
+  document.getElementById('sport-act-list').innerHTML = list.map(a => `
     <div class="act-item" onclick="${viewingPartner ? '' : `toggleAct('${a}')`}">
       <div class="act-check ${sel.includes(a)?'on':''}">${sel.includes(a)?'✓':''}</div>
       <span>${a}</span>
@@ -1997,7 +1998,6 @@ function renderAll() {
   renderMeals(); renderFoodScores();
   renderSportGrid(); renderSportScores();
   renderStats(); renderObjectifs();
-  //renderCompare(); renderBadges(); renderChart(); is this necessary?
 
 }
 </script>
