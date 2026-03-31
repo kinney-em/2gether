@@ -1542,11 +1542,34 @@ function renderCompare() {
 }
 
 function renderBadges() {
-  document.getElementById('badge-grid').innerHTML = BADGES.map(b => `
-    <div class="badge-card ${b.earnedMe?'earned':''}">
+  const earned = BADGES.filter(b => b.earnedMe);
+  const locked = BADGES.filter(b => !b.earnedMe);
+  const lockedExpanded = document.getElementById('badge-grid')._lockedOpen || false;
+
+  const earnedHTML = earned.map(b => `
+    <div class="badge-card earned">
       <div class="badge-icon">${b.icon}</div>
       <div class="badge-name">${b.name}</div>
     </div>`).join('');
+
+  const lockedHTML = lockedExpanded ? locked.map(b => `
+    <div class="badge-card">
+      <div class="badge-icon">${b.icon}</div>
+      <div class="badge-name">${b.name}</div>
+    </div>`).join('') : '';
+
+  const lockedToggle = locked.length ? `
+    <div style="grid-column:1/-1;display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 0;user-select:none;" onclick="toggleLockedBadges()">
+      <span style="font-size:11px;color:var(--text-3);font-weight:600;">${lockedExpanded ? '▾' : '▸'} ${locked.length} badge${locked.length>1?'s':''} non débloqué${locked.length>1?'s':''}</span>
+    </div>` : '';
+
+  document.getElementById('badge-grid').innerHTML = earnedHTML + lockedToggle + lockedHTML;
+}
+
+function toggleLockedBadges() {
+  const grid = document.getElementById('badge-grid');
+  grid._lockedOpen = !grid._lockedOpen;
+  renderBadges();
 }
 
 function getWeekKeyByOffset(offset) {
