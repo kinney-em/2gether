@@ -1167,7 +1167,7 @@ function closeProfilPanel(e) {
 }
 
 function changeWeek(d) {
-  weekOffset += d;
+  weekOffset = Math.min(1, weekOffset + d);
   renderAll();
 }
 
