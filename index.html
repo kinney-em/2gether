@@ -220,20 +220,21 @@
   .meal-btn, .sport-btn {
     width: 100%; aspect-ratio: 1;
     border-radius: var(--radius-sm);
-    border: 1.5px solid var(--border);
+    border: 2px solid var(--border);
     background: var(--surface);
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 700;
+    font-size: 16px; font-weight: 800;
     transition: all .12s;
     color: var(--text-3);
   }
   .meal-btn:active, .sport-btn:active { transform: scale(0.92); }
-  .meal-btn.sain { background: var(--green-light); border-color: var(--green); color: var(--green-dark); }
-	.meal-btn.correct { background: var(--amber-light); border-color: var(--amber); color: var(--amber-dark); }
-  .meal-btn.malbouffe { background: var(--red-light); border-color: var(--red); color: var(--red-dark); }
-  .meal-btn.skip { background: var(--gray-light); border-color: var(--gray); color: var(--text-3); opacity: .6; }
-  .sport-btn.done { background: var(--teal-light); border-color: var(--teal); color: var(--teal-dark); }
+  /* Colorblind-safe: color + shape + border-width all differ */
+  .meal-btn.sain     { background: var(--green-light); border: 2.5px solid var(--green); color: var(--green-dark); }
+  .meal-btn.correct  { background: var(--amber-light); border: 2px dashed var(--amber); color: var(--amber-dark); }
+  .meal-btn.malbouffe{ background: var(--red-light);   border: 2.5px solid var(--red);   color: var(--red-dark); }
+  .meal-btn.skip     { background: var(--gray-light);  border: 1.5px solid var(--gray);  color: var(--text-3); opacity: .5; }
+  .sport-btn.done    { background: var(--teal-light);  border: 2.5px solid var(--teal);  color: var(--teal-dark); }
 
   /* --- SPORT MODAL --- */
   .modal-overlay {
@@ -571,7 +572,8 @@
       <div class="week-grid" id="grid-din"></div>
       <div class="sec-label">Snacks</div>
       <div class="week-grid" id="grid-snack"></div>
-      <p style="font-size:11px;color:var(--text-3);margin-top:8px;">Tapez pour cycler : vide → ✓ sain → ~ correct → ✗ malbouffe → — ignoré</p>
+      <p style="font-size:11px;color:var(--text-3);margin-top:8px;">Tapez pour cycler : vide → <b>✔</b> sain → <b>≈</b> correct → <b>✖</b> malbouffe → — ignoré</p>
+      <div id="meal-ratio-bar" style="display:none;height:20px;border-radius:99px;overflow:hidden;margin-top:10px;border:1px solid var(--border);"></div>
     </div>
 
     <!-- SPORT -->
@@ -1231,7 +1233,7 @@ function renderMeals() {
   MEALS.forEach(type => {
     const g = document.getElementById('grid-' + type);
     if (!g) return;
-const icons = { none:'·', sain:'✓', correct:'~', malbouffe:'✗', skip:'—' };
+const icons = { none:'·', sain:'✔', correct:'≈', malbouffe:'✖', skip:'—' };
 	      g.innerHTML = DAYS.map((d,i) => `
       <div class="day-col">
         <div class="day-lbl">${d}</div>
@@ -1269,28 +1271,24 @@ const { sain, mal, correct } = countMeals(getData(), wk);
       <div class="score-chip-val">${mal}</div>
     </div>`;
 
-	// Couleur dynamique de l'arrière-plan
+  // Ratio bar (colorblind-safe: color + width + text)
   const total = sain + correct + mal;
-  if (total === 0) {
-    document.getElementById('tab-repas').style.background = 'transparent';
-  } else {
-    const pctSain = sain / total;
-    const pctCorrect = correct / total;
-    const pctMal = mal / total;
-
-    // Mélange RGB entre vert (sain), amber (correct) et rouge (malbouffe)
-    const r = Math.round(pctSain * 0x27 + pctCorrect * 0x63 + pctMal * 0x50);
-    const g = Math.round(pctSain * 0x50 + pctCorrect * 0x38 + pctMal * 0x13);
-    const b = Math.round(pctSain * 0x0A + pctCorrect * 0x06 + pctMal * 0x13);
-
-    // Très pâle — on mélange avec le blanc à 55%
-    const blend = 0.15;
-    const rFinal = Math.round(255 + (r - 255) * blend);
-    const gFinal = Math.round(255 + (g - 255) * blend);
-    const bFinal = Math.round(255 + (b - 255) * blend);
-
-    document.getElementById('tab-repas').style.background =
-      `rgb(${rFinal}, ${gFinal}, ${bFinal})`;
+  document.getElementById('tab-repas').style.background = '';
+  const ratioBar = document.getElementById('meal-ratio-bar');
+  if (ratioBar) {
+    if (total === 0) {
+      ratioBar.style.display = 'none';
+    } else {
+      const pSain = Math.round(sain / total * 100);
+      const pCorrect = Math.round(correct / total * 100);
+      const pMal = 100 - pSain - pCorrect;
+      ratioBar.style.display = 'flex';
+      ratioBar.innerHTML = `
+        ${pSain > 0 ? `<div title="✔ Sain ${pSain}%" style="flex:${pSain};background:var(--green);height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--green-dark);min-width:${pSain > 15 ? 'auto' : '0'};overflow:hidden;">${pSain > 15 ? pSain+'%' : ''}</div>` : ''}
+        ${pCorrect > 0 ? `<div title="≈ Correct ${pCorrect}%" style="flex:${pCorrect};background:var(--amber);height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--amber-dark);overflow:hidden;">${pCorrect > 15 ? pCorrect+'%' : ''}</div>` : ''}
+        ${pMal > 0 ? `<div title="✖ Malbouffe ${pMal}%" style="flex:${pMal};background:var(--red);height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--red-dark);overflow:hidden;">${pMal > 15 ? pMal+'%' : ''}</div>` : ''}
+      `;
+    }
   }
 }
 
