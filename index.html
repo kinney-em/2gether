@@ -1673,14 +1673,9 @@ const dataFood = labels.map((_,i) => {
     return countSportForQuarter(getData(), i * 3);
   });
  
-<<<<<<< Updated upstream
-  const goalFood = Array(labels.length).fill(getData().goals.repas);
-  const goalSport = Array(labels.length).fill(getData().goals.sport);
-=======
   const m = getGoalWeekMultiplier(currentPeriod);
   const goalFood = Array(labels.length).fill(Math.round(getData().goals.repas * m * 10) / 10);
   const goalSport = Array(labels.length).fill(Math.round(getData().goals.sport * m * 10) / 10);
->>>>>>> Stashed changes
 
   if (statsChart) statsChart.destroy();
   statsChart = new Chart(document.getElementById('statsChart'), {
