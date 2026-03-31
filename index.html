@@ -10,10 +10,11 @@
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --green: #639922; --green-light: #EAF3DE; --green-dark: #27500A;
+    /* Colorblind-safe: green shifted to blue-green, red shifted to red-orange */
+    --green: #1E9E5A; --green-light: #DDF2E8; --green-dark: #0A4A28;
     --teal: #1D9E75; --teal-light: #E1F5EE; --teal-dark: #085041;
     --amber: #BA7517; --amber-light: #FAEEDA; --amber-dark: #633806;
-    --red: #E24B4A; --red-light: #FCEBEB; --red-dark: #501313;
+    --red: #D44000; --red-light: #FCEADE; --red-dark: #5A1A00;
     --gray: #888780; --gray-light: #F1EFE8; --gray-dark: #2C2C2A;
     --coral: #D85A30; --coral-light: #FAECE7;
     --bg: #f8f7f4; --surface: #ffffff; --border: rgba(0,0,0,0.08);
@@ -26,10 +27,15 @@
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #1a1a18; --surface: #252523; --border: rgba(255,255,255,0.08);
-      --text: #f0ede8; --text-2: #aaa89f; --text-3: #666661;
-      --green-light: #1a2e0a; --teal-light: #062318; --red-light: #2a1010;
-      --amber-light: #2a1e06; --gray-light: #252523;
+      --bg: #1a1a18; --surface: #252523; --border: rgba(255,255,255,0.10);
+      --text: #f0ede8; --text-2: #c8c5bc; --text-3: #888780;
+      --green: #2EBD6E; --green-light: #0d2e1a; --green-dark: #7DDBA8;
+      --teal: #2AC492; --teal-light: #062318; --teal-dark: #7DE8C4;
+      --red: #FF6B35; --red-light: #2e1200; --red-dark: #FFAA85;
+      --amber: #E09030; --amber-light: #2a1e06; --amber-dark: #F5C97A;
+      --coral: #E8784A; --coral-light: #2e1508;
+      --gray-light: #2e2e2c;
+      --shadow: 0 2px 12px rgba(0,0,0,0.25);
     }
   }
 
@@ -136,7 +142,7 @@
     color: var(--text-2);
   }
   .user-pill.me { border-color: var(--teal); background: var(--teal-light); color: var(--teal-dark); }
-  .user-pill.partner { border-color: var(--coral); background: var(--coral-light); color: #4A1B0C; }
+  .user-pill.partner { border-color: var(--coral); background: var(--coral-light); color: var(--red-dark); }
   .logout-btn { font-size: 12px; color: var(--text-3); cursor: pointer; background: none; border: none; font-family: 'Nunito', sans-serif; }
 
   /* --- TABS --- */
@@ -388,7 +394,7 @@
   width: 40px; height: 40px; border-radius: 50%;
   background: var(--coral-light);
   display: flex; align-items: center; justify-content: center;
-  font-size: 16px; font-weight: 700; color: #4A1B0C; flex-shrink: 0;
+  font-size: 16px; font-weight: 700; color: var(--red-dark); flex-shrink: 0;
 }
 	
 </style>
