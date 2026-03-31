@@ -533,7 +533,7 @@
       <button class="tab" onclick="showTab('objectifs',this)">📋 Récap</button>
       <button class="tab active" onclick="showTab('repas',this)">🥗 Repas</button>
       <button class="tab" onclick="showTab('sport',this)">🏃 Sport</button>
-      <button class="tab" onclick="showTab('stats',this)">📊 Stats</button>
+      <button class="tab" onclick="showTab('pleine-conscience',this)" style="color:var(--text-3);">🧘 Pleine conscience <span style="font-size:10px;">(soon)</span></button>
 
     </div>
   </div>
@@ -580,22 +580,13 @@
       <div class="week-grid" id="grid-sport"></div>
     </div>
 
-    <!-- STATS -->
-    <div id="tab-stats" class="screen">
-      <div class="period-bar">
-        <button class="ptab active" onclick="setPeriod('7j',this)">7 jours</button>
-        <button class="ptab" onclick="setPeriod('sem',this)">Semaine</button>
-        <button class="ptab" onclick="setPeriod('mois',this)">Mois</button>
-        <button class="ptab" onclick="setPeriod('trim',this)">Trimestre</button>
-        <button class="ptab" onclick="setPeriod('an',this)">Année</button>
+    <!-- PLEINE CONSCIENCE (coming soon) -->
+    <div id="tab-pleine-conscience" class="screen">
+      <div style="text-align:center;padding:60px 24px;color:var(--text-3);">
+        <div style="font-size:48px;margin-bottom:16px;">🧘</div>
+        <div style="font-size:17px;font-weight:700;margin-bottom:8px;">Pleine conscience</div>
+        <div style="font-size:13px;">Cette fonctionnalité arrive bientôt.</div>
       </div>
-      <div class="stat-cards" id="stat-cards"></div>
-      <div class="sec-label">Progression</div>
-      <div class="chart-wrap"><canvas id="statsChart"></canvas></div>
-      <div class="sec-label">Comparaison avec votre proche</div>
-      <div id="compare-section"></div>
-      <div class="sec-label">Badges</div>
-      <div class="badge-grid" id="badge-grid"></div>
     </div>
 
 
@@ -635,8 +626,28 @@
 	  
     <!-- RECAP SEMAINE -->
     <div id="tab-objectifs" class="screen">
+      <div class="week-nav">
+        <button onclick="changeWeek(-1)">← Préc.</button>
+        <span id="week-lbl-o">Cette semaine</span>
+        <button onclick="changeWeek(1)">Suiv. →</button>
+      </div>
       <div class="sec-label" id="goals-label">Récap de la semaine</div>
       <div id="goal-progress"></div>
+      <hr style="border:none;border-top:1px solid var(--surface);margin:16px 0;">
+      <div class="period-bar">
+        <button class="ptab active" onclick="setPeriod('7j',this)">7 jours</button>
+        <button class="ptab" onclick="setPeriod('sem',this)">Semaine</button>
+        <button class="ptab" onclick="setPeriod('mois',this)">Mois</button>
+        <button class="ptab" onclick="setPeriod('trim',this)">Trimestre</button>
+        <button class="ptab" onclick="setPeriod('an',this)">Année</button>
+      </div>
+      <div class="stat-cards" id="stat-cards"></div>
+      <div class="sec-label">Progression</div>
+      <div class="chart-wrap"><canvas id="statsChart"></canvas></div>
+      <div class="sec-label">Comparaison avec votre proche</div>
+      <div id="compare-section"></div>
+      <div class="sec-label">Badges</div>
+      <div class="badge-grid" id="badge-grid"></div>
     </div>
   </div>
 </div>
@@ -1103,8 +1114,7 @@ function showTab(name, btn) {
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   btn.classList.add('active');
-  if (name === 'stats') renderStats();
-  if (name === 'objectifs') renderObjectifs();
+  if (name === 'objectifs') { renderObjectifs(); renderStats(); }
 }
 
 function toggleProfilMenu(e) {
@@ -2035,7 +2045,7 @@ function adjustGoal(type, d) {
 // ---- RENDER ALL ----
 function renderAll() {
   const lbl = getWeekLabel();
-  ['week-lbl-r','week-lbl-s'].forEach(id => {
+  ['week-lbl-r','week-lbl-s','week-lbl-o'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.textContent = lbl;
   });
