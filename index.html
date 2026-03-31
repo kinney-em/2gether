@@ -530,10 +530,10 @@
       </div>
     </div>
     <div class="tab-bar">
+      <button class="tab" onclick="showTab('objectifs',this)">📋 Récap</button>
       <button class="tab active" onclick="showTab('repas',this)">🥗 Repas</button>
       <button class="tab" onclick="showTab('sport',this)">🏃 Sport</button>
       <button class="tab" onclick="showTab('stats',this)">📊 Stats</button>
-      <button class="tab" onclick="showTab('objectifs',this)">🎯 Objectifs</button>		
 
     </div>
   </div>
@@ -599,6 +599,22 @@
     </div>
 
 
+<!-- GOALS MODAL -->
+<div id="goals-modal" style="
+  display:none; position:fixed; inset:0; z-index:90;
+  background:rgba(0,0,0,0.35);" onclick="closeGoalsModal(event)">
+  <div style="
+    position:absolute; right:0; top:0; bottom:0; width:min(320px, 100vw);
+    background:var(--bg); overflow-y:auto; padding:20px 16px 40px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <span style="font-size:16px; font-weight:700;">Mes objectifs</span>
+      <button onclick="closeGoalsModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-2);">✕</button>
+    </div>
+    <div class="sec-label">Objectifs hebdomadaires</div>
+    <div id="goals-modal-list"></div>
+  </div>
+</div>
+
 <!-- PROFIL PANEL -->
 <div id="profil-panel" style="
   display:none; position:fixed; inset:0; z-index:90;
@@ -617,11 +633,9 @@
   </div>
 </div>
 	  
-    <!-- OBJECTIFS -->
+    <!-- RECAP SEMAINE -->
     <div id="tab-objectifs" class="screen">
-      <div class="sec-label" id="goals-label">Mes objectifs hebdomadaires</div>
-      <div id="goals-list"></div>
-      <div class="sec-label">Progression (7 jours glissants)</div>
+      <div class="sec-label" id="goals-label">Récap de la semaine</div>
       <div id="goal-progress"></div>
     </div>
   </div>
@@ -1136,6 +1150,16 @@ function toggleProfilMenu(e) {
         onmouseover="this.style.background='var(--gray-light)'"
         onmouseout="this.style.background='none'">
         ⚙️ Voir mon profil complet
+      </div>
+      <div onclick="openGoalsModal()" style="padding:9px 12px;cursor:pointer;font-size:13px;
+        border-radius:var(--radius-sm);color:var(--text);"
+        onmouseover="this.style.background='var(--gray-light)'"
+        onmouseout="this.style.background='none'">
+        🎯 Définir mes objectifs
+      </div>
+      <div style="padding:9px 12px;font-size:13px;border-radius:var(--radius-sm);
+        color:var(--text-3);cursor:default;">
+        🏅 Ma liste d'activités <span style="font-size:11px;">(coming soon)</span>
       </div>
       <div onclick="doLogout()" style="padding:9px 12px;cursor:pointer;font-size:13px;
         border-radius:var(--radius-sm);color:var(--red);"
@@ -1934,30 +1958,8 @@ function renderObjectifs() {
   const data = getData();
   const partnerName = viewingPartner && activePartnerUid ? (partnersData[activePartnerUid]?.name || 'Partenaire') : null;
   document.getElementById('goals-label').textContent = partnerName
-    ? `Objectifs hebdomadaires de ${partnerName}`
-    : 'Mes objectifs hebdomadaires';
-  const goalsList = document.getElementById('goals-list');
-  if (viewingPartner) {
-    goalsList.innerHTML = '';
-  } else {
-    goalsList.innerHTML = `
-    <div class="goal-row">
-      <span class="goal-label">🥗 Repas sains / semaine</span>
-      <div class="goal-ctrl">
-        <button onclick="adjustGoal('repas',-1)">−</button>
-        <span class="goal-val">${data.goals.repas}</span>
-        <button onclick="adjustGoal('repas',1)">+</button>
-      </div>
-    </div>
-    <div class="goal-row">
-      <span class="goal-label">🏃 Jours sport / semaine</span>
-      <div class="goal-ctrl">
-        <button onclick="adjustGoal('sport',-1)">−</button>
-        <span class="goal-val">${data.goals.sport}</span>
-        <button onclick="adjustGoal('sport',1)">+</button>
-      </div>
-    </div>`;
-  }
+    ? `Récap de la semaine · ${partnerName}`
+    : 'Récap de la semaine';
 
   const wk = getWeekKey();
   const sainWk = countMeals(data, wk).sain;
@@ -1978,9 +1980,41 @@ function renderObjectifs() {
     </div>`;
 }
 
+function renderGoalsModal() {
+  const data = myData;
+  document.getElementById('goals-modal-list').innerHTML = `
+    <div class="goal-row">
+      <span class="goal-label">🥗 Repas sains / semaine</span>
+      <div class="goal-ctrl">
+        <button onclick="adjustGoal('repas',-1)">−</button>
+        <span class="goal-val">${data.goals.repas}</span>
+        <button onclick="adjustGoal('repas',1)">+</button>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-label">🏃 Jours sport / semaine</span>
+      <div class="goal-ctrl">
+        <button onclick="adjustGoal('sport',-1)">−</button>
+        <span class="goal-val">${data.goals.sport}</span>
+        <button onclick="adjustGoal('sport',1)">+</button>
+      </div>
+    </div>`;
+}
+
+function openGoalsModal() {
+  document.getElementById('profil-dropdown').style.display = 'none';
+  renderGoalsModal();
+  document.getElementById('goals-modal').style.display = 'block';
+}
+
+function closeGoalsModal(e) {
+  if (!e || e.target === document.getElementById('goals-modal'))
+    document.getElementById('goals-modal').style.display = 'none';
+}
+
 function adjustGoal(type, d) {
-  if (viewingPartner) return;
   myData.goals[type] = Math.max(1, myData.goals[type] + d);
+  renderGoalsModal();
   renderObjectifs();
   saveProfile();
 }
