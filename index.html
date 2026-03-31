@@ -1665,8 +1665,14 @@ const dataFood = labels.map((_,i) => {
     return countSportForQuarter(getData(), i * 3);
   });
  
-  const goalFood = Array(labels.length).fill(getData().goals.repas);
-  const goalSport = Array(labels.length).fill(getData().goals.sport);
+  const goalFood = labels.map((_, i) => {
+    const m = getGoalWeekMultiplier(currentPeriod, i);
+    return Math.round(getData().goals.repas * m * 10) / 10;
+  });
+  const goalSport = labels.map((_, i) => {
+    const m = getGoalWeekMultiplier(currentPeriod, i);
+    return Math.round(getData().goals.sport * m * 10) / 10;
+  });
 
   if (statsChart) statsChart.destroy();
   statsChart = new Chart(document.getElementById('statsChart'), {
