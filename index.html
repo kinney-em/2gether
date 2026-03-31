@@ -634,6 +634,7 @@
       <div class="sec-label" id="goals-label">Récap de la semaine</div>
       <div id="goal-progress"></div>
       <hr style="border:none;border-top:1px solid var(--surface);margin:16px 0;">
+      <div class="sec-label">Récap Global</div>
       <div class="period-bar">
         <button class="ptab active" onclick="setPeriod('7j',this)">7 jours</button>
         <button class="ptab" onclick="setPeriod('sem',this)">Semaine</button>
@@ -642,7 +643,6 @@
         <button class="ptab" onclick="setPeriod('an',this)">Année</button>
       </div>
       <div class="stat-cards" id="stat-cards"></div>
-      <div class="sec-label">Progression</div>
       <div class="chart-wrap"><canvas id="statsChart"></canvas></div>
       <div class="sec-label">Comparaison avec votre proche</div>
       <div id="compare-section"></div>
@@ -1440,18 +1440,19 @@ function renderStats() {
   const sportDays = countSportDays(data, getWeekKey());
   const ratio = Math.round(getRatio(data) * 100);
 
+  const gaugeColor = ratio >= 70 ? 'var(--green)' : ratio >= 40 ? '#F4A261' : 'var(--red)';
+  const r = 40, stroke = 8, circ = Math.PI * r;
+  const dash = (ratio / 100) * circ;
   document.getElementById('stat-cards').innerHTML = `
-    <div class="stat-card">
-      <div class="stat-card-label">Repas sains (total)</div>
-      <div class="stat-card-val" style="color:var(--green);">${sain}</div>
-      <div class="stat-card-sub">Ratio sain: ${ratio}%</div>
-      <div class="pbar" style="margin-top:6px;"><div class="pbar-fill" style="width:${ratio}%;background:var(--green);"></div></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-label">Jours sport (sem.)</div>
-      <div class="stat-card-val" style="color:var(--teal);">${sportDays}</div>
-      <div class="stat-card-sub">Objectif: ${data.goals.sport}</div>
-      <div class="pbar" style="margin-top:6px;"><div class="pbar-fill" style="width:${Math.min(100,Math.round(sportDays/data.goals.sport*100))}%;background:var(--teal);"></div></div>
+    <div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;padding:16px 0;">
+      <svg width="110" height="70" viewBox="0 0 110 70">
+        <path d="M10,65 A${r},${r} 0 0,1 100,65" fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="${stroke}" stroke-linecap="round"/>
+        <path d="M10,65 A${r},${r} 0 0,1 100,65" fill="none" stroke="${gaugeColor}" stroke-width="${stroke}" stroke-linecap="round"
+          stroke-dasharray="${dash} ${circ}" style="transition:stroke-dasharray .6s cubic-bezier(.4,0,.2,1);"/>
+      </svg>
+      <div style="margin-top:-18px;font-size:26px;font-weight:800;color:${gaugeColor};">${ratio}%</div>
+      <div style="font-size:11px;color:var(--text-2);font-weight:600;margin-top:4px;">Ratio repas sains</div>
+      <div style="font-size:11px;color:var(--text-3);margin-top:2px;">${sain} repas sains au total</div>
     </div>`;
 
   renderCompare();
