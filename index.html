@@ -1314,6 +1314,7 @@ function renderActList() {
       <div class="act-check ${sel.includes(a)?'on':''}">${sel.includes(a)?'✓':''}</div>
       <span>${a}</span>
     </div>`).join('');
+  document.querySelector('.add-row').style.display = viewingPartner ? 'none' : 'flex';
 }
 
 function toggleAct(act) {
