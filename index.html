@@ -495,15 +495,15 @@
 		</div>
 	
   <div class="header">
-    <!-- Row 1: pills + week nav + user menu -->
-    <div style="display:flex;align-items:center;gap:6px;">
-      <div class="user-pill me" onclick="setUser('me')" id="pill-me">
-        <span id="pill-me-avatar">🌱</span> <span id="pill-me-name">Moi</span>
+    <!-- Row 1: pills + user menu -->
+    <div style="display:flex;align-items:center;gap:6px;min-width:0;">
+      <div class="user-pill me" onclick="setUser('me')" id="pill-me" style="min-width:0;overflow:hidden;">
+        <span id="pill-me-avatar">🌱</span> <span id="pill-me-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Moi</span>
       </div>
       <img src="LOGO_habits.png" alt="" style="width:20px;height:auto;opacity:0.4;flex-shrink:0;">
-      <div style="position:relative;">
-        <div class="user-pill" onclick="togglePartnerPill(event)" id="pill-partner">
-          <span id="pill-partner-avatar">🌱</span> <span id="pill-partner-name">Partenaires</span>
+      <div style="position:relative;min-width:0;flex-shrink:1;">
+        <div class="user-pill" onclick="togglePartnerPill(event)" id="pill-partner" style="min-width:0;overflow:hidden;">
+          <span id="pill-partner-avatar">🌱</span> <span id="pill-partner-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Partenaires</span>
         </div>
         <div id="partner-pill-dropdown" style="
           display:none; position:absolute; left:0; top:36px;
@@ -513,16 +513,12 @@
           min-width:180px; z-index:200; overflow:hidden;">
         </div>
       </div>
-      <div style="flex:1;"></div>
-      <button onclick="changeWeek(-1)" class="week-nav-btn">‹</button>
-      <span id="week-lbl" style="font-size:11px;font-weight:700;color:var(--text-2);white-space:nowrap;text-align:center;">Cette semaine</span>
-      <button onclick="changeWeek(1)" class="week-nav-btn">›</button>
-      <div style="width:1px;height:16px;background:var(--border);flex-shrink:0;margin:0 2px;"></div>
-      <div style="position:relative;">
+      <div style="flex:1;min-width:8px;"></div>
+      <div style="position:relative;flex-shrink:0;">
         <button class="logout-btn" onclick="toggleProfilMenu(event); return false;" id="profil-menu-btn"
           style="padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);
           background:var(--surface);cursor:pointer;font-family:'Nunito',sans-serif;
-          font-size:13px;color:var(--text);-webkit-tap-highlight-color:transparent;">👤 ▾</button>
+          font-size:13px;color:var(--text);-webkit-tap-highlight-color:transparent;white-space:nowrap;">👤 ▾</button>
         <div id="profil-dropdown" style="
           display:none; position:absolute; right:0; top:36px;
           background:var(--surface); border-radius:var(--radius);
@@ -538,6 +534,12 @@
       <button class="tab" onclick="showTab('objectifs',this)">📋 Récap</button>
       <button class="tab active" onclick="showTab('repas',this)">🥗 Repas</button>
       <button class="tab" onclick="showTab('sport',this)">🏃 Sport</button>
+    </div>
+    <!-- Row 3: week nav slim -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+      <button onclick="changeWeek(-1)" class="week-nav-btn">‹</button>
+      <span id="week-lbl" style="font-size:11px;font-weight:700;color:var(--text-2);white-space:nowrap;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:200px;">Cette semaine</span>
+      <button onclick="changeWeek(1)" class="week-nav-btn">›</button>
     </div>
   </div>
 
@@ -1050,7 +1052,7 @@ function getWeekLabel() {
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
   const fmt = d => d.toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
-  const prefix = weekOffset === 0 ? 'Cette semaine · ' : weekOffset === -1 ? 'Semaine dernière · ' : weekOffset === 1 ? 'Semaine prochaine · ' : '';
+  const prefix = weekOffset === 0 ? 'Cette sem. · ' : weekOffset === -1 ? 'Sem. dernière · ' : weekOffset === 1 ? 'Sem. prochaine · ' : '';
   return `${prefix}${fmt(monday)} – ${fmt(sunday)}`;
 }
 ////////////////////////////////////////////////////////////////////////////////
