@@ -121,10 +121,10 @@
   z-index: 30;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 12px 16px 8px;
+  padding: 8px 12px 6px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 .header-top { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 0; }
   .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
@@ -174,18 +174,19 @@
   .screen { display: none; }
   .screen.active { display: block; }
 
-  /* --- WEEK NAV --- */
-  .week-nav {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 12px;
-  }
-  .week-nav button {
-    padding: 5px 12px; border-radius: var(--radius-sm);
-    border: 1px solid var(--border); background: var(--surface);
-    cursor: pointer; font-size: 12px; color: var(--text-2);
+  /* --- WEEK NAV (compact, in header) --- */
+  .week-nav-btn {
+    width: 28px; height: 28px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    font-size: 16px; font-weight: 700;
+    color: var(--text-2);
+    display: flex; align-items: center; justify-content: center;
     font-family: 'Nunito', sans-serif;
+    flex-shrink: 0;
   }
-  .week-nav span { font-size: 13px; font-weight: 700; }
 
   /* --- SCORE STRIP --- */
   .score-strip { display: flex; gap: 8px; margin-bottom: 14px; }
@@ -219,6 +220,7 @@
   .day-lbl { font-size: 10px; font-weight: 700; color: var(--text-3); text-transform: uppercase; }
   .meal-btn, .sport-btn {
     width: 100%; aspect-ratio: 1;
+    min-width: 44px; min-height: 44px;
     border-radius: var(--radius-sm);
     border: 2px solid var(--border);
     background: var(--surface);
@@ -493,40 +495,15 @@
 		</div>
 	
   <div class="header">
-    <div class="header-top">
-      <div class="header-title">HabituDeux </div>
-<div style="display:flex;align-items:center;gap:8px;position:relative;z-index:101;">
-  <div style="position:relative;">
-  <button class="logout-btn" onclick="toggleProfilMenu(event); return false;" id="profil-menu-btn"
-	  style="
-    padding: 6px 10px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border);
-    background: var(--surface);
-    cursor: pointer;
-    font-family: 'Nunito', sans-serif;
-    font-size: 13px;
-    color: var(--text);
-    -webkit-tap-highlight-color: transparent;">👤 ▾</button>
-  <div id="profil-dropdown" style="
-    display:none; position:absolute; right:0; top:32px;
-    background:var(--surface); border-radius:var(--radius);
-    box-shadow:0 4px 20px rgba(0,0,0,0.12);
-    border:1px solid var(--border);
-    min-width:220px; z-index:100; overflow:hidden;">
-    <div id="profil-dropdown-content"></div>
-  </div>
-</div>
+    <!-- Row 1: pills + user menu -->
+    <div style="display:flex;align-items:center;gap:6px;min-width:0;">
+      <div class="user-pill me" onclick="setUser('me')" id="pill-me" style="min-width:0;overflow:hidden;">
+        <span id="pill-me-avatar">🌱</span> <span id="pill-me-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Moi</span>
       </div>
-    </div>
-    <div class="user-pills">
-      <div class="user-pill me" onclick="setUser('me')" id="pill-me">
-        <span id="pill-me-avatar">🌱</span> <span id="pill-me-name">Moi</span>
-      </div>
-      <img src="LOGO_habits.png" alt="" style="width:28px;height:auto;opacity:0.55;flex-shrink:0;">
-      <div style="position:relative;">
-        <div class="user-pill" onclick="togglePartnerPill(event)" id="pill-partner">
-          <span id="pill-partner-avatar">🌱</span> <span id="pill-partner-name">Partenaires</span>
+      <img src="LOGO_habits.png" alt="" style="width:20px;height:auto;opacity:0.4;flex-shrink:0;">
+      <div style="position:relative;min-width:0;flex-shrink:1;">
+        <div class="user-pill" onclick="togglePartnerPill(event)" id="pill-partner" style="min-width:0;overflow:hidden;">
+          <span id="pill-partner-avatar">🌱</span> <span id="pill-partner-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Partenaires</span>
         </div>
         <div id="partner-pill-dropdown" style="
           display:none; position:absolute; left:0; top:36px;
@@ -536,12 +513,33 @@
           min-width:180px; z-index:200; overflow:hidden;">
         </div>
       </div>
+      <div style="flex:1;min-width:8px;"></div>
+      <div style="position:relative;flex-shrink:0;">
+        <button class="logout-btn" onclick="toggleProfilMenu(event); return false;" id="profil-menu-btn"
+          style="padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);
+          background:var(--surface);cursor:pointer;font-family:'Nunito',sans-serif;
+          font-size:13px;color:var(--text);-webkit-tap-highlight-color:transparent;white-space:nowrap;">👤 ▾</button>
+        <div id="profil-dropdown" style="
+          display:none; position:absolute; right:0; top:36px;
+          background:var(--surface); border-radius:var(--radius);
+          box-shadow:0 4px 20px rgba(0,0,0,0.12);
+          border:1px solid var(--border);
+          min-width:220px; z-index:100; overflow:hidden;">
+          <div id="profil-dropdown-content"></div>
+        </div>
+      </div>
     </div>
-    <div class="tab-bar">
+    <!-- Row 2: tabs full width -->
+    <div class="tab-bar" style="padding:0;">
       <button class="tab" onclick="showTab('objectifs',this)">📋 Récap</button>
       <button class="tab active" onclick="showTab('repas',this)">🥗 Repas</button>
       <button class="tab" onclick="showTab('sport',this)">🏃 Sport</button>
-
+    </div>
+    <!-- Row 3: week nav slim -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+      <button onclick="changeWeek(-1)" class="week-nav-btn">‹</button>
+      <span id="week-lbl" style="font-size:11px;font-weight:700;color:var(--text-2);white-space:nowrap;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:200px;">Cette semaine</span>
+      <button onclick="changeWeek(1)" class="week-nav-btn">›</button>
     </div>
   </div>
 
@@ -558,11 +556,6 @@
 	</div>
     <!-- REPAS -->
     <div id="tab-repas" class="screen active">
-      <div class="week-nav">
-        <button onclick="changeWeek(-1)">← Préc.</button>
-        <span id="week-lbl-r">Cette semaine</span>
-        <button onclick="changeWeek(1)">Suiv. →</button>
-      </div>
       <div class="score-strip" id="food-scores"></div>
       <div class="sec-label">Petit-déjeuner</div>
       <div class="week-grid" id="grid-pdj"></div>
@@ -574,15 +567,15 @@
       <div class="week-grid" id="grid-snack"></div>
       <p style="font-size:11px;color:var(--text-3);margin-top:8px;">Tapez pour cycler : vide → <b>✔</b> sain → <b>≈</b> correct → <b>✖</b> malbouffe → — ignoré</p>
       <div id="meal-ratio-bar" style="display:none;height:20px;border-radius:99px;overflow:hidden;margin-top:10px;border:1px solid var(--border);"></div>
+      <div id="meal-empty-state" style="display:none;text-align:center;padding:20px 16px 8px;">
+        <div style="font-size:32px;margin-bottom:8px;">🥗</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">C'est parti pour cette semaine !</div>
+        <div style="font-size:12px;color:var(--text-2);line-height:1.5;">Appuyez sur une case pour enregistrer votre premier repas.</div>
+      </div>
     </div>
 
     <!-- SPORT -->
     <div id="tab-sport" class="screen">
-      <div class="week-nav">
-        <button onclick="changeWeek(-1)">← Préc.</button>
-        <span id="week-lbl-s">Cette semaine</span>
-        <button onclick="changeWeek(1)">Suiv. →</button>
-      </div>
       <div class="score-strip" id="sport-scores"></div>
       <div class="sec-label">Activités par jour — tapez pour sélectionner</div>
       <div class="week-grid" id="grid-sport"></div>
@@ -634,11 +627,6 @@
 	  
     <!-- RECAP SEMAINE -->
     <div id="tab-objectifs" class="screen">
-      <div class="week-nav">
-        <button onclick="changeWeek(-1)">← Préc.</button>
-        <span id="week-lbl-o">Cette semaine</span>
-        <button onclick="changeWeek(1)">Suiv. →</button>
-      </div>
       <div class="sec-label" id="goals-label">Récap de la semaine</div>
       <div id="goal-progress"></div>
       <hr style="border:none;border-top:1px solid var(--surface);margin:16px 0;">
@@ -1064,7 +1052,7 @@ function getWeekLabel() {
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
   const fmt = d => d.toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
-  const prefix = weekOffset === 0 ? 'Cette semaine · ' : weekOffset === -1 ? 'Semaine dernière · ' : weekOffset === 1 ? 'Semaine prochaine · ' : '';
+  const prefix = weekOffset === 0 ? 'Cette sem. · ' : weekOffset === -1 ? 'Sem. dernière · ' : weekOffset === 1 ? 'Sem. prochaine · ' : '';
   return `${prefix}${fmt(monday)} – ${fmt(sunday)}`;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -1213,6 +1201,28 @@ function changeWeek(d) {
   renderAll();
 }
 
+// ---- SWIPE TO CHANGE WEEK ----
+(function() {
+  let tx = 0, ty = 0, locked = false;
+  document.getElementById('app').addEventListener('touchstart', e => {
+    tx = e.touches[0].clientX;
+    ty = e.touches[0].clientY;
+    locked = false;
+  }, { passive: true });
+  document.getElementById('app').addEventListener('touchend', e => {
+    if (locked) return;
+    const dx = e.changedTouches[0].clientX - tx;
+    const dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return;
+    changeWeek(dx < 0 ? 1 : -1);
+  }, { passive: true });
+  document.getElementById('app').addEventListener('touchmove', e => {
+    const dx = Math.abs(e.touches[0].clientX - tx);
+    const dy = Math.abs(e.touches[0].clientY - ty);
+    if (dy > dx) locked = true;
+  }, { passive: true });
+})();
+
 // ---- MEALS ----
 function getMeal(type, day) {
   const wk = getWeekKey();
@@ -1271,8 +1281,12 @@ const { sain, mal, correct } = countMeals(getData(), wk);
       <div class="score-chip-val">${mal}</div>
     </div>`;
 
-  // Ratio bar (colorblind-safe: color + width + text)
+  // Empty state
   const total = sain + correct + mal;
+  const emptyState = document.getElementById('meal-empty-state');
+  if (emptyState) emptyState.style.display = (!viewingPartner && total === 0) ? 'block' : 'none';
+
+  // Ratio bar (colorblind-safe: color + width + text)
   document.getElementById('tab-repas').style.background = '';
   const ratioBar = document.getElementById('meal-ratio-bar');
   if (ratioBar) {
@@ -1511,11 +1525,34 @@ function renderCompare() {
 }
 
 function renderBadges() {
-  document.getElementById('badge-grid').innerHTML = BADGES.map(b => `
-    <div class="badge-card ${b.earnedMe?'earned':''}">
+  const earned = BADGES.filter(b => b.earnedMe);
+  const locked = BADGES.filter(b => !b.earnedMe);
+  const lockedExpanded = document.getElementById('badge-grid')._lockedOpen || false;
+
+  const earnedHTML = earned.map(b => `
+    <div class="badge-card earned">
       <div class="badge-icon">${b.icon}</div>
       <div class="badge-name">${b.name}</div>
     </div>`).join('');
+
+  const lockedHTML = lockedExpanded ? locked.map(b => `
+    <div class="badge-card">
+      <div class="badge-icon">${b.icon}</div>
+      <div class="badge-name">${b.name}</div>
+    </div>`).join('') : '';
+
+  const lockedToggle = locked.length ? `
+    <div style="grid-column:1/-1;display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 0;user-select:none;" onclick="toggleLockedBadges()">
+      <span style="font-size:11px;color:var(--text-3);font-weight:600;">${lockedExpanded ? '▾' : '▸'} ${locked.length} badge${locked.length>1?'s':''} non débloqué${locked.length>1?'s':''}</span>
+    </div>` : '';
+
+  document.getElementById('badge-grid').innerHTML = earnedHTML + lockedToggle + lockedHTML;
+}
+
+function toggleLockedBadges() {
+  const grid = document.getElementById('badge-grid');
+  grid._lockedOpen = !grid._lockedOpen;
+  renderBadges();
 }
 
 function getWeekKeyByOffset(offset) {
@@ -2052,10 +2089,8 @@ function adjustGoal(type, d) {
 // ---- RENDER ALL ----
 function renderAll() {
   const lbl = getWeekLabel();
-  ['week-lbl-r','week-lbl-s','week-lbl-o'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = lbl;
-  });
+  const el = document.getElementById('week-lbl');
+  if (el) el.textContent = lbl;
   renderMeals(); renderFoodScores();
   renderSportGrid(); renderSportScores();
   renderObjectifs(); renderStats();
