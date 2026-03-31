@@ -1213,6 +1213,28 @@ function changeWeek(d) {
   renderAll();
 }
 
+// ---- SWIPE TO CHANGE WEEK ----
+(function() {
+  let tx = 0, ty = 0, locked = false;
+  document.getElementById('app').addEventListener('touchstart', e => {
+    tx = e.touches[0].clientX;
+    ty = e.touches[0].clientY;
+    locked = false;
+  }, { passive: true });
+  document.getElementById('app').addEventListener('touchend', e => {
+    if (locked) return;
+    const dx = e.changedTouches[0].clientX - tx;
+    const dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return;
+    changeWeek(dx < 0 ? 1 : -1);
+  }, { passive: true });
+  document.getElementById('app').addEventListener('touchmove', e => {
+    const dx = Math.abs(e.touches[0].clientX - tx);
+    const dy = Math.abs(e.touches[0].clientY - ty);
+    if (dy > dx) locked = true;
+  }, { passive: true });
+})();
+
 // ---- MEALS ----
 function getMeal(type, day) {
   const wk = getWeekKey();
