@@ -141,27 +141,26 @@
   /* --- TABS --- */
   .tab-bar {
     display: flex;
-    gap: 0;
-    padding: 0 16px;
+    gap: 6px;
+    padding: 8px 16px;
     overflow-x: auto;
     scrollbar-width: none;
   }
   .tab-bar::-webkit-scrollbar { display: none; }
   .tab {
-    flex: 1;
-    padding: 8px 4px;
-    border: none;
-    background: transparent;
+    padding: 5px 12px;
+    border-radius: 99px;
+    border: 1.5px solid transparent;
+    background: var(--gray-light);
     cursor: pointer;
     font-family: 'Nunito', sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
-    color: var(--text-3);
-    border-bottom: 2px solid transparent;
+    color: var(--text-2);
     transition: all .15s;
     white-space: nowrap;
   }
-  .tab.active { color: var(--teal); border-bottom-color: var(--teal); }
+  .tab.active { border-color: var(--teal); background: var(--teal-light); color: var(--teal-dark); }
 
   /* --- MAIN --- */
   .main { padding: 16px; max-width: 500px; margin: 0 auto; }
@@ -533,7 +532,6 @@
       <button class="tab" onclick="showTab('objectifs',this)">📋 Récap</button>
       <button class="tab active" onclick="showTab('repas',this)">🥗 Repas</button>
       <button class="tab" onclick="showTab('sport',this)">🏃 Sport</button>
-      <button class="tab" onclick="showTab('pleine-conscience',this)" style="color:var(--text-3);">🧘 Pleine conscience <span style="font-size:10px;">(soon)</span></button>
 
     </div>
   </div>
