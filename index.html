@@ -21,6 +21,8 @@
     --shadow: 0 2px 12px rgba(0,0,0,0.06);
   }
 
+  @keyframes spin { to { transform: rotate(360deg); } }
+
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #1a1a18; --surface: #252523; --border: rgba(255,255,255,0.08);
@@ -393,6 +395,12 @@
 </head>
 <body>
 
+<!-- LOADING SCREEN -->
+<div id="loading-screen" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:999; flex-direction:column; align-items:center; justify-content:center; gap:16px;">
+  <div style="font-size:48px; animation:spin 1.2s linear infinite;">🌱</div>
+  <div style="font-size:15px; font-weight:600; color:var(--text-2);">Chargement…</div>
+</div>
+
 <!-- CONFIG NOTICE (shown if Firebase not configured) -->
 <div class="config-notice" id="config-notice" style="display:none;">
   <strong>⚙️ Configuration Firebase requise</strong><br>
@@ -685,7 +693,7 @@ auth.onAuthStateChanged(user => {
   if (user) {
     currentUid = user.uid;
     document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app').style.display = 'block';
+    document.getElementById('loading-screen').style.display = 'flex';
     loadUserProfile();
   } else {
     currentUid = null;
@@ -805,6 +813,8 @@ async function loadUserProfile() {
   if (!doc.exists) {
     pairCode = Math.floor(1000 + Math.random() * 9000).toString();
     document.getElementById('my-pair-code').textContent = pairCode;
+    document.getElementById('loading-screen').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
     showCard('pair');
     return;
   }
@@ -836,6 +846,8 @@ async function loadUserProfile() {
 	///////
   setSyncStatus(true);
   renderAll();
+  document.getElementById('loading-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
 }
 
 async function loadPartnerProfile(uid) {
