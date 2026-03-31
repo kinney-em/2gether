@@ -495,12 +495,12 @@
 		</div>
 	
   <div class="header">
-    <!-- Row 1: pills + user menu -->
+    <!-- Row 1: pills + week nav + user menu -->
     <div style="display:flex;align-items:center;gap:6px;">
       <div class="user-pill me" onclick="setUser('me')" id="pill-me">
         <span id="pill-me-avatar">🌱</span> <span id="pill-me-name">Moi</span>
       </div>
-      <img src="LOGO_habits.png" alt="" style="width:22px;height:auto;opacity:0.45;flex-shrink:0;">
+      <img src="LOGO_habits.png" alt="" style="width:20px;height:auto;opacity:0.4;flex-shrink:0;">
       <div style="position:relative;">
         <div class="user-pill" onclick="togglePartnerPill(event)" id="pill-partner">
           <span id="pill-partner-avatar">🌱</span> <span id="pill-partner-name">Partenaires</span>
@@ -514,6 +514,10 @@
         </div>
       </div>
       <div style="flex:1;"></div>
+      <button onclick="changeWeek(-1)" class="week-nav-btn">‹</button>
+      <span id="week-lbl" style="font-size:11px;font-weight:700;color:var(--text-2);white-space:nowrap;text-align:center;">Cette semaine</span>
+      <button onclick="changeWeek(1)" class="week-nav-btn">›</button>
+      <div style="width:1px;height:16px;background:var(--border);flex-shrink:0;margin:0 2px;"></div>
       <div style="position:relative;">
         <button class="logout-btn" onclick="toggleProfilMenu(event); return false;" id="profil-menu-btn"
           style="padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);
@@ -529,18 +533,11 @@
         </div>
       </div>
     </div>
-    <!-- Row 2: tabs + week nav -->
-    <div style="display:flex;align-items:center;gap:6px;">
-      <div class="tab-bar" style="flex:1;padding:0;">
-        <button class="tab" onclick="showTab('objectifs',this)">📋 Récap</button>
-        <button class="tab active" onclick="showTab('repas',this)">🥗 Repas</button>
-        <button class="tab" onclick="showTab('sport',this)">🏃 Sport</button>
-      </div>
-      <div style="display:flex;align-items:center;gap:2px;flex-shrink:0;">
-        <button onclick="changeWeek(-1)" class="week-nav-btn">‹</button>
-        <span id="week-lbl" style="font-size:11px;font-weight:700;color:var(--text-2);white-space:nowrap;min-width:80px;text-align:center;">Cette semaine</span>
-        <button onclick="changeWeek(1)" class="week-nav-btn">›</button>
-      </div>
+    <!-- Row 2: tabs full width -->
+    <div class="tab-bar" style="padding:0;">
+      <button class="tab" onclick="showTab('objectifs',this)">📋 Récap</button>
+      <button class="tab active" onclick="showTab('repas',this)">🥗 Repas</button>
+      <button class="tab" onclick="showTab('sport',this)">🏃 Sport</button>
     </div>
   </div>
 
