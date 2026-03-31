@@ -1635,6 +1635,14 @@ function getFoodBarColor(barIdx) {
   return `rgb(${rF}, ${gF}, ${bF})`;
 }
 	
+// Multiplicateur hebdomadaire selon la période affichée dans le graphique
+function getGoalWeekMultiplier(period) {
+  if (period === '7j') return 1 / 7;   // 1 jour
+  if (period === 'sem') return 1;       // 1 semaine
+  if (period === 'mois') return 30 / 7; // ~1 mois = 30 jours
+  return 90 / 7;                        // trimestre / annuel = 90 jours
+}
+
 function renderChart() {
 const today = new Date();
   const last7 = Array.from({length:7}, (_,i) => {
