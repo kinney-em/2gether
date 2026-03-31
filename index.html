@@ -1308,11 +1308,13 @@ function closeSportModal(e) {
 function renderActList() {
   const acts = getData().activities;
   const sel = getSport(activeDayIdx);
-  document.getElementById('sport-act-list').innerHTML = acts.map(a => `
+  const list = viewingPartner ? sel : acts;
+  document.getElementById('sport-act-list').innerHTML = list.map(a => `
     <div class="act-item" onclick="${viewingPartner ? '' : `toggleAct('${a}')`}">
       <div class="act-check ${sel.includes(a)?'on':''}">${sel.includes(a)?'✓':''}</div>
       <span>${a}</span>
     </div>`).join('');
+  document.querySelector('.add-row').style.display = viewingPartner ? 'none' : 'flex';
 }
 
 function toggleAct(act) {
@@ -1663,8 +1665,14 @@ const dataFood = labels.map((_,i) => {
     return countSportForQuarter(getData(), i * 3);
   });
  
-  const goalFood = Array(labels.length).fill(getData().goals.repas);
-  const goalSport = Array(labels.length).fill(getData().goals.sport);
+  const goalFood = labels.map((_, i) => {
+    const m = getGoalWeekMultiplier(currentPeriod, i);
+    return Math.round(getData().goals.repas * m * 10) / 10;
+  });
+  const goalSport = labels.map((_, i) => {
+    const m = getGoalWeekMultiplier(currentPeriod, i);
+    return Math.round(getData().goals.sport * m * 10) / 10;
+  });
 
   if (statsChart) statsChart.destroy();
   statsChart = new Chart(document.getElementById('statsChart'), {
@@ -1996,6 +2004,8 @@ function renderAll() {
   });
   renderMeals(); renderFoodScores();
   renderSportGrid(); renderSportScores();
+  renderStats(); renderObjectifs();
+
 }
 </script>
 
