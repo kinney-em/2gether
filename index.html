@@ -530,10 +530,10 @@
       </div>
     </div>
     <div class="tab-bar">
+      <button class="tab" onclick="showTab('objectifs',this)">📋 Récap</button>
       <button class="tab active" onclick="showTab('repas',this)">🥗 Repas</button>
       <button class="tab" onclick="showTab('sport',this)">🏃 Sport</button>
-      <button class="tab" onclick="showTab('stats',this)">📊 Stats</button>
-      <button class="tab" onclick="showTab('objectifs',this)">🎯 Objectifs</button>		
+      <button class="tab" onclick="showTab('pleine-conscience',this)" style="color:var(--text-3);">🧘 Pleine conscience <span style="font-size:10px;">(soon)</span></button>
 
     </div>
   </div>
@@ -580,24 +580,31 @@
       <div class="week-grid" id="grid-sport"></div>
     </div>
 
-    <!-- STATS -->
-    <div id="tab-stats" class="screen">
-      <div class="period-bar">
-        <button class="ptab active" onclick="setPeriod('7j',this)">7 jours</button>
-        <button class="ptab" onclick="setPeriod('sem',this)">Semaine</button>
-        <button class="ptab" onclick="setPeriod('mois',this)">Mois</button>
-        <button class="ptab" onclick="setPeriod('trim',this)">Trimestre</button>
-        <button class="ptab" onclick="setPeriod('an',this)">Année</button>
+    <!-- PLEINE CONSCIENCE (coming soon) -->
+    <div id="tab-pleine-conscience" class="screen">
+      <div style="text-align:center;padding:60px 24px;color:var(--text-3);">
+        <div style="font-size:48px;margin-bottom:16px;">🧘</div>
+        <div style="font-size:17px;font-weight:700;margin-bottom:8px;">Pleine conscience</div>
+        <div style="font-size:13px;">Cette fonctionnalité arrive bientôt.</div>
       </div>
-      <div class="stat-cards" id="stat-cards"></div>
-      <div class="sec-label">Progression</div>
-      <div class="chart-wrap"><canvas id="statsChart"></canvas></div>
-      <div class="sec-label">Comparaison avec votre proche</div>
-      <div id="compare-section"></div>
-      <div class="sec-label">Badges</div>
-      <div class="badge-grid" id="badge-grid"></div>
     </div>
 
+
+<!-- GOALS MODAL -->
+<div id="goals-modal" style="
+  display:none; position:fixed; inset:0; z-index:90;
+  background:rgba(0,0,0,0.35);" onclick="closeGoalsModal(event)">
+  <div style="
+    position:absolute; right:0; top:0; bottom:0; width:min(320px, 100vw);
+    background:var(--bg); overflow-y:auto; padding:20px 16px 40px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <span style="font-size:16px; font-weight:700;">Mes objectifs</span>
+      <button onclick="closeGoalsModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-2);">✕</button>
+    </div>
+    <div class="sec-label">Objectifs hebdomadaires</div>
+    <div id="goals-modal-list"></div>
+  </div>
+</div>
 
 <!-- PROFIL PANEL -->
 <div id="profil-panel" style="
@@ -617,12 +624,30 @@
   </div>
 </div>
 	  
-    <!-- OBJECTIFS -->
+    <!-- RECAP SEMAINE -->
     <div id="tab-objectifs" class="screen">
-      <div class="sec-label" id="goals-label">Mes objectifs hebdomadaires</div>
-      <div id="goals-list"></div>
-      <div class="sec-label">Progression (7 jours glissants)</div>
+      <div class="week-nav">
+        <button onclick="changeWeek(-1)">← Préc.</button>
+        <span id="week-lbl-o">Cette semaine</span>
+        <button onclick="changeWeek(1)">Suiv. →</button>
+      </div>
+      <div class="sec-label" id="goals-label">Récap de la semaine</div>
       <div id="goal-progress"></div>
+      <hr style="border:none;border-top:1px solid var(--surface);margin:16px 0;">
+      <div class="sec-label">Récap Global</div>
+      <div class="period-bar">
+        <button class="ptab active" onclick="setPeriod('7j',this)">7 jours</button>
+        <button class="ptab" onclick="setPeriod('sem',this)">Semaine</button>
+        <button class="ptab" onclick="setPeriod('mois',this)">Mois</button>
+        <button class="ptab" onclick="setPeriod('trim',this)">Trimestre</button>
+        <button class="ptab" onclick="setPeriod('an',this)">Année</button>
+      </div>
+      <div class="stat-cards" id="stat-cards"></div>
+      <div class="chart-wrap"><canvas id="statsChart"></canvas></div>
+      <div class="sec-label" id="compare-label">Comparaison avec vos proches</div>
+      <div id="compare-section"></div>
+      <div class="sec-label">Badges</div>
+      <div class="badge-grid" id="badge-grid"></div>
     </div>
   </div>
 </div>
@@ -1089,8 +1114,7 @@ function showTab(name, btn) {
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   btn.classList.add('active');
-  if (name === 'stats') renderStats();
-  if (name === 'objectifs') renderObjectifs();
+  if (name === 'objectifs') { renderObjectifs(); renderStats(); }
 }
 
 function toggleProfilMenu(e) {
@@ -1136,6 +1160,16 @@ function toggleProfilMenu(e) {
         onmouseover="this.style.background='var(--gray-light)'"
         onmouseout="this.style.background='none'">
         ⚙️ Voir mon profil complet
+      </div>
+      <div onclick="openGoalsModal()" style="padding:9px 12px;cursor:pointer;font-size:13px;
+        border-radius:var(--radius-sm);color:var(--text);"
+        onmouseover="this.style.background='var(--gray-light)'"
+        onmouseout="this.style.background='none'">
+        🎯 Définir mes objectifs
+      </div>
+      <div style="padding:9px 12px;font-size:13px;border-radius:var(--radius-sm);
+        color:var(--text-3);cursor:default;">
+        🏅 Ma liste d'activités <span style="font-size:11px;">(coming soon)</span>
       </div>
       <div onclick="doLogout()" style="padding:9px 12px;cursor:pointer;font-size:13px;
         border-radius:var(--radius-sm);color:var(--red);"
@@ -1406,20 +1440,23 @@ function renderStats() {
   const sportDays = countSportDays(data, getWeekKey());
   const ratio = Math.round(getRatio(data) * 100);
 
+  const gaugeColor = ratio >= 70 ? 'var(--green)' : ratio >= 40 ? '#F4A261' : 'var(--red)';
+  const r = 40, stroke = 8, circ = Math.PI * r;
+  const dash = (ratio / 100) * circ;
   document.getElementById('stat-cards').innerHTML = `
-    <div class="stat-card">
-      <div class="stat-card-label">Repas sains (total)</div>
-      <div class="stat-card-val" style="color:var(--green);">${sain}</div>
-      <div class="stat-card-sub">Ratio sain: ${ratio}%</div>
-      <div class="pbar" style="margin-top:6px;"><div class="pbar-fill" style="width:${ratio}%;background:var(--green);"></div></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-label">Jours sport (sem.)</div>
-      <div class="stat-card-val" style="color:var(--teal);">${sportDays}</div>
-      <div class="stat-card-sub">Objectif: ${data.goals.sport}</div>
-      <div class="pbar" style="margin-top:6px;"><div class="pbar-fill" style="width:${Math.min(100,Math.round(sportDays/data.goals.sport*100))}%;background:var(--teal);"></div></div>
+    <div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;padding:16px 0;">
+      <svg width="110" height="70" viewBox="0 0 110 70">
+        <path d="M10,65 A${r},${r} 0 0,1 100,65" fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="${stroke}" stroke-linecap="round"/>
+        <path d="M10,65 A${r},${r} 0 0,1 100,65" fill="none" stroke="${gaugeColor}" stroke-width="${stroke}" stroke-linecap="round"
+          stroke-dasharray="${dash} ${circ}" style="transition:stroke-dasharray .6s cubic-bezier(.4,0,.2,1);"/>
+      </svg>
+      <div style="margin-top:-18px;font-size:26px;font-weight:800;color:${gaugeColor};">${ratio}%</div>
+      <div style="font-size:11px;color:var(--text-2);font-weight:600;margin-top:4px;">Ratio repas sains</div>
+      <div style="font-size:11px;color:var(--text-3);margin-top:2px;">${sain} repas sains au total</div>
     </div>`;
 
+  const partnerName = activePartnerUid ? (partnersData[activePartnerUid]?.name || 'votre proche') : 'votre proche';
+  document.getElementById('compare-label').textContent = `Comparaison avec ${partnerName}`;
   renderCompare();
   renderBadges();
   renderChart();
@@ -1934,30 +1971,8 @@ function renderObjectifs() {
   const data = getData();
   const partnerName = viewingPartner && activePartnerUid ? (partnersData[activePartnerUid]?.name || 'Partenaire') : null;
   document.getElementById('goals-label').textContent = partnerName
-    ? `Objectifs hebdomadaires de ${partnerName}`
-    : 'Mes objectifs hebdomadaires';
-  const goalsList = document.getElementById('goals-list');
-  if (viewingPartner) {
-    goalsList.innerHTML = '';
-  } else {
-    goalsList.innerHTML = `
-    <div class="goal-row">
-      <span class="goal-label">🥗 Repas sains / semaine</span>
-      <div class="goal-ctrl">
-        <button onclick="adjustGoal('repas',-1)">−</button>
-        <span class="goal-val">${data.goals.repas}</span>
-        <button onclick="adjustGoal('repas',1)">+</button>
-      </div>
-    </div>
-    <div class="goal-row">
-      <span class="goal-label">🏃 Jours sport / semaine</span>
-      <div class="goal-ctrl">
-        <button onclick="adjustGoal('sport',-1)">−</button>
-        <span class="goal-val">${data.goals.sport}</span>
-        <button onclick="adjustGoal('sport',1)">+</button>
-      </div>
-    </div>`;
-  }
+    ? `Récap de la semaine · ${partnerName}`
+    : 'Récap de la semaine';
 
   const wk = getWeekKey();
   const sainWk = countMeals(data, wk).sain;
@@ -1978,9 +1993,41 @@ function renderObjectifs() {
     </div>`;
 }
 
+function renderGoalsModal() {
+  const data = myData;
+  document.getElementById('goals-modal-list').innerHTML = `
+    <div class="goal-row">
+      <span class="goal-label">🥗 Repas sains / semaine</span>
+      <div class="goal-ctrl">
+        <button onclick="adjustGoal('repas',-1)">−</button>
+        <span class="goal-val">${data.goals.repas}</span>
+        <button onclick="adjustGoal('repas',1)">+</button>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-label">🏃 Jours sport / semaine</span>
+      <div class="goal-ctrl">
+        <button onclick="adjustGoal('sport',-1)">−</button>
+        <span class="goal-val">${data.goals.sport}</span>
+        <button onclick="adjustGoal('sport',1)">+</button>
+      </div>
+    </div>`;
+}
+
+function openGoalsModal() {
+  document.getElementById('profil-dropdown').style.display = 'none';
+  renderGoalsModal();
+  document.getElementById('goals-modal').style.display = 'block';
+}
+
+function closeGoalsModal(e) {
+  if (!e || e.target === document.getElementById('goals-modal'))
+    document.getElementById('goals-modal').style.display = 'none';
+}
+
 function adjustGoal(type, d) {
-  if (viewingPartner) return;
   myData.goals[type] = Math.max(1, myData.goals[type] + d);
+  renderGoalsModal();
   renderObjectifs();
   saveProfile();
 }
@@ -2001,12 +2048,13 @@ function adjustGoal(type, d) {
 // ---- RENDER ALL ----
 function renderAll() {
   const lbl = getWeekLabel();
-  ['week-lbl-r','week-lbl-s'].forEach(id => {
+  ['week-lbl-r','week-lbl-s','week-lbl-o'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.textContent = lbl;
   });
   renderMeals(); renderFoodScores();
   renderSportGrid(); renderSportScores();
+  renderObjectifs(); renderStats();
 }
 </script>
 
