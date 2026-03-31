@@ -1308,12 +1308,12 @@ function closeSportModal(e) {
 function renderActList() {
   const acts = getData().activities;
   const sel = getSport(activeDayIdx);
-  document.getElementById('sport-act-list').innerHTML = acts.map(a => `
+  const list = viewingPartner ? sel : acts;
+  document.getElementById('sport-act-list').innerHTML = list.map(a => `
     <div class="act-item" onclick="${viewingPartner ? '' : `toggleAct('${a}')`}">
       <div class="act-check ${sel.includes(a)?'on':''}">${sel.includes(a)?'✓':''}</div>
       <span>${a}</span>
     </div>`).join('');
-  document.querySelector('.add-row').style.display = viewingPartner ? 'none' : 'flex';
   document.querySelector('.add-row').style.display = viewingPartner ? 'none' : 'flex';
 }
 
