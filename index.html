@@ -481,6 +481,21 @@
   <div class="login-title">Habitudes ensemble</div>
   <div class="login-sub">Suivez vos objectifs à deux</div>
 
+  <div id="login-pitch" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:340px;margin-bottom:4px;">
+    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);">
+      <span style="font-size:22px;">🥗</span>
+      <span style="font-size:13px;color:var(--text-2);">Notez vos repas et votre sport chaque jour</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);">
+      <span style="font-size:22px;">📊</span>
+      <span style="font-size:13px;color:var(--text-2);">Visualisez vos tendances sur la semaine, le mois…</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);">
+      <span style="font-size:22px;">🔗</span>
+      <span style="font-size:13px;color:var(--text-2);">Jumelez-vous avec un proche pour vous motiver ensemble</span>
+    </div>
+  </div>
+
   <div class="login-card" id="card-login">
     <h2>Se connecter</h2>
     <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="votre@email.com"/></div>
@@ -517,13 +532,14 @@
 
   <div class="login-card" id="card-pair" style="display:none;">
     <h2>🔗 Lier avec un proche</h2>
-    <p style="font-size:13px;color:var(--text-2);margin-bottom:8px;">Partagez ce code avec votre proche pour que vos données soient liées :</p>
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:12px;">Une fois jumelés, vous pouvez comparer vos habitudes et vous motiver ensemble. Chacun garde ses propres données — le jumelage partage uniquement les scores.</p>
+    <p style="font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Votre code</p>
     <div class="pair-code-display" id="my-pair-code">——</div>
-    <div class="pair-hint">Votre proche doit entrer ce code dans son application</div>
-    <div class="login-sep">— ou entrez le code de votre proche —</div>
-    <div class="field"><label>Code de jumelage</label><input type="text" id="pair-code-input" placeholder="ex: 4729" maxlength="6" style="text-align:center;letter-spacing:4px;font-size:18px;"/></div>
+    <div class="pair-hint">Transmettez ce code à votre proche (SMS, oral…)</div>
+    <div class="login-sep">— votre proche a déjà un code ? —</div>
+    <div class="field"><label>Entrez son code</label><input type="text" id="pair-code-input" placeholder="ex: 4729" maxlength="6" style="text-align:center;letter-spacing:4px;font-size:18px;"/></div>
     <button class="btn btn-primary" onclick="doPair()">Rejoindre</button>
-    <button class="btn btn-secondary" onclick="skipPair()">Plus tard</button>
+    <button class="btn btn-secondary" onclick="skipPair()">Passer cette étape</button>
     <div id="pair-error"></div>
   </div>
 </div>
@@ -803,6 +819,8 @@ function showCard(id) {
   ['login','register','pair','reset'].forEach(c => {
     document.getElementById('card-'+c).style.display = c===id ? 'flex' : 'none';
   });
+  const pitch = document.getElementById('login-pitch');
+  if (pitch) pitch.style.display = id === 'login' ? 'flex' : 'none';
 }
 
 function setError(id, msg) { document.getElementById(id).textContent = msg; }
