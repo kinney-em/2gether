@@ -1632,11 +1632,11 @@ function countTotalSain(data) {
 }
 
 function getRatio(data) {
-  let s=0, m=0;
+  let s=0, c=0, m=0;
   Object.values(data.meals).forEach(wk =>
-    Object.values(wk).forEach(day => Object.values(day).forEach(v => { if(v==='sain')s++; else if(v==='malbouffe')m++; }))
+    Object.values(wk).forEach(day => Object.values(day).forEach(v => { if(v==='sain')s++; else if(v==='correct')c++; else if(v==='malbouffe')m++; }))
   );
-  return (s+m) === 0 ? 0 : s/(s+m);
+  return (s+c+m) === 0 ? 0 : s/(s+c+m);
 }
 
 function hasStreak(data, n) {
