@@ -1,0 +1,14 @@
+{
+  "name": "Habitudes ensemble",
+  "short_name": "2gether",
+  "description": "Suivez vos objectifs à deux",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8F9FA",
+  "theme_color": "#1D9E75",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "LOGO_habits.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "LOGO_habits.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
