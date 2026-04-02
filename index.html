@@ -2015,7 +2015,7 @@ const EMOJIS = ['🌱','🌱','🍀','🌴','🫀','🫁','🌈','💜','🔥','
 let selectedAvatar = null;
 
 function openEditProfil() {
-  const name = document.getElementById('pill-me').textContent;
+  const name = document.getElementById('pill-me-name').textContent;
   document.getElementById('edit-name').value = name;
 	document.getElementById('edit-email').value = auth.currentUser?.email || '—';
   selectedAvatar = myData.avatar || '🌱';
