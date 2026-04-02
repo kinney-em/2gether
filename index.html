@@ -1,18 +1,20 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
 <title>Habitudes ensemble</title>
+<link rel="icon" type="image/png" href="LOGO_habits.png">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --green: #639922; --green-light: #EAF3DE; --green-dark: #27500A;
+    /* Colorblind-safe: green shifted to blue-green, red shifted to red-orange */
+    --green: #1E9E5A; --green-light: #DDF2E8; --green-dark: #0A4A28;
     --teal: #1D9E75; --teal-light: #E1F5EE; --teal-dark: #085041;
     --amber: #BA7517; --amber-light: #FAEEDA; --amber-dark: #633806;
-    --red: #E24B4A; --red-light: #FCEBEB; --red-dark: #501313;
+    --red: #D44000; --red-light: #FCEADE; --red-dark: #5A1A00;
     --gray: #888780; --gray-light: #F1EFE8; --gray-dark: #2C2C2A;
     --coral: #D85A30; --coral-light: #FAECE7;
     --bg: #f8f7f4; --surface: #ffffff; --border: rgba(0,0,0,0.08);
@@ -25,10 +27,15 @@
 
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #1a1a18; --surface: #252523; --border: rgba(255,255,255,0.08);
-      --text: #f0ede8; --text-2: #aaa89f; --text-3: #666661;
-      --green-light: #1a2e0a; --teal-light: #062318; --red-light: #2a1010;
-      --amber-light: #2a1e06; --gray-light: #252523;
+      --bg: #1a1a18; --surface: #252523; --border: rgba(255,255,255,0.10);
+      --text: #f0ede8; --text-2: #c8c5bc; --text-3: #888780;
+      --green: #2EBD6E; --green-light: #0d2e1a; --green-dark: #7DDBA8;
+      --teal: #2AC492; --teal-light: #062318; --teal-dark: #7DE8C4;
+      --red: #FF6B35; --red-light: #2e1200; --red-dark: #FFAA85;
+      --amber: #E09030; --amber-light: #2a1e06; --amber-dark: #F5C97A;
+      --coral: #E8784A; --coral-light: #2e1508;
+      --gray-light: #2e2e2c;
+      --shadow: 0 2px 12px rgba(0,0,0,0.25);
     }
   }
 
@@ -50,7 +57,7 @@
     padding: 24px;
     gap: 16px;
   }
-  .login-logo { font-size: 48px; margin-bottom: 8px; }
+  .login-logo { margin-bottom: 8px; }
   .login-title { font-size: 24px; font-weight: 700; color: var(--text); text-align: center; }
   .login-sub { font-size: 14px; color: var(--text-2); text-align: center; margin-bottom: 8px; }
   .login-card {
@@ -114,10 +121,10 @@
   z-index: 30;
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 12px 16px 8px;
+  padding: 8px 12px 6px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 .header-top { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-bottom: 0; }
   .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
@@ -135,51 +142,51 @@
     color: var(--text-2);
   }
   .user-pill.me { border-color: var(--teal); background: var(--teal-light); color: var(--teal-dark); }
-  .user-pill.partner { border-color: var(--coral); background: var(--coral-light); color: #4A1B0C; }
+  .user-pill.partner { border-color: var(--coral); background: var(--coral-light); color: var(--red-dark); }
   .logout-btn { font-size: 12px; color: var(--text-3); cursor: pointer; background: none; border: none; font-family: 'Nunito', sans-serif; }
 
   /* --- TABS --- */
   .tab-bar {
     display: flex;
-    gap: 0;
-    padding: 0 16px;
+    gap: 6px;
+    padding: 8px 16px;
     overflow-x: auto;
     scrollbar-width: none;
   }
   .tab-bar::-webkit-scrollbar { display: none; }
   .tab {
-    flex: 1;
-    padding: 8px 4px;
-    border: none;
-    background: transparent;
+    padding: 5px 12px;
+    border-radius: 99px;
+    border: 1.5px solid transparent;
+    background: var(--gray-light);
     cursor: pointer;
     font-family: 'Nunito', sans-serif;
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
-    color: var(--text-3);
-    border-bottom: 2px solid transparent;
+    color: var(--text-2);
     transition: all .15s;
     white-space: nowrap;
   }
-  .tab.active { color: var(--teal); border-bottom-color: var(--teal); }
+  .tab.active { border-color: var(--teal); background: var(--teal-light); color: var(--teal-dark); }
 
   /* --- MAIN --- */
   .main { padding: 16px; max-width: 500px; margin: 0 auto; }
   .screen { display: none; }
   .screen.active { display: block; }
 
-  /* --- WEEK NAV --- */
-  .week-nav {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 12px;
-  }
-  .week-nav button {
-    padding: 5px 12px; border-radius: var(--radius-sm);
-    border: 1px solid var(--border); background: var(--surface);
-    cursor: pointer; font-size: 12px; color: var(--text-2);
+  /* --- WEEK NAV (compact, in header) --- */
+  .week-nav-btn {
+    width: 28px; height: 28px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    cursor: pointer;
+    font-size: 16px; font-weight: 700;
+    color: var(--text-2);
+    display: flex; align-items: center; justify-content: center;
     font-family: 'Nunito', sans-serif;
+    flex-shrink: 0;
   }
-  .week-nav span { font-size: 13px; font-weight: 700; }
 
   /* --- SCORE STRIP --- */
   .score-strip { display: flex; gap: 8px; margin-bottom: 14px; }
@@ -213,21 +220,33 @@
   .day-lbl { font-size: 10px; font-weight: 700; color: var(--text-3); text-transform: uppercase; }
   .meal-btn, .sport-btn {
     width: 100%; aspect-ratio: 1;
+    min-width: 44px; min-height: 44px;
     border-radius: var(--radius-sm);
-    border: 1.5px solid var(--border);
+    border: 2px solid var(--border);
     background: var(--surface);
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 700;
+    font-size: 16px; font-weight: 800;
     transition: all .12s;
     color: var(--text-3);
+    position: relative;
   }
   .meal-btn:active, .sport-btn:active { transform: scale(0.92); }
-  .meal-btn.sain { background: var(--green-light); border-color: var(--green); color: var(--green-dark); }
-	.meal-btn.correct { background: var(--amber-light); border-color: var(--amber); color: var(--amber-dark); }
-  .meal-btn.malbouffe { background: var(--red-light); border-color: var(--red); color: var(--red-dark); }
-  .meal-btn.skip { background: var(--gray-light); border-color: var(--gray); color: var(--text-3); opacity: .6; }
-  .sport-btn.done { background: var(--teal-light); border-color: var(--teal); color: var(--teal-dark); }
+  /* Colorblind-safe: color + shape + border-width all differ */
+  .meal-btn.sain     { background: var(--green-light); border: 2.5px solid var(--green); color: var(--green-dark); }
+  .meal-btn.correct  { background: var(--amber-light); border: 2px dashed var(--amber); color: var(--amber-dark); }
+  .meal-btn.malbouffe{ background: var(--red-light);   border: 2.5px solid var(--red);   color: var(--red-dark); }
+  .meal-btn.skip     { background: var(--gray-light);  border: 1.5px solid var(--gray);  color: var(--text-3); opacity: .5; }
+  .sport-btn.done    { background: var(--teal-light);  border: 2.5px solid var(--teal);  color: var(--teal-dark); }
+  .meal-cycle-dots {
+    position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 3px; pointer-events: none;
+  }
+  .meal-cycle-dots span {
+    width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: 0.2; transition: opacity .15s;
+  }
+  .meal-cycle-dots span.on { opacity: 0.7; }
+  .meal-btn.long-pressing { transform: scale(0.88) !important; opacity: 0.65; transition: transform 0.45s ease, opacity 0.45s ease !important; }
 
   /* --- SPORT MODAL --- */
   .modal-overlay {
@@ -299,6 +318,22 @@
   .badge-card.earned .badge-name { color: var(--amber-dark); font-weight: 700; }
   .badge-card:not(.earned) .badge-icon { filter: grayscale(1); opacity: .35; }
 
+  /* --- COLLAPSIBLE SECTIONS --- */
+  .collapse-header {
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; padding: 10px 14px; margin: 10px 0 0;
+    background: var(--surface); border-radius: var(--radius);
+    box-shadow: var(--shadow); user-select: none;
+  }
+  .collapse-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--text-2);
+  }
+  .collapse-chevron { font-size: 13px; color: var(--text-3); transition: transform .25s; }
+  .collapse-chevron.open { transform: rotate(180deg); }
+  .collapse-body { overflow: hidden; max-height: 0; transition: max-height .35s ease; }
+  .collapse-body.open { max-height: 2000px; }
+
   /* --- COMPARE --- */
   .compare-row {
     display: flex; align-items: center; gap: 8px;
@@ -337,6 +372,39 @@
   }
   .sync-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--green); margin-right: 4px; vertical-align: middle; }
   .sync-dot.off { background: var(--gray); }
+
+  /* --- SYNC TOAST --- */
+  #sync-toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    z-index: 9999; min-width: 220px; max-width: 90vw;
+    padding: 10px 18px; border-radius: 24px;
+    font-size: 13px; font-weight: 600; text-align: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    transition: transform 0.28s cubic-bezier(.4,0,.2,1), opacity 0.28s;
+    opacity: 0; pointer-events: none;
+  }
+  #sync-toast.show {
+    transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto;
+  }
+  #sync-toast.toast-saving {
+    background: var(--bg); color: var(--text-2);
+    border: 1.5px solid var(--gray-light);
+  }
+  #sync-toast.toast-error {
+    background: var(--red-light); color: var(--red);
+    border: 1.5px solid var(--red);
+  }
+  #sync-toast.toast-ok {
+    background: #e6f9f0; color: #1a7a47;
+    border: 1.5px solid var(--green);
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .toast-spinner {
+    display: inline-block; width: 12px; height: 12px;
+    border: 2px solid var(--gray-light); border-top-color: var(--text-3);
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+    vertical-align: middle; margin-right: 6px;
+  }
 
   /* CONFIG NOTICE */
   .config-notice {
@@ -388,7 +456,7 @@
   width: 40px; height: 40px; border-radius: 50%;
   background: var(--coral-light);
   display: flex; align-items: center; justify-content: center;
-  font-size: 16px; font-weight: 700; color: #4A1B0C; flex-shrink: 0;
+  font-size: 16px; font-weight: 700; color: var(--red-dark); flex-shrink: 0;
 }
 	
 </style>
@@ -397,7 +465,7 @@
 
 <!-- LOADING SCREEN -->
 <div id="loading-screen" style="display:none; position:fixed; inset:0; background:var(--bg); z-index:999; flex-direction:column; align-items:center; justify-content:center; gap:16px;">
-  <div style="font-size:48px; animation:spin 1.2s linear infinite;">🌱</div>
+  <div style="animation:spin 1.2s linear infinite;"><img src="LOGO_habits.png" alt="2gether" style="width:72px;height:auto;"></div>
   <div style="font-size:15px; font-weight:600; color:var(--text-2);">Chargement…</div>
 </div>
 
@@ -409,9 +477,24 @@
 
 <!-- LOGIN -->
 <div id="login-screen">
-  <div class="login-logo">🌱</div>
+  <div class="login-logo"><img src="LOGO_habits.png" alt="2gether" style="width:90px;height:auto;"></div>
   <div class="login-title">Habitudes ensemble</div>
   <div class="login-sub">Suivez vos objectifs à deux</div>
+
+  <div id="login-pitch" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:340px;margin-bottom:4px;">
+    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);">
+      <span style="font-size:22px;">🥗</span>
+      <span style="font-size:13px;color:var(--text-2);">Notez vos repas et votre sport chaque jour</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);">
+      <span style="font-size:22px;">📊</span>
+      <span style="font-size:13px;color:var(--text-2);">Visualisez vos tendances sur la semaine, le mois…</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);">
+      <span style="font-size:22px;">🔗</span>
+      <span style="font-size:13px;color:var(--text-2);">Jumelez-vous avec un proche pour vous motiver ensemble</span>
+    </div>
+  </div>
 
   <div class="login-card" id="card-login">
     <h2>Se connecter</h2>
@@ -449,13 +532,14 @@
 
   <div class="login-card" id="card-pair" style="display:none;">
     <h2>🔗 Lier avec un proche</h2>
-    <p style="font-size:13px;color:var(--text-2);margin-bottom:8px;">Partagez ce code avec votre proche pour que vos données soient liées :</p>
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:12px;">Une fois jumelés, vous pouvez comparer vos habitudes et vous motiver ensemble. Chacun garde ses propres données — le jumelage partage uniquement les scores.</p>
+    <p style="font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Votre code</p>
     <div class="pair-code-display" id="my-pair-code">——</div>
-    <div class="pair-hint">Votre proche doit entrer ce code dans son application</div>
-    <div class="login-sep">— ou entrez le code de votre proche —</div>
-    <div class="field"><label>Code de jumelage</label><input type="text" id="pair-code-input" placeholder="ex: 4729" maxlength="6" style="text-align:center;letter-spacing:4px;font-size:18px;"/></div>
+    <div class="pair-hint">Transmettez ce code à votre proche (SMS, oral…)</div>
+    <div class="login-sep">— votre proche a déjà un code ? —</div>
+    <div class="field"><label>Entrez son code</label><input type="text" id="pair-code-input" placeholder="ex: 4729" maxlength="6" style="text-align:center;letter-spacing:4px;font-size:18px;"/></div>
     <button class="btn btn-primary" onclick="doPair()">Rejoindre</button>
-    <button class="btn btn-secondary" onclick="skipPair()">Plus tard</button>
+    <button class="btn btn-secondary" onclick="skipPair()">Passer cette étape</button>
     <div id="pair-error"></div>
   </div>
 </div>
@@ -486,39 +570,15 @@
 		</div>
 	
   <div class="header">
-    <div class="header-top">
-      <div class="header-title">🌱 HabituDEUX </div>
-<div style="display:flex;align-items:center;gap:8px;position:relative;z-index:101;">
-  <div style="position:relative;">
-  <button class="logout-btn" onclick="toggleProfilMenu(event); return false;" id="profil-menu-btn"
-	  style="
-    padding: 6px 10px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border);
-    background: var(--surface);
-    cursor: pointer;
-    font-family: 'Nunito', sans-serif;
-    font-size: 13px;
-    color: var(--text);
-    -webkit-tap-highlight-color: transparent;">👤 ▾</button>
-  <div id="profil-dropdown" style="
-    display:none; position:absolute; right:0; top:32px;
-    background:var(--surface); border-radius:var(--radius);
-    box-shadow:0 4px 20px rgba(0,0,0,0.12);
-    border:1px solid var(--border);
-    min-width:220px; z-index:100; overflow:hidden;">
-    <div id="profil-dropdown-content"></div>
-  </div>
-</div>
+    <!-- Row 1: pills + user menu -->
+    <div style="display:flex;align-items:center;gap:6px;min-width:0;">
+      <div class="user-pill me" onclick="setUser('me')" id="pill-me" style="min-width:0;overflow:hidden;">
+        <span id="pill-me-avatar">🌱</span> <span id="pill-me-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Moi</span>
       </div>
-    </div>
-    <div class="user-pills">
-      <div class="user-pill me" onclick="setUser('me')" id="pill-me">
-        <span id="pill-me-avatar">🌱</span> <span id="pill-me-name">Moi</span>
-      </div>
-      <div style="position:relative;">
-        <div class="user-pill" onclick="togglePartnerPill(event)" id="pill-partner">
-          <span id="pill-partner-avatar">🌿</span> <span id="pill-partner-name">Partenaires</span>
+      <img src="LOGO_habits.png" alt="" style="width:20px;height:auto;opacity:0.4;flex-shrink:0;">
+      <div style="position:relative;min-width:0;flex-shrink:1;">
+        <div class="user-pill" onclick="togglePartnerPill(event)" id="pill-partner" style="min-width:0;overflow:hidden;">
+          <span id="pill-partner-avatar">🌱</span> <span id="pill-partner-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Partenaires</span>
         </div>
         <div id="partner-pill-dropdown" style="
           display:none; position:absolute; left:0; top:36px;
@@ -528,13 +588,33 @@
           min-width:180px; z-index:200; overflow:hidden;">
         </div>
       </div>
+      <div style="flex:1;min-width:8px;"></div>
+      <div style="position:relative;flex-shrink:0;">
+        <button class="logout-btn" onclick="toggleProfilMenu(event); return false;" id="profil-menu-btn"
+          style="padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);
+          background:var(--surface);cursor:pointer;font-family:'Nunito',sans-serif;
+          font-size:13px;color:var(--text);-webkit-tap-highlight-color:transparent;white-space:nowrap;">👤 ▾</button>
+        <div id="profil-dropdown" style="
+          display:none; position:absolute; right:0; top:36px;
+          background:var(--surface); border-radius:var(--radius);
+          box-shadow:0 4px 20px rgba(0,0,0,0.12);
+          border:1px solid var(--border);
+          min-width:220px; z-index:100; overflow:hidden;">
+          <div id="profil-dropdown-content"></div>
+        </div>
+      </div>
     </div>
-    <div class="tab-bar">
+    <!-- Row 2: tabs full width -->
+    <div class="tab-bar" style="padding:0;">
+      <button class="tab" onclick="showTab('objectifs',this)">📋 Récap</button>
       <button class="tab active" onclick="showTab('repas',this)">🥗 Repas</button>
       <button class="tab" onclick="showTab('sport',this)">🏃 Sport</button>
-      <button class="tab" onclick="showTab('stats',this)">📊 Stats</button>
-      <button class="tab" onclick="showTab('objectifs',this)">🎯 Objectifs</button>		
-
+    </div>
+    <!-- Row 3: week nav slim -->
+    <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
+      <button onclick="changeWeek(-1)" class="week-nav-btn" id="week-nav-prev">‹</button>
+      <span id="week-lbl" style="font-size:11px;font-weight:700;color:var(--text-2);white-space:nowrap;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:200px;">Cette semaine</span>
+      <button onclick="changeWeek(1)" class="week-nav-btn" id="week-nav-next">›</button>
     </div>
   </div>
 
@@ -551,11 +631,6 @@
 	</div>
     <!-- REPAS -->
     <div id="tab-repas" class="screen active">
-      <div class="week-nav">
-        <button onclick="changeWeek(-1)">← Préc.</button>
-        <span id="week-lbl-r">Cette semaine</span>
-        <button onclick="changeWeek(1)">Suiv. →</button>
-      </div>
       <div class="score-strip" id="food-scores"></div>
       <div class="sec-label">Petit-déjeuner</div>
       <div class="week-grid" id="grid-pdj"></div>
@@ -565,39 +640,47 @@
       <div class="week-grid" id="grid-din"></div>
       <div class="sec-label">Snacks</div>
       <div class="week-grid" id="grid-snack"></div>
-      <p style="font-size:11px;color:var(--text-3);margin-top:8px;">Tapez pour cycler : vide → ✓ sain → ~ correct → ✗ malbouffe → — ignoré</p>
+      <p style="font-size:11px;color:var(--text-3);margin-top:8px;">Tapez pour cycler : vide → <b>✔</b> sain → <b>≈</b> correct → <b>✖</b> malbouffe · Appui long pour remettre à zéro</p>
+      <div id="meal-ratio-bar" style="display:none;height:20px;border-radius:99px;overflow:hidden;margin-top:10px;border:1px solid var(--border);"></div>
+      <div id="meal-empty-state" style="display:none;text-align:center;padding:20px 16px 8px;">
+        <div style="font-size:32px;margin-bottom:8px;">🥗</div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">C'est parti pour cette semaine !</div>
+        <div style="font-size:12px;color:var(--text-2);line-height:1.5;">Appuyez sur une case pour enregistrer votre premier repas.</div>
+      </div>
     </div>
 
     <!-- SPORT -->
     <div id="tab-sport" class="screen">
-      <div class="week-nav">
-        <button onclick="changeWeek(-1)">← Préc.</button>
-        <span id="week-lbl-s">Cette semaine</span>
-        <button onclick="changeWeek(1)">Suiv. →</button>
-      </div>
       <div class="score-strip" id="sport-scores"></div>
       <div class="sec-label">Activités par jour — tapez pour sélectionner</div>
       <div class="week-grid" id="grid-sport"></div>
     </div>
 
-    <!-- STATS -->
-    <div id="tab-stats" class="screen">
-      <div class="period-bar">
-        <button class="ptab active" onclick="setPeriod('7j',this)">7 jours</button>
-        <button class="ptab" onclick="setPeriod('sem',this)">Semaine</button>
-        <button class="ptab" onclick="setPeriod('mois',this)">Mois</button>
-        <button class="ptab" onclick="setPeriod('trim',this)">Trimestre</button>
-        <button class="ptab" onclick="setPeriod('an',this)">Année</button>
+    <!-- PLEINE CONSCIENCE (coming soon) -->
+    <div id="tab-pleine-conscience" class="screen">
+      <div style="text-align:center;padding:60px 24px;color:var(--text-3);">
+        <div style="font-size:48px;margin-bottom:16px;">🧘</div>
+        <div style="font-size:17px;font-weight:700;margin-bottom:8px;">Pleine conscience</div>
+        <div style="font-size:13px;">Cette fonctionnalité arrive bientôt.</div>
       </div>
-      <div class="stat-cards" id="stat-cards"></div>
-      <div class="sec-label">Progression</div>
-      <div class="chart-wrap"><canvas id="statsChart"></canvas></div>
-      <div class="sec-label">Comparaison avec votre proche</div>
-      <div id="compare-section"></div>
-      <div class="sec-label">Badges</div>
-      <div class="badge-grid" id="badge-grid"></div>
     </div>
 
+
+<!-- GOALS MODAL -->
+<div id="goals-modal" style="
+  display:none; position:fixed; inset:0; z-index:90;
+  background:rgba(0,0,0,0.35);" onclick="closeGoalsModal(event)">
+  <div style="
+    position:absolute; right:0; top:0; bottom:0; width:min(320px, 100vw);
+    background:var(--bg); overflow-y:auto; padding:20px 16px 40px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <span style="font-size:16px; font-weight:700;">Mes objectifs</span>
+      <button onclick="closeGoalsModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-2);">✕</button>
+    </div>
+    <div class="sec-label">Objectifs hebdomadaires</div>
+    <div id="goals-modal-list"></div>
+  </div>
+</div>
 
 <!-- PROFIL PANEL -->
 <div id="profil-panel" style="
@@ -617,12 +700,42 @@
   </div>
 </div>
 	  
-    <!-- OBJECTIFS -->
+    <!-- RECAP SEMAINE -->
     <div id="tab-objectifs" class="screen">
-      <div class="sec-label" id="goals-label">Mes objectifs hebdomadaires</div>
-      <div id="goals-list"></div>
-      <div class="sec-label">Progression (7 jours glissants)</div>
+      <div class="sec-label" id="goals-label">Récap de la semaine</div>
       <div id="goal-progress"></div>
+
+      <div class="collapse-header" onclick="toggleCollapse('stats-body','stats-chev')">
+        <span class="collapse-title">Récap Global</span>
+        <span class="collapse-chevron open" id="stats-chev">▾</span>
+      </div>
+      <div class="collapse-body open" id="stats-body">
+        <div class="period-bar" style="margin-top:10px;">
+          <button class="ptab active" onclick="setPeriod('7j',this)">7 jours</button>
+          <button class="ptab" onclick="setPeriod('sem',this)">Semaine</button>
+          <button class="ptab" onclick="setPeriod('mois',this)">Mois</button>
+          <button class="ptab" onclick="setPeriod('trim',this)">Trimestre</button>
+          <button class="ptab" onclick="setPeriod('an',this)">Année</button>
+        </div>
+        <div class="stat-cards" id="stat-cards"></div>
+        <div class="chart-wrap"><canvas id="statsChart"></canvas></div>
+      </div>
+
+      <div class="collapse-header" onclick="toggleCollapse('compare-body','compare-chev')">
+        <span class="collapse-title" id="compare-label">Comparaison avec vos proches</span>
+        <span class="collapse-chevron open" id="compare-chev">▾</span>
+      </div>
+      <div class="collapse-body open" id="compare-body">
+        <div id="compare-section" style="margin-top:6px;"></div>
+      </div>
+
+      <div class="collapse-header" onclick="toggleCollapse('badges-body','badges-chev')">
+        <span class="collapse-title">Badges</span>
+        <span class="collapse-chevron" id="badges-chev">▾</span>
+      </div>
+      <div class="collapse-body" id="badges-body">
+        <div class="badge-grid" id="badge-grid" style="margin-top:10px;"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -689,14 +802,19 @@ let activePartnerUid = null;
 let unsubscribePartners = {};
 
 // ---- AUTH ----
+let _registering = false; // flag: don't auto-load profile during registration flow
+
 auth.onAuthStateChanged(user => {
   if (user) {
     currentUid = user.uid;
+    if (_registering) return; // doRegister handles the UI itself
+    if (!user.emailVerified) return; // doLogin handles the unverified case
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('loading-screen').style.display = 'flex';
     loadUserProfile();
   } else {
     currentUid = null;
+    document.getElementById('loading-screen').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
   }
@@ -706,6 +824,8 @@ function showCard(id) {
   ['login','register','pair','reset'].forEach(c => {
     document.getElementById('card-'+c).style.display = c===id ? 'flex' : 'none';
   });
+  const pitch = document.getElementById('login-pitch');
+  if (pitch) pitch.style.display = id === 'login' ? 'flex' : 'none';
 }
 
 function setError(id, msg) { document.getElementById(id).textContent = msg; }
@@ -739,6 +859,7 @@ async function doRegister() {
   const pwd = document.getElementById('reg-pwd').value;
   if (!name) { setError('reg-error','Entrez votre prénom'); return; }
   try {
+    _registering = true;
     const cred = await auth.createUserWithEmailAndPassword(email, pwd);
     const code = Math.floor(1000 + Math.random() * 9000).toString();
     await db.collection('users').doc(cred.user.uid).set({
@@ -746,11 +867,12 @@ async function doRegister() {
       activities: DEFAULT_ACTS,
       goals: { repas: 14, sport: 3 }
     });
-    document.getElementById('pill-me').textContent = name;
     document.getElementById('my-pair-code').textContent = code;
     await cred.user.sendEmailVerification();
-	  showCard('pair');
+    _registering = false;
+    showCard('pair');
   } catch(e) {
+    _registering = false;
     setError('reg-error', e.message);
   }
 }
@@ -809,7 +931,15 @@ function skipPair() {
 	
 // ---- DATA LOAD ----
 async function loadUserProfile() {
-  const doc = await db.collection('users').doc(currentUid).get();
+  let doc;
+  try {
+    doc = await db.collection('users').doc(currentUid).get();
+  } catch(e) {
+    document.getElementById('loading-screen').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    setError('login-error', 'Erreur de connexion, réessayez.');
+    return;
+  }
   if (!doc.exists) {
     pairCode = Math.floor(1000 + Math.random() * 9000).toString();
     document.getElementById('my-pair-code').textContent = pairCode;
@@ -845,9 +975,29 @@ async function loadUserProfile() {
   }
 	///////
   setSyncStatus(true);
+  setWeekNavColor('var(--teal)');
   renderAll();
   document.getElementById('loading-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
+
+  window.addEventListener('offline', () => {
+    _syncWasError = true;
+    showSyncToast('error', 'Hors ligne — modifications en attente de synchro');
+    const dot = document.getElementById('sync-dot');
+    const label = document.getElementById('sync-label');
+    if (dot) dot.style.background = 'var(--gray)';
+    if (label) label.innerHTML = `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gray);margin-right:4px;vertical-align:middle;"></span>Hors ligne`;
+  });
+  window.addEventListener('online', () => {
+    if (_syncWasError) {
+      _syncWasError = false;
+      showSyncToast('ok', 'Connexion rétablie ✓');
+    }
+    const dot = document.getElementById('sync-dot');
+    const label = document.getElementById('sync-label');
+    if (dot) dot.style.background = 'var(--green)';
+    if (label) label.innerHTML = `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:4px;vertical-align:middle;"></span>Synchro ✓`;
+  });
 }
 
 async function loadPartnerProfile(uid) {
@@ -858,7 +1008,7 @@ async function loadPartnerProfile(uid) {
   if (!partnersData[uid]) partnersData[uid] = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
   partnersData[uid].name = d.name || 'Partenaire';
   partnersData[uid].email = d.email || '';
-  partnersData[uid].avatar = d.avatar || '🌿';
+  partnersData[uid].avatar = d.avatar || '🌱';
   partnersData[uid].activities = d.activities || [...DEFAULT_ACTS];
   partnersData[uid].goals = d.goals || { repas: 14, sport: 3 };
   const earned = d.badges || [];
@@ -869,13 +1019,13 @@ function updatePartnerPill() {
   const avatarEl = document.getElementById('pill-partner-avatar');
   const nameEl = document.getElementById('pill-partner-name');
   if (partnerUids.length === 0) {
-    if (avatarEl) avatarEl.textContent = '🌿';
+    if (avatarEl) avatarEl.textContent = '🌱';
     if (nameEl) nameEl.textContent = 'Partenaires';
   } else if (activePartnerUid && partnersData[activePartnerUid]) {
-    if (avatarEl) avatarEl.textContent = partnersData[activePartnerUid].avatar || '🌿';
+    if (avatarEl) avatarEl.textContent = partnersData[activePartnerUid].avatar || '🌱';
     if (nameEl) nameEl.textContent = partnersData[activePartnerUid].name || 'Partenaire';
   } else {
-    if (avatarEl) avatarEl.textContent = '🌿';
+    if (avatarEl) avatarEl.textContent = '🌱';
     if (nameEl) nameEl.textContent = `${partnerUids.length} partenaire${partnerUids.length > 1 ? 's' : ''}`;
   }
 }
@@ -898,7 +1048,7 @@ function togglePartnerPill(e) {
       background:${isActive ? 'var(--coral-light)' : 'none'};"
       onmouseover="this.style.background='var(--gray-light)'"
       onmouseout="this.style.background='${isActive ? 'var(--coral-light)' : 'none'}'">
-      <span style="font-size:18px;">${p.avatar || '🌿'}</span>
+      <span style="font-size:18px;">${p.avatar || '🌱'}</span>
       <span style="font-weight:600;flex:1;">${p.name || 'Partenaire'}</span>
       ${isActive ? '<span style="font-size:10px;color:var(--coral);">●</span>' : ''}
     </div>`;
@@ -968,12 +1118,38 @@ function subscribeToPartner(uid) {
     if (!partnersData[uid]) partnersData[uid] = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
     partnersData[uid].name = d.name || 'Partenaire';
     partnersData[uid].email = d.email || '';
-    partnersData[uid].avatar = d.avatar || '🌿';
+    partnersData[uid].avatar = d.avatar || '🌱';
     partnersData[uid].activities = d.activities || [...DEFAULT_ACTS];
     partnersData[uid].goals = d.goals || { repas: 14, sport: 3 };
     updatePartnerPill();
     if (viewingPartner && activePartnerUid === uid) renderAll();
   });
+}
+
+let _syncWasError = false;
+let _toastTimer = null;
+
+function showSyncToast(type, msg) {
+  const t = document.getElementById('sync-toast');
+  if (!t) return;
+  if (_toastTimer) { clearTimeout(_toastTimer); _toastTimer = null; }
+  t.className = '';
+  t.innerHTML = msg;
+  // Force reflow pour relancer l'animation si déjà visible
+  void t.offsetWidth;
+  t.classList.add('show', 'toast-' + type);
+  if (type !== 'error') {
+    _toastTimer = setTimeout(() => {
+      t.classList.remove('show');
+    }, type === 'saving' ? 8000 : 2000);
+  }
+}
+
+function hideSyncToast() {
+  const t = document.getElementById('sync-toast');
+  if (!t) return;
+  if (_toastTimer) { clearTimeout(_toastTimer); _toastTimer = null; }
+  t.classList.remove('show');
 }
 
 function setSyncStatus(ok) {
@@ -985,6 +1161,13 @@ function setSyncStatus(ok) {
       background:${ok ? 'var(--green)' : 'var(--gray)'};
       margin-right:4px;vertical-align:middle;"></span>
     ${ok ? 'Synchro ✓' : 'Hors ligne'}`;
+  if (ok && _syncWasError) {
+    _syncWasError = false;
+    showSyncToast('ok', 'Synchronisation rétablie ✓');
+  } else if (!ok) {
+    _syncWasError = true;
+    showSyncToast('error', 'Échec de la sauvegarde — vérifiez votre connexion');
+  }
 }
 
 async function saveEntry() {
@@ -1031,7 +1214,7 @@ function getWeekLabel() {
   const sunday = new Date(monday);
   sunday.setDate(monday.getDate() + 6);
   const fmt = d => d.toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
-  const prefix = weekOffset === 0 ? 'Cette semaine · ' : weekOffset === -1 ? 'Semaine dernière · ' : weekOffset === 1 ? 'Semaine prochaine · ' : '';
+  const prefix = weekOffset === 0 ? 'Cette sem. · ' : weekOffset === -1 ? 'Sem. dernière · ' : weekOffset === 1 ? 'Sem. prochaine · ' : '';
   return `${prefix}${fmt(monday)} – ${fmt(sunday)}`;
 }
 ////////////////////////////////////////////////////////////////////////////////
@@ -1043,6 +1226,15 @@ function getData() {
 }
 
 
+function setWeekNavColor(color) {
+  const lbl = document.getElementById('week-lbl');
+  const prev = document.getElementById('week-nav-prev');
+  const next = document.getElementById('week-nav-next');
+  if (lbl) lbl.style.color = color;
+  if (prev) prev.style.borderColor = color;
+  if (next) next.style.borderColor = color;
+}
+
 function setUser(who, uid) {
   const banner = document.getElementById('readonly-banner');
   if (who === 'me') {
@@ -1051,11 +1243,13 @@ function setUser(who, uid) {
     document.getElementById('pill-me').className = 'user-pill me';
     document.getElementById('pill-partner').className = 'user-pill';
     banner.style.display = 'none';
+    setWeekNavColor('var(--teal)');
   } else {
     viewingPartner = true;
     activePartnerUid = uid || partnerUids[0] || null;
     document.getElementById('pill-me').className = 'user-pill';
     document.getElementById('pill-partner').className = 'user-pill partner';
+    setWeekNavColor('var(--coral)');
     updatePartnerPill();
     if (!activePartnerUid) {
       banner.innerHTML = `🔗 Vous n'avez pas encore ajouté de partenaire. Votre code de jumelage est disponible sur votre <span onclick="openProfilPanel()" style="text-decoration:underline;cursor:pointer;">profil utilisateur</span>.`;
@@ -1089,8 +1283,7 @@ function showTab(name, btn) {
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
   btn.classList.add('active');
-  if (name === 'stats') renderStats();
-  if (name === 'objectifs') renderObjectifs();
+  if (name === 'objectifs') { renderObjectifs(); renderStats(); }
 }
 
 function toggleProfilMenu(e) {
@@ -1124,7 +1317,7 @@ function toggleProfilMenu(e) {
         : partnerUids.map(uid => {
             const p = partnersData[uid] || {};
             return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
-              <span style="font-size:16px;">${p.avatar || '🌿'}</span>
+              <span style="font-size:16px;">${p.avatar || '🌱'}</span>
               <span style="font-size:13px;font-weight:600;">${p.name || 'Partenaire'}</span>
             </div>`;
           }).join('')
@@ -1136,6 +1329,16 @@ function toggleProfilMenu(e) {
         onmouseover="this.style.background='var(--gray-light)'"
         onmouseout="this.style.background='none'">
         ⚙️ Voir mon profil complet
+      </div>
+      <div onclick="openGoalsModal()" style="padding:9px 12px;cursor:pointer;font-size:13px;
+        border-radius:var(--radius-sm);color:var(--text);"
+        onmouseover="this.style.background='var(--gray-light)'"
+        onmouseout="this.style.background='none'">
+        🎯 Définir mes objectifs
+      </div>
+      <div style="padding:9px 12px;font-size:13px;border-radius:var(--radius-sm);
+        color:var(--text-3);cursor:default;">
+        🏅 Ma liste d'activités <span style="font-size:11px;">(coming soon)</span>
       </div>
       <div onclick="doLogout()" style="padding:9px 12px;cursor:pointer;font-size:13px;
         border-radius:var(--radius-sm);color:var(--red);"
@@ -1166,12 +1369,66 @@ function closeProfilPanel(e) {
     document.getElementById('profil-panel').style.display = 'none';
 }
 
+function toggleCollapse(bodyId, chevId) {
+  document.getElementById(bodyId).classList.toggle('open');
+  document.getElementById(chevId).classList.toggle('open');
+}
+
 function changeWeek(d) {
-  weekOffset += d;
+  weekOffset = Math.min(1, weekOffset + d);
   renderAll();
 }
 
+// ---- SWIPE TO CHANGE WEEK ----
+(function() {
+  let tx = 0, ty = 0, locked = false;
+  document.addEventListener('touchstart', e => {
+    tx = e.touches[0].clientX;
+    ty = e.touches[0].clientY;
+    locked = false;
+  }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (locked) return;
+    const dx = e.changedTouches[0].clientX - tx;
+    const dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return;
+    changeWeek(dx < 0 ? 1 : -1);
+  }, { passive: true });
+  document.addEventListener('touchmove', e => {
+    const dx = Math.abs(e.touches[0].clientX - tx);
+    const dy = Math.abs(e.touches[0].clientY - ty);
+    if (dy > dx) locked = true;
+  }, { passive: true });
+})();
+
 // ---- MEALS ----
+let mealLongPressTimer = null, mealLongPressEl = null, mealLongPressHandled = false;
+
+function startMealLongPress(type, day, el) {
+  if (viewingPartner) return;
+  mealLongPressHandled = false;
+  mealLongPressEl = el;
+  el.classList.add('long-pressing');
+  mealLongPressTimer = setTimeout(() => {
+    mealLongPressHandled = true;
+    mealLongPressEl = null;
+    el.classList.remove('long-pressing');
+    const wk = getWeekKey();
+    if (!myData.meals[wk]) myData.meals[wk] = {};
+    if (!myData.meals[wk][day]) myData.meals[wk][day] = {};
+    myData.meals[wk][day][type] = 'none';
+    renderMeals(); renderFoodScores();
+    saveEntry();
+    if (navigator.vibrate) navigator.vibrate([30]);
+  }, 500);
+}
+
+function cancelMealLongPress() {
+  clearTimeout(mealLongPressTimer);
+  mealLongPressTimer = null;
+  if (mealLongPressEl) { mealLongPressEl.classList.remove('long-pressing'); mealLongPressEl = null; }
+}
+
 function getMeal(type, day) {
   const wk = getWeekKey();
   return getData().meals[wk]?.[day]?.[type] || 'none';
@@ -1179,6 +1436,7 @@ function getMeal(type, day) {
 
 function cycleMeal(type, day) {
   if (viewingPartner) return;
+  if (mealLongPressHandled) { mealLongPressHandled = false; return; }
   const wk = getWeekKey();
   if (!myData.meals[wk]) myData.meals[wk] = {};
   if (!myData.meals[wk][day]) myData.meals[wk][day] = {};
@@ -1188,15 +1446,28 @@ myData.meals[wk][day][type] = cur === 'none' ? 'sain' : cur === 'sain' ? 'correc
 }
 
 function renderMeals() {
+  const icons = { none:'·', sain:'✔', correct:'≈', malbouffe:'✖', skip:'—' };
+  const stateOrder = ['none','sain','correct','malbouffe'];
   MEALS.forEach(type => {
     const g = document.getElementById('grid-' + type);
     if (!g) return;
-const icons = { none:'·', sain:'✓', correct:'~', malbouffe:'✗', skip:'—' };
-	      g.innerHTML = DAYS.map((d,i) => `
+    g.innerHTML = DAYS.map((d,i) => {
+      const state = getMeal(type,i);
+      const si = stateOrder.indexOf(state);
+      const dots = [1,2,3].map(n => `<span${si >= n ? ' class="on"' : ''}></span>`).join('');
+      return `
       <div class="day-col">
         <div class="day-lbl">${d}</div>
-        <div class="meal-btn ${getMeal(type,i)}" onclick="cycleMeal('${type}',${i})">${icons[getMeal(type,i)]}</div>
-      </div>`).join('');
+        <div class="meal-btn ${state}"
+          onclick="cycleMeal('${type}',${i})"
+          onmousedown="startMealLongPress('${type}',${i},this)"
+          onmouseup="cancelMealLongPress()"
+          onmouseleave="cancelMealLongPress()"
+          ontouchstart="startMealLongPress('${type}',${i},this)"
+          ontouchend="cancelMealLongPress()"
+          ontouchmove="cancelMealLongPress()">${icons[state]}<div class="meal-cycle-dots">${dots}</div></div>
+      </div>`;
+    }).join('');
   });
 }
 
@@ -1229,28 +1500,28 @@ const { sain, mal, correct } = countMeals(getData(), wk);
       <div class="score-chip-val">${mal}</div>
     </div>`;
 
-	// Couleur dynamique de l'arrière-plan
+  // Empty state
   const total = sain + correct + mal;
-  if (total === 0) {
-    document.getElementById('tab-repas').style.background = 'transparent';
-  } else {
-    const pctSain = sain / total;
-    const pctCorrect = correct / total;
-    const pctMal = mal / total;
+  const emptyState = document.getElementById('meal-empty-state');
+  if (emptyState) emptyState.style.display = (!viewingPartner && total === 0) ? 'block' : 'none';
 
-    // Mélange RGB entre vert (sain), amber (correct) et rouge (malbouffe)
-    const r = Math.round(pctSain * 0x27 + pctCorrect * 0x63 + pctMal * 0x50);
-    const g = Math.round(pctSain * 0x50 + pctCorrect * 0x38 + pctMal * 0x13);
-    const b = Math.round(pctSain * 0x0A + pctCorrect * 0x06 + pctMal * 0x13);
-
-    // Très pâle — on mélange avec le blanc à 55%
-    const blend = 0.15;
-    const rFinal = Math.round(255 + (r - 255) * blend);
-    const gFinal = Math.round(255 + (g - 255) * blend);
-    const bFinal = Math.round(255 + (b - 255) * blend);
-
-    document.getElementById('tab-repas').style.background =
-      `rgb(${rFinal}, ${gFinal}, ${bFinal})`;
+  // Ratio bar (colorblind-safe: color + width + text)
+  document.getElementById('tab-repas').style.background = '';
+  const ratioBar = document.getElementById('meal-ratio-bar');
+  if (ratioBar) {
+    if (total === 0) {
+      ratioBar.style.display = 'none';
+    } else {
+      const pSain = Math.round(sain / total * 100);
+      const pCorrect = Math.round(correct / total * 100);
+      const pMal = 100 - pSain - pCorrect;
+      ratioBar.style.display = 'flex';
+      ratioBar.innerHTML = `
+        ${pSain > 0 ? `<div title="✔ Sain ${pSain}%" style="flex:${pSain};background:var(--green);height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--green-dark);min-width:${pSain > 15 ? 'auto' : '0'};overflow:hidden;">${pSain > 15 ? pSain+'%' : ''}</div>` : ''}
+        ${pCorrect > 0 ? `<div title="≈ Correct ${pCorrect}%" style="flex:${pCorrect};background:var(--amber);height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--amber-dark);overflow:hidden;">${pCorrect > 15 ? pCorrect+'%' : ''}</div>` : ''}
+        ${pMal > 0 ? `<div title="✖ Malbouffe ${pMal}%" style="flex:${pMal};background:var(--red);height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--red-dark);overflow:hidden;">${pMal > 15 ? pMal+'%' : ''}</div>` : ''}
+      `;
+    }
   }
 }
 
@@ -1406,20 +1677,25 @@ function renderStats() {
   const sportDays = countSportDays(data, getWeekKey());
   const ratio = Math.round(getRatio(data) * 100);
 
+  const gaugeColor = ratio >= 70 ? 'var(--green)' : ratio >= 40 ? '#F4A261' : 'var(--red)';
+  const r = 40, stroke = 8, circ = Math.PI * r;
+  const dash = (ratio / 100) * circ;
   document.getElementById('stat-cards').innerHTML = `
-    <div class="stat-card">
-      <div class="stat-card-label">Repas sains (total)</div>
-      <div class="stat-card-val" style="color:var(--green);">${sain}</div>
-      <div class="stat-card-sub">Ratio sain: ${ratio}%</div>
-      <div class="pbar" style="margin-top:6px;"><div class="pbar-fill" style="width:${ratio}%;background:var(--green);"></div></div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-card-label">Jours sport (sem.)</div>
-      <div class="stat-card-val" style="color:var(--teal);">${sportDays}</div>
-      <div class="stat-card-sub">Objectif: ${data.goals.sport}</div>
-      <div class="pbar" style="margin-top:6px;"><div class="pbar-fill" style="width:${Math.min(100,Math.round(sportDays/data.goals.sport*100))}%;background:var(--teal);"></div></div>
+    <div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;padding:16px 0;">
+      <svg width="110" height="70" viewBox="0 0 110 70">
+        <path d="M10,65 A${r},${r} 0 0,1 100,65" fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="${stroke}" stroke-linecap="round"/>
+        <path d="M10,65 A${r},${r} 0 0,1 100,65" fill="none" stroke="${gaugeColor}" stroke-width="${stroke}" stroke-linecap="round"
+          stroke-dasharray="${dash} ${circ}" style="transition:stroke-dasharray .6s cubic-bezier(.4,0,.2,1);"/>
+      </svg>
+      <div style="margin-top:-18px;font-size:26px;font-weight:800;color:${gaugeColor};">${ratio}%</div>
+      <div style="font-size:11px;color:var(--text-2);font-weight:600;margin-top:4px;">Ratio repas sains</div>
+      <div style="font-size:11px;color:var(--text-3);margin-top:2px;">${sain} repas sains au total</div>
     </div>`;
 
+  const partnerLabel = partnerUids.length === 0 ? 'vos proches'
+    : partnerUids.length === 1 ? (partnersData[partnerUids[0]]?.name || 'votre proche')
+    : 'vos proches';
+  document.getElementById('compare-label').textContent = `Comparaison avec ${partnerLabel}`;
   renderCompare();
   renderBadges();
   renderChart();
@@ -1470,11 +1746,34 @@ function renderCompare() {
 }
 
 function renderBadges() {
-  document.getElementById('badge-grid').innerHTML = BADGES.map(b => `
-    <div class="badge-card ${b.earnedMe?'earned':''}">
+  const earned = BADGES.filter(b => b.earnedMe);
+  const locked = BADGES.filter(b => !b.earnedMe);
+  const lockedExpanded = document.getElementById('badge-grid')._lockedOpen || false;
+
+  const earnedHTML = earned.map(b => `
+    <div class="badge-card earned">
       <div class="badge-icon">${b.icon}</div>
       <div class="badge-name">${b.name}</div>
     </div>`).join('');
+
+  const lockedHTML = lockedExpanded ? locked.map(b => `
+    <div class="badge-card">
+      <div class="badge-icon">${b.icon}</div>
+      <div class="badge-name">${b.name}</div>
+    </div>`).join('') : '';
+
+  const lockedToggle = locked.length ? `
+    <div style="grid-column:1/-1;display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 0;user-select:none;" onclick="toggleLockedBadges()">
+      <span style="font-size:11px;color:var(--text-3);font-weight:600;">${lockedExpanded ? '▾' : '▸'} ${locked.length} badge${locked.length>1?'s':''} non débloqué${locked.length>1?'s':''}</span>
+    </div>` : '';
+
+  document.getElementById('badge-grid').innerHTML = earnedHTML + lockedToggle + lockedHTML;
+}
+
+function toggleLockedBadges() {
+  const grid = document.getElementById('badge-grid');
+  grid._lockedOpen = !grid._lockedOpen;
+  renderBadges();
 }
 
 function getWeekKeyByOffset(offset) {
@@ -1712,11 +2011,11 @@ async function chooseAvatar(emoji) {
   await db.collection('users').doc(currentUid).update({ avatar: emoji });
 }
 
-const EMOJIS = ['🌱','🌿','🍀','🌴','🫀','🫁','🌈','💜','🔥','🎸','☕','🍵','🥑','🍉','🦁','🐨','🦝','🐻','🐼','🙀'];
+const EMOJIS = ['🌱','🌱','🍀','🌴','🫀','🫁','🌈','💜','🔥','🎸','☕','🍵','🥑','🍉','🦁','🐨','🦝','🐻','🐼','🙀'];
 let selectedAvatar = null;
 
 function openEditProfil() {
-  const name = document.getElementById('pill-me').textContent;
+  const name = document.getElementById('pill-me-name').textContent;
   document.getElementById('edit-name').value = name;
 	document.getElementById('edit-email').value = auth.currentUser?.email || '—';
   selectedAvatar = myData.avatar || '🌱';
@@ -1832,7 +2131,7 @@ async function renderProfil() {
       return `
         <div style="border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:12px;">
           <div class="partner-linked">
-            <div style="font-size:28px;">${pd.avatar || '🌿'}</div>
+            <div style="font-size:28px;">${pd.avatar || '🌱'}</div>
             <div>
               <div style="font-weight:700;font-size:15px;">${pd.name || 'Partenaire'}</div>
               <div style="font-size:12px;color:var(--text-3);">${pdd.email || ''}</div>
@@ -1934,30 +2233,8 @@ function renderObjectifs() {
   const data = getData();
   const partnerName = viewingPartner && activePartnerUid ? (partnersData[activePartnerUid]?.name || 'Partenaire') : null;
   document.getElementById('goals-label').textContent = partnerName
-    ? `Objectifs hebdomadaires de ${partnerName}`
-    : 'Mes objectifs hebdomadaires';
-  const goalsList = document.getElementById('goals-list');
-  if (viewingPartner) {
-    goalsList.innerHTML = '';
-  } else {
-    goalsList.innerHTML = `
-    <div class="goal-row">
-      <span class="goal-label">🥗 Repas sains / semaine</span>
-      <div class="goal-ctrl">
-        <button onclick="adjustGoal('repas',-1)">−</button>
-        <span class="goal-val">${data.goals.repas}</span>
-        <button onclick="adjustGoal('repas',1)">+</button>
-      </div>
-    </div>
-    <div class="goal-row">
-      <span class="goal-label">🏃 Jours sport / semaine</span>
-      <div class="goal-ctrl">
-        <button onclick="adjustGoal('sport',-1)">−</button>
-        <span class="goal-val">${data.goals.sport}</span>
-        <button onclick="adjustGoal('sport',1)">+</button>
-      </div>
-    </div>`;
-  }
+    ? `Récap de la semaine · ${partnerName}`
+    : 'Récap de la semaine';
 
   const wk = getWeekKey();
   const sainWk = countMeals(data, wk).sain;
@@ -1978,9 +2255,41 @@ function renderObjectifs() {
     </div>`;
 }
 
+function renderGoalsModal() {
+  const data = myData;
+  document.getElementById('goals-modal-list').innerHTML = `
+    <div class="goal-row">
+      <span class="goal-label">🥗 Repas sains / semaine</span>
+      <div class="goal-ctrl">
+        <button onclick="adjustGoal('repas',-1)">−</button>
+        <span class="goal-val">${data.goals.repas}</span>
+        <button onclick="adjustGoal('repas',1)">+</button>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-label">🏃 Jours sport / semaine</span>
+      <div class="goal-ctrl">
+        <button onclick="adjustGoal('sport',-1)">−</button>
+        <span class="goal-val">${data.goals.sport}</span>
+        <button onclick="adjustGoal('sport',1)">+</button>
+      </div>
+    </div>`;
+}
+
+function openGoalsModal() {
+  document.getElementById('profil-dropdown').style.display = 'none';
+  renderGoalsModal();
+  document.getElementById('goals-modal').style.display = 'block';
+}
+
+function closeGoalsModal(e) {
+  if (!e || e.target === document.getElementById('goals-modal'))
+    document.getElementById('goals-modal').style.display = 'none';
+}
+
 function adjustGoal(type, d) {
-  if (viewingPartner) return;
   myData.goals[type] = Math.max(1, myData.goals[type] + d);
+  renderGoalsModal();
   renderObjectifs();
   saveProfile();
 }
@@ -2001,12 +2310,11 @@ function adjustGoal(type, d) {
 // ---- RENDER ALL ----
 function renderAll() {
   const lbl = getWeekLabel();
-  ['week-lbl-r','week-lbl-s'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = lbl;
-  });
+  const el = document.getElementById('week-lbl');
+  if (el) el.textContent = lbl;
   renderMeals(); renderFoodScores();
   renderSportGrid(); renderSportScores();
+  renderObjectifs(); renderStats();
 }
 </script>
 
@@ -2069,6 +2377,8 @@ function renderAll() {
     <div id="edit-profil-error" style="font-size:12px;color:var(--red);text-align:center;margin-top:6px;"></div>
   </div>
 </div>
-	
+
+<div id="sync-toast"></div>
+
 </body>
 </html>
