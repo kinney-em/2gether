@@ -1948,6 +1948,13 @@ const today = new Date();
     d.setDate(today.getDate() - 6 + i);
     return d.toLocaleDateString('fr-FR', {day:'numeric', month:'short'});
   });
+  const semTooltips = currentPeriod === 'sem' ? [0,1,2,3,4].map(i => {
+    const offset = i - 4;
+    const mon = new Date(); mon.setDate(mon.getDate() - ((mon.getDay()+6)%7) + offset*7);
+    const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+    const fmt = d => d.toLocaleDateString('fr-FR', {day:'numeric', month:'short'});
+    return `${fmt(mon)} – ${fmt(sun)}`;
+  }) : null;
   const labels = currentPeriod==='7j' ? last7 :
     currentPeriod==='sem' ? ['S-4','S-3','S-2','S-1','Cette sem.'] :
     currentPeriod==='mois' ? ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'] :
@@ -1990,7 +1997,14 @@ const dataFood = labels.map((_,i) => {
     },
     options: {
       responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false} },
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title: items => {
+        const i = items[0].dataIndex;
+        if (semTooltips) return semTooltips[i];
+        if (currentPeriod === '7j') { const d = new Date(); d.setDate(d.getDate() - 6 + i); return d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'short'}); }
+        if (currentPeriod === 'mois' || currentPeriod === 'an') { const months = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre']; return months[currentPeriod === 'an' ? [0,3,6,9][i] : i]; }
+        if (currentPeriod === 'trim') return ['1er trim.','2e trim.','3e trim.','4e trim.'][i];
+        return items[0].label;
+      }}}},
       scales: {
         x:{ grid:{display:false}, ticks:{font:{size:10}, autoSkip:false, maxRotation:0} },
         y:{ beginAtZero:true, ticks:{stepSize:1,font:{size:10}}, grid:{color:'rgba(128,128,128,0.1)'} }
