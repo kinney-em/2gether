@@ -1632,11 +1632,11 @@ function countTotalSain(data) {
 }
 
 function getRatio(data) {
-  let s=0, m=0;
+  let s=0, c=0, m=0;
   Object.values(data.meals).forEach(wk =>
-    Object.values(wk).forEach(day => Object.values(day).forEach(v => { if(v==='sain')s++; else if(v==='malbouffe')m++; }))
+    Object.values(wk).forEach(day => Object.values(day).forEach(v => { if(v==='sain')s++; else if(v==='correct')c++; else if(v==='malbouffe')m++; }))
   );
-  return (s+m) === 0 ? 0 : s/(s+m);
+  return (s+c+m) === 0 ? 0 : s/(s+c+m);
 }
 
 function hasStreak(data, n) {
@@ -1935,10 +1935,32 @@ function getFoodBarColor(barIdx) {
 	
 // Multiplicateur hebdomadaire selon la période affichée dans le graphique
 function getGoalWeekMultiplier(period) {
-  if (period === '7j') return 1 / 7;   // 1 jour
-  if (period === 'sem') return 1;       // 1 semaine
-  if (period === 'mois') return 30 / 7; // ~1 mois = 30 jours
-  return 90 / 7;                        // trimestre / annuel = 90 jours
+  if (period === '7j') return 1 / 7;
+  if (period === 'sem') return 1;
+  if (period === 'mois') return 30 / 7;
+  if (period === 'trim') return 90 / 7;
+  if (period === 'an') return 360 / 7;
+  return 90 / 7;
+}
+
+function countMealsForYear(data, year) {
+  let total = 0;
+  Object.entries(data.meals).forEach(([wk, days]) => {
+    const y = parseInt(wk.split('-W')[0]);
+    if (y === year)
+      Object.values(days).forEach(meals => Object.values(meals).forEach(s => { if (s === 'sain') total++; }));
+  });
+  return total;
+}
+
+function countSportForYear(data, year) {
+  let total = 0;
+  Object.entries(data.sports).forEach(([wk, days]) => {
+    const y = parseInt(wk.split('-W')[0]);
+    if (y === year)
+      Object.values(days).forEach(acts => { if (acts && acts.length > 0) total++; });
+  });
+  return total;
 }
 
 function renderChart() {
@@ -1948,10 +1970,23 @@ const today = new Date();
     d.setDate(today.getDate() - 6 + i);
     return d.toLocaleDateString('fr-FR', {day:'numeric', month:'short'});
   });
+  const semTooltips = currentPeriod === 'sem' ? [0,1,2,3,4].map(i => {
+    const offset = i - 4;
+    const mon = new Date(); mon.setDate(mon.getDate() - ((mon.getDay()+6)%7) + offset*7);
+    const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+    const fmt = d => d.toLocaleDateString('fr-FR', {day:'numeric', month:'short'});
+    return `${fmt(mon)} – ${fmt(sun)}`;
+  }) : null;
   const labels = currentPeriod==='7j' ? last7 :
     currentPeriod==='sem' ? ['S-4','S-3','S-2','S-1','Cette sem.'] :
     currentPeriod==='mois' ? ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'] :
-    currentPeriod==='trim' ? ['T1','T2','T3','T4'] : ['Jan','Avr','Jul','Oct'];
+    currentPeriod==='trim' ? ['T1','T2','T3','T4'] : (() => {
+      const currentYear = new Date().getFullYear();
+      const years = new Set([currentYear]);
+      Object.keys(getData().meals).forEach(wk => years.add(parseInt(wk.split('-W')[0])));
+      Object.keys(getData().sports).forEach(wk => years.add(parseInt(wk.split('-W')[0])));
+      return [...years].sort().map(String);
+    })();
 
 const dataFood = labels.map((_,i) => {
     if (currentPeriod === '7j') {
@@ -1962,6 +1997,7 @@ const dataFood = labels.map((_,i) => {
     if (currentPeriod === 'sem') return countMeals(getData(), getWeekKeyByOffset(i - 4)).sain;
   if (currentPeriod === 'mois') return countMealsForMonth(getData(), i);
     if (currentPeriod === 'trim') return countMealsForQuarter(getData(), i);
+    if (currentPeriod === 'an') return countMealsForYear(getData(), parseInt(labels[i]));
     return countMealsForQuarter(getData(), i * 3);
   });
   const dataSport = labels.map((_,i) => {
@@ -1969,6 +2005,7 @@ const dataFood = labels.map((_,i) => {
     if (currentPeriod === 'sem') return countSportDays(getData(), getWeekKeyByOffset(i - 4));
     if (currentPeriod === 'mois') return countSportForMonth(getData(), i);
     if (currentPeriod === 'trim') return countSportForQuarter(getData(), i);
+    if (currentPeriod === 'an') return countSportForYear(getData(), parseInt(labels[i]));
     return countSportForQuarter(getData(), i * 3);
   });
  
@@ -1984,13 +2021,20 @@ const dataFood = labels.map((_,i) => {
       datasets: [
        { label:'Repas sains', data:dataFood, backgroundColor:dataFood.map((_,i) => getFoodBarColor(i)), borderColor:'#1D9E75', borderWidth:1.5, borderRadius:4 },		  
         { label:'Jours sport', data:dataSport, backgroundColor:'rgba(99,153,34,0.25)', borderColor:'#639922', borderWidth:1.5, borderRadius:4 },
-        { label:'Objectif repas', data:goalFood, type:'line', borderColor:'#1D9E75', borderDash:[4,4], pointRadius:0, fill:false },
-        { label:'Objectif sport', data:goalSport, type:'line', borderColor:'#639922', borderDash:[4,4], pointRadius:0, fill:false },
+        { label:'Objectif repas', data:goalFood, type:'line', borderColor:'#1D9E75', borderDash:[4,4], pointRadius: labels.length === 1 ? 4 : 0, fill:false },
+        { label:'Objectif sport', data:goalSport, type:'line', borderColor:'#639922', borderDash:[4,4], pointRadius: labels.length === 1 ? 4 : 0, fill:false },
       ]
     },
     options: {
       responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{display:false} },
+      plugins:{ legend:{display:false}, tooltip:{ callbacks:{ title: items => {
+        const i = items[0].dataIndex;
+        if (semTooltips) return semTooltips[i];
+        if (currentPeriod === '7j') { const d = new Date(); d.setDate(d.getDate() - 6 + i); return d.toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'short'}); }
+        if (currentPeriod === 'mois') { const months = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre']; return months[i]; }
+        if (currentPeriod === 'trim') return ['1er trim.','2e trim.','3e trim.','4e trim.'][i];
+        return items[0].label;
+      }}}},
       scales: {
         x:{ grid:{display:false}, ticks:{font:{size:10}, autoSkip:false, maxRotation:0} },
         y:{ beginAtZero:true, ticks:{stepSize:1,font:{size:10}}, grid:{color:'rgba(128,128,128,0.1)'} }
