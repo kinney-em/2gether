@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8"/>
@@ -229,6 +229,7 @@
     font-size: 16px; font-weight: 800;
     transition: all .12s;
     color: var(--text-3);
+    position: relative;
   }
   .meal-btn:active, .sport-btn:active { transform: scale(0.92); }
   /* Colorblind-safe: color + shape + border-width all differ */
@@ -237,6 +238,15 @@
   .meal-btn.malbouffe{ background: var(--red-light);   border: 2.5px solid var(--red);   color: var(--red-dark); }
   .meal-btn.skip     { background: var(--gray-light);  border: 1.5px solid var(--gray);  color: var(--text-3); opacity: .5; }
   .sport-btn.done    { background: var(--teal-light);  border: 2.5px solid var(--teal);  color: var(--teal-dark); }
+  .meal-cycle-dots {
+    position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 3px; pointer-events: none;
+  }
+  .meal-cycle-dots span {
+    width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: 0.2; transition: opacity .15s;
+  }
+  .meal-cycle-dots span.on { opacity: 0.7; }
+  .meal-btn.long-pressing { transform: scale(0.88) !important; opacity: 0.65; transition: transform 0.45s ease, opacity 0.45s ease !important; }
 
   /* --- SPORT MODAL --- */
   .modal-overlay {
@@ -308,6 +318,22 @@
   .badge-card.earned .badge-name { color: var(--amber-dark); font-weight: 700; }
   .badge-card:not(.earned) .badge-icon { filter: grayscale(1); opacity: .35; }
 
+  /* --- COLLAPSIBLE SECTIONS --- */
+  .collapse-header {
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; padding: 10px 14px; margin: 10px 0 0;
+    background: var(--surface); border-radius: var(--radius);
+    box-shadow: var(--shadow); user-select: none;
+  }
+  .collapse-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--text-2);
+  }
+  .collapse-chevron { font-size: 13px; color: var(--text-3); transition: transform .25s; }
+  .collapse-chevron.open { transform: rotate(180deg); }
+  .collapse-body { overflow: hidden; max-height: 0; transition: max-height .35s ease; }
+  .collapse-body.open { max-height: 2000px; }
+
   /* --- COMPARE --- */
   .compare-row {
     display: flex; align-items: center; gap: 8px;
@@ -346,6 +372,39 @@
   }
   .sync-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--green); margin-right: 4px; vertical-align: middle; }
   .sync-dot.off { background: var(--gray); }
+
+  /* --- SYNC TOAST --- */
+  #sync-toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    z-index: 9999; min-width: 220px; max-width: 90vw;
+    padding: 10px 18px; border-radius: 24px;
+    font-size: 13px; font-weight: 600; text-align: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+    transition: transform 0.28s cubic-bezier(.4,0,.2,1), opacity 0.28s;
+    opacity: 0; pointer-events: none;
+  }
+  #sync-toast.show {
+    transform: translateX(-50%) translateY(0); opacity: 1; pointer-events: auto;
+  }
+  #sync-toast.toast-saving {
+    background: var(--bg); color: var(--text-2);
+    border: 1.5px solid var(--gray-light);
+  }
+  #sync-toast.toast-error {
+    background: var(--red-light); color: var(--red);
+    border: 1.5px solid var(--red);
+  }
+  #sync-toast.toast-ok {
+    background: #e6f9f0; color: #1a7a47;
+    border: 1.5px solid var(--green);
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .toast-spinner {
+    display: inline-block; width: 12px; height: 12px;
+    border: 2px solid var(--gray-light); border-top-color: var(--text-3);
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+    vertical-align: middle; margin-right: 6px;
+  }
 
   /* CONFIG NOTICE */
   .config-notice {
@@ -565,7 +624,7 @@
       <div class="week-grid" id="grid-din"></div>
       <div class="sec-label">Snacks</div>
       <div class="week-grid" id="grid-snack"></div>
-      <p style="font-size:11px;color:var(--text-3);margin-top:8px;">Tapez pour cycler : vide → <b>✔</b> sain → <b>≈</b> correct → <b>✖</b> malbouffe → — ignoré</p>
+      <p style="font-size:11px;color:var(--text-3);margin-top:8px;">Tapez pour cycler : vide → <b>✔</b> sain → <b>≈</b> correct → <b>✖</b> malbouffe · Appui long pour remettre à zéro</p>
       <div id="meal-ratio-bar" style="display:none;height:20px;border-radius:99px;overflow:hidden;margin-top:10px;border:1px solid var(--border);"></div>
       <div id="meal-empty-state" style="display:none;text-align:center;padding:20px 16px 8px;">
         <div style="font-size:32px;margin-bottom:8px;">🥗</div>
@@ -629,21 +688,38 @@
     <div id="tab-objectifs" class="screen">
       <div class="sec-label" id="goals-label">Récap de la semaine</div>
       <div id="goal-progress"></div>
-      <hr style="border:none;border-top:1px solid var(--surface);margin:16px 0;">
-      <div class="sec-label">Récap Global</div>
-      <div class="period-bar">
-        <button class="ptab active" onclick="setPeriod('7j',this)">7 jours</button>
-        <button class="ptab" onclick="setPeriod('sem',this)">Semaine</button>
-        <button class="ptab" onclick="setPeriod('mois',this)">Mois</button>
-        <button class="ptab" onclick="setPeriod('trim',this)">Trimestre</button>
-        <button class="ptab" onclick="setPeriod('an',this)">Année</button>
+
+      <div class="collapse-header" onclick="toggleCollapse('stats-body','stats-chev')">
+        <span class="collapse-title">Récap Global</span>
+        <span class="collapse-chevron open" id="stats-chev">▾</span>
       </div>
-      <div class="stat-cards" id="stat-cards"></div>
-      <div class="chart-wrap"><canvas id="statsChart"></canvas></div>
-      <div class="sec-label" id="compare-label">Comparaison avec vos proches</div>
-      <div id="compare-section"></div>
-      <div class="sec-label">Badges</div>
-      <div class="badge-grid" id="badge-grid"></div>
+      <div class="collapse-body open" id="stats-body">
+        <div class="period-bar" style="margin-top:10px;">
+          <button class="ptab active" onclick="setPeriod('7j',this)">7 jours</button>
+          <button class="ptab" onclick="setPeriod('sem',this)">Semaine</button>
+          <button class="ptab" onclick="setPeriod('mois',this)">Mois</button>
+          <button class="ptab" onclick="setPeriod('trim',this)">Trimestre</button>
+          <button class="ptab" onclick="setPeriod('an',this)">Année</button>
+        </div>
+        <div class="stat-cards" id="stat-cards"></div>
+        <div class="chart-wrap"><canvas id="statsChart"></canvas></div>
+      </div>
+
+      <div class="collapse-header" onclick="toggleCollapse('compare-body','compare-chev')">
+        <span class="collapse-title" id="compare-label">Comparaison avec vos proches</span>
+        <span class="collapse-chevron open" id="compare-chev">▾</span>
+      </div>
+      <div class="collapse-body open" id="compare-body">
+        <div id="compare-section" style="margin-top:6px;"></div>
+      </div>
+
+      <div class="collapse-header" onclick="toggleCollapse('badges-body','badges-chev')">
+        <span class="collapse-title">Badges</span>
+        <span class="collapse-chevron" id="badges-chev">▾</span>
+      </div>
+      <div class="collapse-body" id="badges-body">
+        <div class="badge-grid" id="badge-grid" style="margin-top:10px;"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -869,6 +945,25 @@ async function loadUserProfile() {
   renderAll();
   document.getElementById('loading-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
+
+  window.addEventListener('offline', () => {
+    _syncWasError = true;
+    showSyncToast('error', 'Hors ligne — modifications en attente de synchro');
+    const dot = document.getElementById('sync-dot');
+    const label = document.getElementById('sync-label');
+    if (dot) dot.style.background = 'var(--gray)';
+    if (label) label.innerHTML = `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gray);margin-right:4px;vertical-align:middle;"></span>Hors ligne`;
+  });
+  window.addEventListener('online', () => {
+    if (_syncWasError) {
+      _syncWasError = false;
+      showSyncToast('ok', 'Connexion rétablie ✓');
+    }
+    const dot = document.getElementById('sync-dot');
+    const label = document.getElementById('sync-label');
+    if (dot) dot.style.background = 'var(--green)';
+    if (label) label.innerHTML = `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:4px;vertical-align:middle;"></span>Synchro ✓`;
+  });
 }
 
 async function loadPartnerProfile(uid) {
@@ -997,6 +1092,32 @@ function subscribeToPartner(uid) {
   });
 }
 
+let _syncWasError = false;
+let _toastTimer = null;
+
+function showSyncToast(type, msg) {
+  const t = document.getElementById('sync-toast');
+  if (!t) return;
+  if (_toastTimer) { clearTimeout(_toastTimer); _toastTimer = null; }
+  t.className = '';
+  t.innerHTML = msg;
+  // Force reflow pour relancer l'animation si déjà visible
+  void t.offsetWidth;
+  t.classList.add('show', 'toast-' + type);
+  if (type !== 'error') {
+    _toastTimer = setTimeout(() => {
+      t.classList.remove('show');
+    }, type === 'saving' ? 8000 : 2000);
+  }
+}
+
+function hideSyncToast() {
+  const t = document.getElementById('sync-toast');
+  if (!t) return;
+  if (_toastTimer) { clearTimeout(_toastTimer); _toastTimer = null; }
+  t.classList.remove('show');
+}
+
 function setSyncStatus(ok) {
   const dot = document.getElementById('sync-dot');
   const label = document.getElementById('sync-label');
@@ -1006,6 +1127,13 @@ function setSyncStatus(ok) {
       background:${ok ? 'var(--green)' : 'var(--gray)'};
       margin-right:4px;vertical-align:middle;"></span>
     ${ok ? 'Synchro ✓' : 'Hors ligne'}`;
+  if (ok && _syncWasError) {
+    _syncWasError = false;
+    showSyncToast('ok', 'Synchronisation rétablie ✓');
+  } else if (!ok) {
+    _syncWasError = true;
+    showSyncToast('error', 'Échec de la sauvegarde — vérifiez votre connexion');
+  }
 }
 
 async function saveEntry() {
@@ -1196,6 +1324,11 @@ function closeProfilPanel(e) {
     document.getElementById('profil-panel').style.display = 'none';
 }
 
+function toggleCollapse(bodyId, chevId) {
+  document.getElementById(bodyId).classList.toggle('open');
+  document.getElementById(chevId).classList.toggle('open');
+}
+
 function changeWeek(d) {
   weekOffset = Math.min(1, weekOffset + d);
   renderAll();
@@ -1204,19 +1337,19 @@ function changeWeek(d) {
 // ---- SWIPE TO CHANGE WEEK ----
 (function() {
   let tx = 0, ty = 0, locked = false;
-  document.getElementById('app').addEventListener('touchstart', e => {
+  document.addEventListener('touchstart', e => {
     tx = e.touches[0].clientX;
     ty = e.touches[0].clientY;
     locked = false;
   }, { passive: true });
-  document.getElementById('app').addEventListener('touchend', e => {
+  document.addEventListener('touchend', e => {
     if (locked) return;
     const dx = e.changedTouches[0].clientX - tx;
     const dy = e.changedTouches[0].clientY - ty;
     if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return;
     changeWeek(dx < 0 ? 1 : -1);
   }, { passive: true });
-  document.getElementById('app').addEventListener('touchmove', e => {
+  document.addEventListener('touchmove', e => {
     const dx = Math.abs(e.touches[0].clientX - tx);
     const dy = Math.abs(e.touches[0].clientY - ty);
     if (dy > dx) locked = true;
@@ -1224,6 +1357,33 @@ function changeWeek(d) {
 })();
 
 // ---- MEALS ----
+let mealLongPressTimer = null, mealLongPressEl = null, mealLongPressHandled = false;
+
+function startMealLongPress(type, day, el) {
+  if (viewingPartner) return;
+  mealLongPressHandled = false;
+  mealLongPressEl = el;
+  el.classList.add('long-pressing');
+  mealLongPressTimer = setTimeout(() => {
+    mealLongPressHandled = true;
+    mealLongPressEl = null;
+    el.classList.remove('long-pressing');
+    const wk = getWeekKey();
+    if (!myData.meals[wk]) myData.meals[wk] = {};
+    if (!myData.meals[wk][day]) myData.meals[wk][day] = {};
+    myData.meals[wk][day][type] = 'none';
+    renderMeals(); renderFoodScores();
+    saveEntry();
+    if (navigator.vibrate) navigator.vibrate([30]);
+  }, 500);
+}
+
+function cancelMealLongPress() {
+  clearTimeout(mealLongPressTimer);
+  mealLongPressTimer = null;
+  if (mealLongPressEl) { mealLongPressEl.classList.remove('long-pressing'); mealLongPressEl = null; }
+}
+
 function getMeal(type, day) {
   const wk = getWeekKey();
   return getData().meals[wk]?.[day]?.[type] || 'none';
@@ -1231,6 +1391,7 @@ function getMeal(type, day) {
 
 function cycleMeal(type, day) {
   if (viewingPartner) return;
+  if (mealLongPressHandled) { mealLongPressHandled = false; return; }
   const wk = getWeekKey();
   if (!myData.meals[wk]) myData.meals[wk] = {};
   if (!myData.meals[wk][day]) myData.meals[wk][day] = {};
@@ -1240,15 +1401,28 @@ myData.meals[wk][day][type] = cur === 'none' ? 'sain' : cur === 'sain' ? 'correc
 }
 
 function renderMeals() {
+  const icons = { none:'·', sain:'✔', correct:'≈', malbouffe:'✖', skip:'—' };
+  const stateOrder = ['none','sain','correct','malbouffe'];
   MEALS.forEach(type => {
     const g = document.getElementById('grid-' + type);
     if (!g) return;
-const icons = { none:'·', sain:'✔', correct:'≈', malbouffe:'✖', skip:'—' };
-	      g.innerHTML = DAYS.map((d,i) => `
+    g.innerHTML = DAYS.map((d,i) => {
+      const state = getMeal(type,i);
+      const si = stateOrder.indexOf(state);
+      const dots = [1,2,3].map(n => `<span${si >= n ? ' class="on"' : ''}></span>`).join('');
+      return `
       <div class="day-col">
         <div class="day-lbl">${d}</div>
-        <div class="meal-btn ${getMeal(type,i)}" onclick="cycleMeal('${type}',${i})">${icons[getMeal(type,i)]}</div>
-      </div>`).join('');
+        <div class="meal-btn ${state}"
+          onclick="cycleMeal('${type}',${i})"
+          onmousedown="startMealLongPress('${type}',${i},this)"
+          onmouseup="cancelMealLongPress()"
+          onmouseleave="cancelMealLongPress()"
+          ontouchstart="startMealLongPress('${type}',${i},this)"
+          ontouchend="cancelMealLongPress()"
+          ontouchmove="cancelMealLongPress()">${icons[state]}<div class="meal-cycle-dots">${dots}</div></div>
+      </div>`;
+    }).join('');
   });
 }
 
@@ -2156,6 +2330,8 @@ function renderAll() {
     <div id="edit-profil-error" style="font-size:12px;color:var(--red);text-align:center;margin-top:6px;"></div>
   </div>
 </div>
-	
+
+<div id="sync-toast"></div>
+
 </body>
 </html>
