@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8"/>
@@ -229,6 +229,7 @@
     font-size: 16px; font-weight: 800;
     transition: all .12s;
     color: var(--text-3);
+    position: relative;
   }
   .meal-btn:active, .sport-btn:active { transform: scale(0.92); }
   /* Colorblind-safe: color + shape + border-width all differ */
@@ -237,6 +238,15 @@
   .meal-btn.malbouffe{ background: var(--red-light);   border: 2.5px solid var(--red);   color: var(--red-dark); }
   .meal-btn.skip     { background: var(--gray-light);  border: 1.5px solid var(--gray);  color: var(--text-3); opacity: .5; }
   .sport-btn.done    { background: var(--teal-light);  border: 2.5px solid var(--teal);  color: var(--teal-dark); }
+  .meal-cycle-dots {
+    position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 3px; pointer-events: none;
+  }
+  .meal-cycle-dots span {
+    width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: 0.2; transition: opacity .15s;
+  }
+  .meal-cycle-dots span.on { opacity: 0.7; }
+  .meal-btn.long-pressing { transform: scale(0.88) !important; opacity: 0.65; transition: transform 0.45s ease, opacity 0.45s ease !important; }
 
   /* --- SPORT MODAL --- */
   .modal-overlay {
@@ -1309,6 +1319,33 @@ function changeWeek(d) {
 })();
 
 // ---- MEALS ----
+let mealLongPressTimer = null, mealLongPressEl = null, mealLongPressHandled = false;
+
+function startMealLongPress(type, day, el) {
+  if (viewingPartner) return;
+  mealLongPressHandled = false;
+  mealLongPressEl = el;
+  el.classList.add('long-pressing');
+  mealLongPressTimer = setTimeout(() => {
+    mealLongPressHandled = true;
+    mealLongPressEl = null;
+    el.classList.remove('long-pressing');
+    const wk = getWeekKey();
+    if (!myData.meals[wk]) myData.meals[wk] = {};
+    if (!myData.meals[wk][day]) myData.meals[wk][day] = {};
+    myData.meals[wk][day][type] = 'none';
+    renderMeals(); renderFoodScores();
+    saveEntry();
+    if (navigator.vibrate) navigator.vibrate([30]);
+  }, 500);
+}
+
+function cancelMealLongPress() {
+  clearTimeout(mealLongPressTimer);
+  mealLongPressTimer = null;
+  if (mealLongPressEl) { mealLongPressEl.classList.remove('long-pressing'); mealLongPressEl = null; }
+}
+
 function getMeal(type, day) {
   const wk = getWeekKey();
   return getData().meals[wk]?.[day]?.[type] || 'none';
@@ -1316,6 +1353,7 @@ function getMeal(type, day) {
 
 function cycleMeal(type, day) {
   if (viewingPartner) return;
+  if (mealLongPressHandled) { mealLongPressHandled = false; return; }
   const wk = getWeekKey();
   if (!myData.meals[wk]) myData.meals[wk] = {};
   if (!myData.meals[wk][day]) myData.meals[wk][day] = {};
@@ -1325,15 +1363,28 @@ myData.meals[wk][day][type] = cur === 'none' ? 'sain' : cur === 'sain' ? 'correc
 }
 
 function renderMeals() {
+  const icons = { none:'·', sain:'✔', correct:'≈', malbouffe:'✖', skip:'—' };
+  const stateOrder = ['none','sain','correct','malbouffe'];
   MEALS.forEach(type => {
     const g = document.getElementById('grid-' + type);
     if (!g) return;
-const icons = { none:'·', sain:'✔', correct:'≈', malbouffe:'✖', skip:'—' };
-	      g.innerHTML = DAYS.map((d,i) => `
+    g.innerHTML = DAYS.map((d,i) => {
+      const state = getMeal(type,i);
+      const si = stateOrder.indexOf(state);
+      const dots = [1,2,3].map(n => `<span${si >= n ? ' class="on"' : ''}></span>`).join('');
+      return `
       <div class="day-col">
         <div class="day-lbl">${d}</div>
-        <div class="meal-btn ${getMeal(type,i)}" onclick="cycleMeal('${type}',${i})">${icons[getMeal(type,i)]}</div>
-      </div>`).join('');
+        <div class="meal-btn ${state}"
+          onclick="cycleMeal('${type}',${i})"
+          onmousedown="startMealLongPress('${type}',${i},this)"
+          onmouseup="cancelMealLongPress()"
+          onmouseleave="cancelMealLongPress()"
+          ontouchstart="startMealLongPress('${type}',${i},this)"
+          ontouchend="cancelMealLongPress()"
+          ontouchmove="cancelMealLongPress()">${icons[state]}<div class="meal-cycle-dots">${dots}</div></div>
+      </div>`;
+    }).join('');
   });
 }
 
