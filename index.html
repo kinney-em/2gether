@@ -710,6 +710,7 @@
         <span class="collapse-chevron open" id="stats-chev">▾</span>
       </div>
       <div class="collapse-body open" id="stats-body">
+        <div id="ratio-gauge" style="margin-top:10px;"></div>
         <div class="period-bar" style="margin-top:10px;">
           <button class="ptab active" onclick="setPeriod('7j',this)">7 jours</button>
           <button class="ptab" onclick="setPeriod('sem',this)">Semaine</button>
@@ -1680,15 +1681,16 @@ function renderStats() {
   const gaugeColor = ratio >= 70 ? 'var(--green)' : ratio >= 40 ? '#F4A261' : 'var(--red)';
   const r = 40, stroke = 8, circ = Math.PI * r;
   const dash = (ratio / 100) * circ;
-  document.getElementById('stat-cards').innerHTML = `
-    <div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;padding:16px 0;">
+  document.getElementById('stat-cards').innerHTML = '';
+  document.getElementById('ratio-gauge').innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;padding:12px 0;background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);">
       <svg width="110" height="70" viewBox="0 0 110 70">
         <path d="M10,65 A${r},${r} 0 0,1 100,65" fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="${stroke}" stroke-linecap="round"/>
         <path d="M10,65 A${r},${r} 0 0,1 100,65" fill="none" stroke="${gaugeColor}" stroke-width="${stroke}" stroke-linecap="round"
           stroke-dasharray="${dash} ${circ}" style="transition:stroke-dasharray .6s cubic-bezier(.4,0,.2,1);"/>
       </svg>
       <div style="margin-top:-18px;font-size:26px;font-weight:800;color:${gaugeColor};">${ratio}%</div>
-      <div style="font-size:11px;color:var(--text-2);font-weight:600;margin-top:4px;">Ratio repas sains</div>
+      <div style="font-size:11px;color:var(--text-2);font-weight:600;margin-top:4px;">Ratio repas sains (tous temps)</div>
       <div style="font-size:11px;color:var(--text-3);margin-top:2px;">${sain} repas sains au total</div>
     </div>`;
 
