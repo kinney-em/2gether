@@ -481,6 +481,21 @@
   <div class="login-title">Habitudes ensemble</div>
   <div class="login-sub">Suivez vos objectifs à deux</div>
 
+  <div id="login-pitch" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:340px;margin-bottom:4px;">
+    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);">
+      <span style="font-size:22px;">🥗</span>
+      <span style="font-size:13px;color:var(--text-2);">Notez vos repas et votre sport chaque jour</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);">
+      <span style="font-size:22px;">📊</span>
+      <span style="font-size:13px;color:var(--text-2);">Visualisez vos tendances sur la semaine, le mois…</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);">
+      <span style="font-size:22px;">🔗</span>
+      <span style="font-size:13px;color:var(--text-2);">Jumelez-vous avec un proche pour vous motiver ensemble</span>
+    </div>
+  </div>
+
   <div class="login-card" id="card-login">
     <h2>Se connecter</h2>
     <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="votre@email.com"/></div>
@@ -517,13 +532,14 @@
 
   <div class="login-card" id="card-pair" style="display:none;">
     <h2>🔗 Lier avec un proche</h2>
-    <p style="font-size:13px;color:var(--text-2);margin-bottom:8px;">Partagez ce code avec votre proche pour que vos données soient liées :</p>
+    <p style="font-size:13px;color:var(--text-2);margin-bottom:12px;">Une fois jumelés, vous pouvez comparer vos habitudes et vous motiver ensemble. Chacun garde ses propres données — le jumelage partage uniquement les scores.</p>
+    <p style="font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Votre code</p>
     <div class="pair-code-display" id="my-pair-code">——</div>
-    <div class="pair-hint">Votre proche doit entrer ce code dans son application</div>
-    <div class="login-sep">— ou entrez le code de votre proche —</div>
-    <div class="field"><label>Code de jumelage</label><input type="text" id="pair-code-input" placeholder="ex: 4729" maxlength="6" style="text-align:center;letter-spacing:4px;font-size:18px;"/></div>
+    <div class="pair-hint">Transmettez ce code à votre proche (SMS, oral…)</div>
+    <div class="login-sep">— votre proche a déjà un code ? —</div>
+    <div class="field"><label>Entrez son code</label><input type="text" id="pair-code-input" placeholder="ex: 4729" maxlength="6" style="text-align:center;letter-spacing:4px;font-size:18px;"/></div>
     <button class="btn btn-primary" onclick="doPair()">Rejoindre</button>
-    <button class="btn btn-secondary" onclick="skipPair()">Plus tard</button>
+    <button class="btn btn-secondary" onclick="skipPair()">Passer cette étape</button>
     <div id="pair-error"></div>
   </div>
 </div>
@@ -596,9 +612,9 @@
     </div>
     <!-- Row 3: week nav slim -->
     <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
-      <button onclick="changeWeek(-1)" class="week-nav-btn">‹</button>
+      <button onclick="changeWeek(-1)" class="week-nav-btn" id="week-nav-prev">‹</button>
       <span id="week-lbl" style="font-size:11px;font-weight:700;color:var(--text-2);white-space:nowrap;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:200px;">Cette semaine</span>
-      <button onclick="changeWeek(1)" class="week-nav-btn">›</button>
+      <button onclick="changeWeek(1)" class="week-nav-btn" id="week-nav-next">›</button>
     </div>
   </div>
 
@@ -786,14 +802,19 @@ let activePartnerUid = null;
 let unsubscribePartners = {};
 
 // ---- AUTH ----
+let _registering = false; // flag: don't auto-load profile during registration flow
+
 auth.onAuthStateChanged(user => {
   if (user) {
     currentUid = user.uid;
+    if (_registering) return; // doRegister handles the UI itself
+    if (!user.emailVerified) return; // doLogin handles the unverified case
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('loading-screen').style.display = 'flex';
     loadUserProfile();
   } else {
     currentUid = null;
+    document.getElementById('loading-screen').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
   }
@@ -803,6 +824,8 @@ function showCard(id) {
   ['login','register','pair','reset'].forEach(c => {
     document.getElementById('card-'+c).style.display = c===id ? 'flex' : 'none';
   });
+  const pitch = document.getElementById('login-pitch');
+  if (pitch) pitch.style.display = id === 'login' ? 'flex' : 'none';
 }
 
 function setError(id, msg) { document.getElementById(id).textContent = msg; }
@@ -836,6 +859,7 @@ async function doRegister() {
   const pwd = document.getElementById('reg-pwd').value;
   if (!name) { setError('reg-error','Entrez votre prénom'); return; }
   try {
+    _registering = true;
     const cred = await auth.createUserWithEmailAndPassword(email, pwd);
     const code = Math.floor(1000 + Math.random() * 9000).toString();
     await db.collection('users').doc(cred.user.uid).set({
@@ -843,11 +867,12 @@ async function doRegister() {
       activities: DEFAULT_ACTS,
       goals: { repas: 14, sport: 3 }
     });
-    document.getElementById('pill-me').textContent = name;
     document.getElementById('my-pair-code').textContent = code;
     await cred.user.sendEmailVerification();
-	  showCard('pair');
+    _registering = false;
+    showCard('pair');
   } catch(e) {
+    _registering = false;
     setError('reg-error', e.message);
   }
 }
@@ -906,7 +931,15 @@ function skipPair() {
 	
 // ---- DATA LOAD ----
 async function loadUserProfile() {
-  const doc = await db.collection('users').doc(currentUid).get();
+  let doc;
+  try {
+    doc = await db.collection('users').doc(currentUid).get();
+  } catch(e) {
+    document.getElementById('loading-screen').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    setError('login-error', 'Erreur de connexion, réessayez.');
+    return;
+  }
   if (!doc.exists) {
     pairCode = Math.floor(1000 + Math.random() * 9000).toString();
     document.getElementById('my-pair-code').textContent = pairCode;
@@ -942,6 +975,7 @@ async function loadUserProfile() {
   }
 	///////
   setSyncStatus(true);
+  setWeekNavColor('var(--teal)');
   renderAll();
   document.getElementById('loading-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
@@ -1192,6 +1226,15 @@ function getData() {
 }
 
 
+function setWeekNavColor(color) {
+  const lbl = document.getElementById('week-lbl');
+  const prev = document.getElementById('week-nav-prev');
+  const next = document.getElementById('week-nav-next');
+  if (lbl) lbl.style.color = color;
+  if (prev) prev.style.borderColor = color;
+  if (next) next.style.borderColor = color;
+}
+
 function setUser(who, uid) {
   const banner = document.getElementById('readonly-banner');
   if (who === 'me') {
@@ -1200,11 +1243,13 @@ function setUser(who, uid) {
     document.getElementById('pill-me').className = 'user-pill me';
     document.getElementById('pill-partner').className = 'user-pill';
     banner.style.display = 'none';
+    setWeekNavColor('var(--teal)');
   } else {
     viewingPartner = true;
     activePartnerUid = uid || partnerUids[0] || null;
     document.getElementById('pill-me').className = 'user-pill';
     document.getElementById('pill-partner').className = 'user-pill partner';
+    setWeekNavColor('var(--coral)');
     updatePartnerPill();
     if (!activePartnerUid) {
       banner.innerHTML = `🔗 Vous n'avez pas encore ajouté de partenaire. Votre code de jumelage est disponible sur votre <span onclick="openProfilPanel()" style="text-decoration:underline;cursor:pointer;">profil utilisateur</span>.`;
@@ -1647,8 +1692,10 @@ function renderStats() {
       <div style="font-size:11px;color:var(--text-3);margin-top:2px;">${sain} repas sains au total</div>
     </div>`;
 
-  const partnerName = activePartnerUid ? (partnersData[activePartnerUid]?.name || 'votre proche') : 'votre proche';
-  document.getElementById('compare-label').textContent = `Comparaison avec ${partnerName}`;
+  const partnerLabel = partnerUids.length === 0 ? 'vos proches'
+    : partnerUids.length === 1 ? (partnersData[partnerUids[0]]?.name || 'votre proche')
+    : 'vos proches';
+  document.getElementById('compare-label').textContent = `Comparaison avec ${partnerLabel}`;
   renderCompare();
   renderBadges();
   renderChart();
@@ -1968,7 +2015,7 @@ const EMOJIS = ['🌱','🌱','🍀','🌴','🫀','🫁','🌈','💜','🔥','
 let selectedAvatar = null;
 
 function openEditProfil() {
-  const name = document.getElementById('pill-me').textContent;
+  const name = document.getElementById('pill-me-name').textContent;
   document.getElementById('edit-name').value = name;
 	document.getElementById('edit-email').value = auth.currentUser?.email || '—';
   selectedAvatar = myData.avatar || '🌱';
