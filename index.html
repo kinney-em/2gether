@@ -1939,7 +1939,7 @@ function getGoalWeekMultiplier(period) {
   if (period === 'sem') return 1;
   if (period === 'mois') return 30 / 7;
   if (period === 'trim') return 90 / 7;
-  if (period === 'an') return 365 / 7;
+  if (period === 'an') return 360 / 7;
   return 90 / 7;
 }
 
@@ -2021,8 +2021,8 @@ const dataFood = labels.map((_,i) => {
       datasets: [
        { label:'Repas sains', data:dataFood, backgroundColor:dataFood.map((_,i) => getFoodBarColor(i)), borderColor:'#1D9E75', borderWidth:1.5, borderRadius:4 },		  
         { label:'Jours sport', data:dataSport, backgroundColor:'rgba(99,153,34,0.25)', borderColor:'#639922', borderWidth:1.5, borderRadius:4 },
-        { label:'Objectif repas', data:goalFood, type:'line', borderColor:'#1D9E75', borderDash:[4,4], pointRadius:0, fill:false },
-        { label:'Objectif sport', data:goalSport, type:'line', borderColor:'#639922', borderDash:[4,4], pointRadius:0, fill:false },
+        { label:'Objectif repas', data:goalFood, type:'line', borderColor:'#1D9E75', borderDash:[4,4], pointRadius: labels.length === 1 ? 4 : 0, fill:false },
+        { label:'Objectif sport', data:goalSport, type:'line', borderColor:'#639922', borderDash:[4,4], pointRadius: labels.length === 1 ? 4 : 0, fill:false },
       ]
     },
     options: {
