@@ -802,14 +802,19 @@ let activePartnerUid = null;
 let unsubscribePartners = {};
 
 // ---- AUTH ----
+let _registering = false; // flag: don't auto-load profile during registration flow
+
 auth.onAuthStateChanged(user => {
   if (user) {
     currentUid = user.uid;
+    if (_registering) return; // doRegister handles the UI itself
+    if (!user.emailVerified) return; // doLogin handles the unverified case
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('loading-screen').style.display = 'flex';
     loadUserProfile();
   } else {
     currentUid = null;
+    document.getElementById('loading-screen').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
   }
@@ -854,6 +859,7 @@ async function doRegister() {
   const pwd = document.getElementById('reg-pwd').value;
   if (!name) { setError('reg-error','Entrez votre prénom'); return; }
   try {
+    _registering = true;
     const cred = await auth.createUserWithEmailAndPassword(email, pwd);
     const code = Math.floor(1000 + Math.random() * 9000).toString();
     await db.collection('users').doc(cred.user.uid).set({
@@ -861,11 +867,12 @@ async function doRegister() {
       activities: DEFAULT_ACTS,
       goals: { repas: 14, sport: 3 }
     });
-    document.getElementById('pill-me').textContent = name;
     document.getElementById('my-pair-code').textContent = code;
     await cred.user.sendEmailVerification();
-	  showCard('pair');
+    _registering = false;
+    showCard('pair');
   } catch(e) {
+    _registering = false;
     setError('reg-error', e.message);
   }
 }
@@ -924,7 +931,15 @@ function skipPair() {
 	
 // ---- DATA LOAD ----
 async function loadUserProfile() {
-  const doc = await db.collection('users').doc(currentUid).get();
+  let doc;
+  try {
+    doc = await db.collection('users').doc(currentUid).get();
+  } catch(e) {
+    document.getElementById('loading-screen').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'flex';
+    setError('login-error', 'Erreur de connexion, réessayez.');
+    return;
+  }
   if (!doc.exists) {
     pairCode = Math.floor(1000 + Math.random() * 9000).toString();
     document.getElementById('my-pair-code').textContent = pairCode;
@@ -1665,8 +1680,10 @@ function renderStats() {
       <div style="font-size:11px;color:var(--text-3);margin-top:2px;">${sain} repas sains au total</div>
     </div>`;
 
-  const partnerName = activePartnerUid ? (partnersData[activePartnerUid]?.name || 'votre proche') : 'votre proche';
-  document.getElementById('compare-label').textContent = `Comparaison avec ${partnerName}`;
+  const partnerLabel = partnerUids.length === 0 ? 'vos proches'
+    : partnerUids.length === 1 ? (partnersData[partnerUids[0]]?.name || 'votre proche')
+    : 'vos proches';
+  document.getElementById('compare-label').textContent = `Comparaison avec ${partnerLabel}`;
   renderCompare();
   renderBadges();
   renderChart();
