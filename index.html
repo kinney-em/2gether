@@ -318,6 +318,22 @@
   .badge-card.earned .badge-name { color: var(--amber-dark); font-weight: 700; }
   .badge-card:not(.earned) .badge-icon { filter: grayscale(1); opacity: .35; }
 
+  /* --- COLLAPSIBLE SECTIONS --- */
+  .collapse-header {
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; padding: 10px 14px; margin: 10px 0 0;
+    background: var(--surface); border-radius: var(--radius);
+    box-shadow: var(--shadow); user-select: none;
+  }
+  .collapse-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--text-2);
+  }
+  .collapse-chevron { font-size: 13px; color: var(--text-3); transition: transform .25s; }
+  .collapse-chevron.open { transform: rotate(180deg); }
+  .collapse-body { overflow: hidden; max-height: 0; transition: max-height .35s ease; }
+  .collapse-body.open { max-height: 2000px; }
+
   /* --- COMPARE --- */
   .compare-row {
     display: flex; align-items: center; gap: 8px;
@@ -672,21 +688,38 @@
     <div id="tab-objectifs" class="screen">
       <div class="sec-label" id="goals-label">Récap de la semaine</div>
       <div id="goal-progress"></div>
-      <hr style="border:none;border-top:1px solid var(--surface);margin:16px 0;">
-      <div class="sec-label">Récap Global</div>
-      <div class="period-bar">
-        <button class="ptab active" onclick="setPeriod('7j',this)">7 jours</button>
-        <button class="ptab" onclick="setPeriod('sem',this)">Semaine</button>
-        <button class="ptab" onclick="setPeriod('mois',this)">Mois</button>
-        <button class="ptab" onclick="setPeriod('trim',this)">Trimestre</button>
-        <button class="ptab" onclick="setPeriod('an',this)">Année</button>
+
+      <div class="collapse-header" onclick="toggleCollapse('stats-body','stats-chev')">
+        <span class="collapse-title">Récap Global</span>
+        <span class="collapse-chevron open" id="stats-chev">▾</span>
       </div>
-      <div class="stat-cards" id="stat-cards"></div>
-      <div class="chart-wrap"><canvas id="statsChart"></canvas></div>
-      <div class="sec-label" id="compare-label">Comparaison avec vos proches</div>
-      <div id="compare-section"></div>
-      <div class="sec-label">Badges</div>
-      <div class="badge-grid" id="badge-grid"></div>
+      <div class="collapse-body open" id="stats-body">
+        <div class="period-bar" style="margin-top:10px;">
+          <button class="ptab active" onclick="setPeriod('7j',this)">7 jours</button>
+          <button class="ptab" onclick="setPeriod('sem',this)">Semaine</button>
+          <button class="ptab" onclick="setPeriod('mois',this)">Mois</button>
+          <button class="ptab" onclick="setPeriod('trim',this)">Trimestre</button>
+          <button class="ptab" onclick="setPeriod('an',this)">Année</button>
+        </div>
+        <div class="stat-cards" id="stat-cards"></div>
+        <div class="chart-wrap"><canvas id="statsChart"></canvas></div>
+      </div>
+
+      <div class="collapse-header" onclick="toggleCollapse('compare-body','compare-chev')">
+        <span class="collapse-title" id="compare-label">Comparaison avec vos proches</span>
+        <span class="collapse-chevron open" id="compare-chev">▾</span>
+      </div>
+      <div class="collapse-body open" id="compare-body">
+        <div id="compare-section" style="margin-top:6px;"></div>
+      </div>
+
+      <div class="collapse-header" onclick="toggleCollapse('badges-body','badges-chev')">
+        <span class="collapse-title">Badges</span>
+        <span class="collapse-chevron" id="badges-chev">▾</span>
+      </div>
+      <div class="collapse-body" id="badges-body">
+        <div class="badge-grid" id="badge-grid" style="margin-top:10px;"></div>
+      </div>
     </div>
   </div>
 </div>
@@ -1289,6 +1322,11 @@ function openProfilPanel() {
 function closeProfilPanel(e) {
   if (!e || e.target === document.getElementById('profil-panel'))
     document.getElementById('profil-panel').style.display = 'none';
+}
+
+function toggleCollapse(bodyId, chevId) {
+  document.getElementById(bodyId).classList.toggle('open');
+  document.getElementById(chevId).classList.toggle('open');
 }
 
 function changeWeek(d) {
