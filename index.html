@@ -612,9 +612,9 @@
     </div>
     <!-- Row 3: week nav slim -->
     <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
-      <button onclick="changeWeek(-1)" class="week-nav-btn">‹</button>
+      <button onclick="changeWeek(-1)" class="week-nav-btn" id="week-nav-prev">‹</button>
       <span id="week-lbl" style="font-size:11px;font-weight:700;color:var(--text-2);white-space:nowrap;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:200px;">Cette semaine</span>
-      <button onclick="changeWeek(1)" class="week-nav-btn">›</button>
+      <button onclick="changeWeek(1)" class="week-nav-btn" id="week-nav-next">›</button>
     </div>
   </div>
 
@@ -975,6 +975,7 @@ async function loadUserProfile() {
   }
 	///////
   setSyncStatus(true);
+  setWeekNavColor('var(--teal)');
   renderAll();
   document.getElementById('loading-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
@@ -1225,6 +1226,15 @@ function getData() {
 }
 
 
+function setWeekNavColor(color) {
+  const lbl = document.getElementById('week-lbl');
+  const prev = document.getElementById('week-nav-prev');
+  const next = document.getElementById('week-nav-next');
+  if (lbl) lbl.style.color = color;
+  if (prev) prev.style.borderColor = color;
+  if (next) next.style.borderColor = color;
+}
+
 function setUser(who, uid) {
   const banner = document.getElementById('readonly-banner');
   if (who === 'me') {
@@ -1233,11 +1243,13 @@ function setUser(who, uid) {
     document.getElementById('pill-me').className = 'user-pill me';
     document.getElementById('pill-partner').className = 'user-pill';
     banner.style.display = 'none';
+    setWeekNavColor('var(--teal)');
   } else {
     viewingPartner = true;
     activePartnerUid = uid || partnerUids[0] || null;
     document.getElementById('pill-me').className = 'user-pill';
     document.getElementById('pill-partner').className = 'user-pill partner';
+    setWeekNavColor('var(--coral)');
     updatePartnerPill();
     if (!activePartnerUid) {
       banner.innerHTML = `🔗 Vous n'avez pas encore ajouté de partenaire. Votre code de jumelage est disponible sur votre <span onclick="openProfilPanel()" style="text-decoration:underline;cursor:pointer;">profil utilisateur</span>.`;
