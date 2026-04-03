@@ -948,7 +948,7 @@ function skipPair() {
   try {
     await auth.sendPasswordResetEmail(email);
     msgEl.style.color = 'var(--green)';
-    msgEl.textContent = '✅ Email envoyé ! Vérifiez votre boîte mail.';
+    msgEl.textContent = '✅ Si cet email est dans notre base, vous recevrez un lien de réinitialisation. Vérifiez aussi vos spams.';
   } catch(e) {
     msgEl.style.color = 'var(--red)';
     msgEl.textContent = e.code === 'auth/user-not-found' ? 'Aucun compte avec cet email' : e.message;
