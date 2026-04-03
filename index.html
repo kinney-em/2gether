@@ -176,12 +176,12 @@
 
   /* --- WEEK NAV (compact, in header) --- */
   .week-nav-btn {
-    width: 28px; height: 28px;
+    width: 44px; height: 44px;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border);
     background: var(--surface);
     cursor: pointer;
-    font-size: 16px; font-weight: 700;
+    font-size: 18px; font-weight: 700;
     color: var(--text-2);
     display: flex; align-items: center; justify-content: center;
     font-family: 'Nunito', sans-serif;
@@ -190,7 +190,8 @@
   .week-nav-wrap {
     display: flex; align-items: center; justify-content: center; gap: 4px;
     background: var(--surface); border-radius: 99px;
-    padding: 3px 6px; box-shadow: var(--shadow);
+    padding: 0 4px; box-shadow: var(--shadow);
+    min-height: 44px;
   }
   @keyframes week-flash {
     0%   { background: var(--teal-light); }
@@ -2366,6 +2367,8 @@ function renderAll() {
   const lbl = getWeekLabel();
   const el = document.getElementById('week-lbl');
   if (el) el.textContent = lbl;
+  const next = document.getElementById('week-nav-next');
+  if (next) { next.style.opacity = weekOffset >= 1 ? '0.25' : '1'; next.style.pointerEvents = weekOffset >= 1 ? 'none' : ''; }
   renderMeals(); renderFoodScores();
   renderSportGrid(); renderSportScores();
   renderObjectifs(); renderStats();
