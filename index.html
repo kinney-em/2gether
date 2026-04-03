@@ -481,33 +481,23 @@
   <div class="login-title">Habitudes ensemble</div>
   <div class="login-sub">Suivez vos objectifs à deux</div>
 
-  <div id="login-pitch" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:340px;margin-bottom:4px;">
-    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);">
-      <span style="font-size:22px;">🥗</span>
-      <span style="font-size:13px;color:var(--text-2);">Notez vos repas et votre sport chaque jour</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);">
-      <span style="font-size:22px;">📊</span>
-      <span style="font-size:13px;color:var(--text-2);">Visualisez vos tendances sur la semaine, le mois…</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);">
-      <span style="font-size:22px;">🔗</span>
-      <span style="font-size:13px;color:var(--text-2);">Jumelez-vous avec un proche pour vous motiver ensemble</span>
-    </div>
+  <div id="login-pitch" style="display:flex;gap:16px;align-items:center;background:var(--surface);border-radius:var(--radius);padding:10px 16px;box-shadow:var(--shadow);width:100%;max-width:340px;margin-bottom:4px;">
+    <span style="font-size:20px;">🥗</span>
+    <span style="font-size:20px;">📊</span>
+    <span style="font-size:20px;">🔗</span>
+    <span style="font-size:12px;color:var(--text-2);line-height:1.4;">Repas · Sport · Stats · Jumelage à deux</span>
   </div>
 
   <div class="login-card" id="card-login">
     <h2>Se connecter</h2>
     <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="votre@email.com"/></div>
     <div class="field"><label>Mot de passe</label><input type="password" id="login-pwd" placeholder="••••••••"/></div>
+    <div id="login-error"></div>
     <button class="btn btn-primary" onclick="doLogin()">Connexion</button>
     <div class="login-sep">— ou —</div>
-	 
-	  <button class="btn btn-secondary" onclick="resendVerification()">Renvoyer l'email de confirmation</button>
-
+    <button class="btn btn-secondary" onclick="resendVerification()">Renvoyer l'email de confirmation</button>
     <button class="btn btn-secondary" onclick="showCard('register')">Créer un compte</button>
     <button class="btn btn-secondary" onclick="showCard('reset')">Mot de passe oublié ?</button>
-	  <div id="login-error"></div>
   </div>
 
 	<div class="login-card" id="card-reset" style="display:none;">
