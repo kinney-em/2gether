@@ -1,4 +1,4 @@
-const CACHE = '2gether-v1';
+const CACHE = 'duomotiv-v1';
 const STATIC = [
   '/',
   '/index.html',
