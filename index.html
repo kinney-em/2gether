@@ -340,7 +340,16 @@
     font-size: 11px; font-weight: 700; text-transform: uppercase;
     letter-spacing: .06em; color: var(--text-2);
   }
-  .collapse-chevron { font-size: 13px; color: var(--text-3); transition: transform .25s; }
+  .collapse-chevron {
+    width: 24px; height: 24px; border-radius: 6px;
+    background: var(--teal-light); display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: transform .25s, background .2s;
+  }
+  .collapse-chevron::after {
+    content: ''; display: block;
+    border-left: 5px solid transparent; border-right: 5px solid transparent;
+    border-top: 6px solid var(--teal); transition: border-top-color .2s;
+  }
   .collapse-chevron.open { transform: rotate(180deg); }
   .collapse-body { overflow: hidden; max-height: 0; transition: max-height .35s ease; }
   .collapse-body.open { max-height: 2000px; }
@@ -731,7 +740,7 @@
 
       <div class="collapse-header" onclick="toggleCollapse('stats-body','stats-chev')">
         <span class="collapse-title">Récap Global</span>
-        <span class="collapse-chevron open" id="stats-chev">▾</span>
+        <span class="collapse-chevron open" id="stats-chev"></span>
       </div>
       <div class="collapse-body open" id="stats-body">
         <div id="ratio-gauge" style="margin-top:10px;"></div>
@@ -748,7 +757,7 @@
 
       <div class="collapse-header" onclick="toggleCollapse('compare-body','compare-chev')">
         <span class="collapse-title" id="compare-label">Comparaison avec vos proches</span>
-        <span class="collapse-chevron open" id="compare-chev">▾</span>
+        <span class="collapse-chevron open" id="compare-chev"></span>
       </div>
       <div class="collapse-body open" id="compare-body">
         <div id="compare-section" style="margin-top:6px;"></div>
@@ -756,7 +765,7 @@
 
       <div class="collapse-header" onclick="toggleCollapse('badges-body','badges-chev')">
         <span class="collapse-title">Badges</span>
-        <span class="collapse-chevron" id="badges-chev">▾</span>
+        <span class="collapse-chevron" id="badges-chev"></span>
       </div>
       <div class="collapse-body" id="badges-body">
         <div class="badge-grid" id="badge-grid" style="margin-top:10px;"></div>
