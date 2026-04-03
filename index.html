@@ -187,6 +187,16 @@
     font-family: 'Nunito', sans-serif;
     flex-shrink: 0;
   }
+  .week-nav-wrap {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    background: var(--surface); border-radius: 99px;
+    padding: 3px 6px; box-shadow: var(--shadow);
+  }
+  @keyframes week-flash {
+    0%   { background: var(--teal-light); }
+    100% { background: var(--surface); }
+  }
+  .week-nav-wrap.flash { animation: week-flash .4s ease; }
 
   /* --- SCORE STRIP --- */
   .score-strip { display: flex; gap: 8px; margin-bottom: 14px; }
@@ -488,7 +498,7 @@
     </div>
     <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);border-left:3px solid var(--teal);">
       <span style="font-size:22px;">🔗</span>
-      <span style="font-size:13px;color:var(--text-2);">Jumelez-vous avec un proche pour vous motiver ensemble</span>
+      <span style="font-size:13px;color:var(--text-2);">Jumelez-vous avec un.e proche pour vous motiver ensemble</span>
     </div>
   </div>
 
@@ -605,10 +615,12 @@
       <button class="tab" onclick="showTab('sport',this)">🏃 Sport</button>
     </div>
     <!-- Row 3: week nav slim -->
-    <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
-      <button onclick="changeWeek(-1)" class="week-nav-btn" id="week-nav-prev">‹</button>
-      <span id="week-lbl" style="font-size:11px;font-weight:700;color:var(--text-2);white-space:nowrap;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:200px;">Cette semaine</span>
-      <button onclick="changeWeek(1)" class="week-nav-btn" id="week-nav-next">›</button>
+    <div style="display:flex;align-items:center;justify-content:center;">
+      <div class="week-nav-wrap" id="week-nav-wrap">
+        <button onclick="changeWeek(-1)" class="week-nav-btn" id="week-nav-prev">‹</button>
+        <span id="week-lbl" style="font-size:11px;font-weight:700;color:var(--text-2);white-space:nowrap;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:200px;">Cette semaine</span>
+        <button onclick="changeWeek(1)" class="week-nav-btn" id="week-nav-next">›</button>
+      </div>
     </div>
   </div>
 
@@ -1372,6 +1384,8 @@ function toggleCollapse(bodyId, chevId) {
 function changeWeek(d) {
   weekOffset = Math.min(1, weekOffset + d);
   renderAll();
+  const wrap = document.getElementById('week-nav-wrap');
+  if (wrap) { wrap.classList.remove('flash'); void wrap.offsetWidth; wrap.classList.add('flash'); }
 }
 
 // ---- SWIPE TO CHANGE WEEK ----
