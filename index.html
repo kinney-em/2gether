@@ -217,9 +217,7 @@
   .score-chip.bad .score-chip-val { color: var(--red-dark); }
   .score-chip.sport .score-chip-val { color: var(--teal-dark); }
   .pbar { height: 4px; background: rgba(0,0,0,0.08); border-radius: 99px; overflow: hidden; margin-top: 2px; }
-  .pbar-fill { height: 100%; border-radius: 99px; transition: width .5s cubic-bezier(.4,0,.2,1); }
-  @keyframes pbar-flash { 0%{filter:brightness(1)} 40%{filter:brightness(1.5)} 100%{filter:brightness(1)} }
-  .pbar-fill.flash { animation: pbar-flash .5s ease; }
+  .pbar-fill { height: 100%; border-radius: 99px; transition: width .6s cubic-bezier(.4,0,.2,1); }
 
   /* --- SECTION LABEL --- */
   .sec-label {
@@ -1253,11 +1251,6 @@ function getData() {
 }
 
 
-function flashPbar(id) {
-  const el = document.getElementById(id);
-  if (!el) return;
-  el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
-}
 
 function setWeekNavColor(color) {
   const lbl = document.getElementById('week-lbl');
@@ -1523,19 +1516,19 @@ const { sain, mal, correct } = countMeals(getData(), wk);
     <div class="score-chip food">
       <div class="score-chip-label">Repas sains</div>
       <div class="score-chip-val">${sain}</div>
-      <div class="pbar"><div class="pbar-fill" style="width:${pct}%;background:var(--green);"></div></div>
+      <div class="pbar"><div class="pbar-fill" style="width:0%;background:var(--green);"></div></div>
     </div>
 	<div class="score-chip" style="background:var(--amber-light);">
       <div class="score-chip-label" style="color:var(--amber);">Corrects</div>
       <div class="score-chip-val" style="color:var(--amber-dark);">${correct}</div>
     </div>
-	
+
     <div class="score-chip bad">
       <div class="score-chip-label">Malbouffe</div>
       <div class="score-chip-val">${mal}</div>
     </div>`;
   const fp = document.querySelector('#food-scores .pbar-fill');
-  if (fp) { fp.classList.remove('flash'); void fp.offsetWidth; fp.classList.add('flash'); }
+  if (fp) requestAnimationFrame(() => requestAnimationFrame(() => { fp.style.width = pct + '%'; }));
 
   // Empty state
   const total = sain + correct + mal;
@@ -1593,14 +1586,14 @@ function renderSportScores() {
     <div class="score-chip sport">
       <div class="score-chip-label">Jours actifs</div>
       <div class="score-chip-val">${days} / ${goal}</div>
-      <div class="pbar"><div class="pbar-fill" style="width:${pct}%;background:var(--teal);"></div></div>
+      <div class="pbar"><div class="pbar-fill" style="width:0%;background:var(--teal);"></div></div>
     </div>
     <div class="score-chip food">
       <div class="score-chip-label">Objectif atteint</div>
       <div class="score-chip-val">${pct}%</div>
     </div>`;
   const sp = document.querySelector('#sport-scores .pbar-fill');
-  if (sp) { sp.classList.remove('flash'); void sp.offsetWidth; sp.classList.add('flash'); }
+  if (sp) requestAnimationFrame(() => requestAnimationFrame(() => { sp.style.width = pct + '%'; }));
   const emptyState = document.getElementById('sport-empty-state');
   if (emptyState) {
     emptyState.style.display = (!viewingPartner && days === 0) ? 'block' : 'none';
@@ -2335,17 +2328,17 @@ function renderObjectifs() {
   document.getElementById('goal-progress').innerHTML = `
     <div class="goal-progress">
       <div class="gp-row"><span>Repas sains (sem.)</span><span style="font-weight:700;color:var(--green);">${sainWk} / ${data.goals.repas}</span></div>
-      <div class="pbar" style="height:10px;"><div class="pbar-fill" style="width:${fPct}%;background:var(--green);"></div></div>
+      <div class="pbar" style="height:10px;"><div class="pbar-fill" style="width:0%;background:var(--green);"></div></div>
       <div class="gp-pct">${fPct}% de l'objectif</div>
     </div>
     <div class="goal-progress">
       <div class="gp-row"><span>Jours sport (sem.)</span><span style="font-weight:700;color:var(--teal);">${sportWk} / ${data.goals.sport}</span></div>
-      <div class="pbar" style="height:10px;"><div class="pbar-fill" style="width:${sPct}%;background:var(--teal);"></div></div>
+      <div class="pbar" style="height:10px;"><div class="pbar-fill" style="width:0%;background:var(--teal);"></div></div>
       <div class="gp-pct">${sPct}% de l'objectif</div>
     </div>`;
-  document.querySelectorAll('#goal-progress .pbar-fill').forEach(el => {
-    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
-  });
+  const fills = document.querySelectorAll('#goal-progress .pbar-fill');
+  const targets = [fPct, sPct];
+  fills.forEach((el, i) => requestAnimationFrame(() => requestAnimationFrame(() => { el.style.width = targets[i] + '%'; })));
 }
 
 function renderGoalsModal() {
