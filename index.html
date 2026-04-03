@@ -1299,7 +1299,7 @@ function toggleProfilMenu(e) {
   if (!dd) return;
   if (dd.style.display === 'block') { dd.style.display = 'none'; return; }
 
-  const myName = document.getElementById('pill-me').textContent || 'Moi';
+  const myName = document.getElementById('pill-me-name').textContent || 'Moi';
   const partName = document.getElementById('pill-partner').textContent || 'Mon proche';
   const initials = myName.charAt(0).toUpperCase();
     const myAvatar = myData.avatar || '🌱';
