@@ -1220,9 +1220,10 @@ async function sendMotivate() {
   const btn = document.getElementById('motivate-send');
   btn.disabled = true; btn.textContent = 'Envoi…';
   try {
-    const me = myData;
+    const fromName = document.getElementById('pill-me-name')?.textContent || 'Partenaire';
+    const fromAvatar = myData.avatar || '🌱';
     await db.collection('users').doc(currentUid).update({
-      outbox: { to: _motivateTarget, fromName: me.name || 'Partenaire', fromAvatar: me.avatar || '🌱', text, ts: Date.now() }
+      outbox: { to: _motivateTarget, fromName, fromAvatar, text, ts: Date.now() }
     });
     document.getElementById('motivate-sheet').classList.remove('open');
   } catch(err) {
