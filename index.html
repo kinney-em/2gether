@@ -329,6 +329,61 @@
   .badge-card.earned .badge-name { color: var(--amber-dark); font-weight: 700; }
   .badge-card:not(.earned) .badge-icon { filter: grayscale(1); opacity: .35; }
 
+  /* --- MOTIVATE BUTTON --- */
+  #btn-motivate {
+    width: 30px; height: 30px; border-radius: 99px; border: 1.5px solid var(--coral);
+    background: var(--coral-light); color: var(--red-dark);
+    font-size: 14px; cursor: pointer; display: none; flex-shrink: 0;
+    align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent; transition: transform .15s;
+  }
+  #btn-motivate:active { transform: scale(.88); }
+
+  /* --- MOTIVATE SHEET --- */
+  #motivate-sheet {
+    display: none; position: fixed; inset: 0; z-index: 500;
+    background: rgba(0,0,0,.35); align-items: flex-end;
+  }
+  #motivate-sheet.open { display: flex; }
+  #motivate-card {
+    background: var(--surface); border-radius: 20px 20px 0 0;
+    padding: 20px 16px 32px; width: 100%; max-width: 480px; margin: 0 auto;
+    box-shadow: 0 -4px 24px rgba(0,0,0,.12);
+  }
+  #motivate-card h3 { font-size: 15px; font-weight: 700; margin: 0 0 14px; }
+  .motivate-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+  .motivate-chip {
+    padding: 7px 12px; border-radius: 99px; border: 1.5px solid var(--border);
+    background: var(--surface); font-size: 13px; cursor: pointer; font-family: 'Nunito', sans-serif;
+    transition: background .15s, border-color .15s;
+  }
+  .motivate-chip:active, .motivate-chip.selected {
+    background: var(--coral-light); border-color: var(--coral);
+  }
+  #motivate-input {
+    width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: var(--radius-sm);
+    border: 1.5px solid var(--border); font-family: 'Nunito', sans-serif; font-size: 13px;
+    background: var(--bg); color: var(--text); resize: none; margin-bottom: 12px;
+  }
+  #motivate-input:focus { border-color: var(--coral); outline: none; }
+  #motivate-send {
+    width: 100%; padding: 12px; border-radius: var(--radius-sm); border: none;
+    background: var(--coral, #e07060); color: white; font-family: 'Nunito', sans-serif;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+  }
+
+  /* --- INBOX BANNER --- */
+  #inbox-banner {
+    display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 600;
+    background: var(--surface); border-bottom: 2px solid var(--coral);
+    padding: 12px 16px; box-shadow: 0 2px 12px rgba(0,0,0,.12);
+    animation: slideDown .3s ease;
+  }
+  @keyframes slideDown { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+  #inbox-banner.open { display: flex; align-items: center; gap: 10px; }
+  #inbox-banner-text { flex: 1; font-size: 13px; font-weight: 600; }
+  #inbox-banner-close { font-size: 18px; color: var(--text-3); cursor: pointer; padding: 4px; }
+
   /* --- COLLAPSIBLE SECTIONS --- */
   .collapse-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -602,6 +657,7 @@
           min-width:180px; z-index:200; overflow:hidden;">
         </div>
       </div>
+      <button id="btn-motivate" onclick="openMotivate(event)" title="Envoyer un message">💌</button>
       <div style="flex:1;min-width:8px;"></div>
       <div style="position:relative;flex-shrink:0;">
         <button class="logout-btn" onclick="toggleProfilMenu(event); return false;" id="profil-menu-btn"
@@ -1062,6 +1118,7 @@ function updatePartnerPill() {
     if (avatarEl) avatarEl.textContent = '🌱';
     if (nameEl) nameEl.textContent = `${partnerUids.length} partenaire${partnerUids.length > 1 ? 's' : ''}`;
   }
+  updateMotivateBtn();
 }
 
 function togglePartnerPill(e) {
@@ -1102,6 +1159,97 @@ function selectPartner(uid) {
 function closePartnerPillDropdown() {
   const dd = document.getElementById('partner-pill-dropdown');
   if (dd) dd.style.display = 'none';
+}
+
+// ---- MOTIVATE ----
+let _motivateTarget = null;
+
+function openMotivate(e) {
+  e.stopPropagation();
+  if (partnerUids.length === 0) return;
+
+  // 1 seul partner → on l'utilise directement
+  // Plusieurs → on prend le partner actuellement affiché, sinon on demande
+  if (partnerUids.length === 1) {
+    _motivateTarget = partnerUids[0];
+  } else {
+    _motivateTarget = (viewingPartner && activePartnerUid) ? activePartnerUid : null;
+  }
+
+  document.getElementById('motivate-input').value = '';
+  document.querySelectorAll('.motivate-chip').forEach(c => c.classList.remove('selected'));
+
+  // Injecter un sélecteur si target indéfinie (plusieurs partners, vue "moi")
+  const titleEl = document.getElementById('motivate-title');
+  const existing = document.getElementById('motivate-select');
+  if (existing) existing.remove();
+  if (!_motivateTarget) {
+    titleEl.textContent = 'Envoyer un message à…';
+    const sel = document.createElement('select');
+    sel.id = 'motivate-select';
+    sel.style.cssText = 'width:100%;padding:8px 10px;border-radius:var(--radius-sm);border:1.5px solid var(--border);font-family:Nunito,sans-serif;font-size:13px;background:var(--bg);color:var(--text);margin-bottom:12px;';
+    sel.innerHTML = partnerUids.map(uid => {
+      const p = partnersData[uid] || {};
+      return `<option value="${uid}">${p.avatar || '🌱'} ${p.name || 'Partenaire'}</option>`;
+    }).join('');
+    sel.addEventListener('change', () => { _motivateTarget = sel.value; });
+    _motivateTarget = partnerUids[0];
+    titleEl.insertAdjacentElement('afterend', sel);
+  } else {
+    const name = partnersData[_motivateTarget]?.name || 'ton partenaire';
+    titleEl.textContent = `Envoyer un message à ${name}`;
+  }
+
+  document.getElementById('motivate-sheet').classList.add('open');
+}
+
+function closeMotivate(e) {
+  if (e && e.target !== document.getElementById('motivate-sheet')) return;
+  document.getElementById('motivate-sheet').classList.remove('open');
+}
+
+function selectChip(el) {
+  document.querySelectorAll('.motivate-chip').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('motivate-input').value = el.textContent.trim();
+}
+
+async function sendMotivate() {
+  const text = document.getElementById('motivate-input').value.trim();
+  if (!text || !_motivateTarget) return;
+  const btn = document.getElementById('motivate-send');
+  btn.disabled = true; btn.textContent = 'Envoi…';
+  try {
+    const me = myData;
+    await db.collection('users').doc(currentUid).update({
+      outbox: { to: _motivateTarget, fromName: me.name || 'Partenaire', fromAvatar: me.avatar || '🌱', text, ts: Date.now() }
+    });
+    document.getElementById('motivate-sheet').classList.remove('open');
+  } catch(err) {
+    console.error(err);
+  }
+  btn.disabled = false; btn.textContent = 'Envoyer 💌';
+}
+
+// ---- INBOX BANNER ----
+let _lastInboxTs = 0;
+
+function showInboxBanner(fromAvatar, fromName, text) {
+  const banner = document.getElementById('inbox-banner');
+  document.getElementById('inbox-banner-text').textContent = `${fromAvatar} ${fromName} : ${text}`;
+  banner.classList.add('open');
+  clearTimeout(window._inboxTimer);
+  window._inboxTimer = setTimeout(dismissInboxBanner, 6000);
+}
+
+function dismissInboxBanner() {
+  document.getElementById('inbox-banner').classList.remove('open');
+}
+
+function updateMotivateBtn() {
+  const btn = document.getElementById('btn-motivate');
+  if (!btn) return;
+  btn.style.display = partnerUids.length > 0 ? 'flex' : 'none';
 }
 
 
@@ -1155,7 +1303,14 @@ function subscribeToPartner(uid) {
     partnersData[uid].avatar = d.avatar || '🌱';
     partnersData[uid].activities = d.activities || [...DEFAULT_ACTS];
     partnersData[uid].goals = d.goals || { repas: 14, sport: 3 };
+    // Inbox: detect message sent to me
+    const ob = d.outbox;
+    if (ob && ob.to === currentUid && ob.ts && ob.ts > _lastInboxTs) {
+      _lastInboxTs = ob.ts;
+      showInboxBanner(ob.fromAvatar || '🌱', ob.fromName || 'Partenaire', ob.text || '');
+    }
     updatePartnerPill();
+    updateMotivateBtn();
     if (viewingPartner && activePartnerUid === uid) renderAll();
   });
 }
@@ -2514,6 +2669,29 @@ function renderAll() {
 </div>
 
 <div id="sync-toast"></div>
+
+<!-- INBOX BANNER -->
+<div id="inbox-banner">
+  <span id="inbox-banner-text"></span>
+  <span id="inbox-banner-close" onclick="dismissInboxBanner()">×</span>
+</div>
+
+<!-- MOTIVATE SHEET -->
+<div id="motivate-sheet" onclick="closeMotivate(event)">
+  <div id="motivate-card">
+    <h3 id="motivate-title">Envoyer un message</h3>
+    <div class="motivate-chips">
+      <span class="motivate-chip" onclick="selectChip(this)">💪 Allez, tu peux !</span>
+      <span class="motivate-chip" onclick="selectChip(this)">🔥 Belle semaine !</span>
+      <span class="motivate-chip" onclick="selectChip(this)">🥗 Mange bien ce soir !</span>
+      <span class="motivate-chip" onclick="selectChip(this)">🎉 Objectif atteint !</span>
+      <span class="motivate-chip" onclick="selectChip(this)">⭐ Fier·e de toi !</span>
+      <span class="motivate-chip" onclick="selectChip(this)">🏃 Continue comme ça !</span>
+    </div>
+    <textarea id="motivate-input" rows="2" placeholder="Ou écris un message libre..."></textarea>
+    <button id="motivate-send" onclick="sendMotivate()">Envoyer 💌</button>
+  </div>
+</div>
 
 </body>
 </html>
