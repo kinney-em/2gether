@@ -677,7 +677,7 @@
           <span style="font-size:28px;opacity:0.75;">🚶🏼‍➡️</span>
           <span style="font-size:24px;opacity:0.6;">🛼</span>
         </div>
-        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">Cette semaine commence maintenant !</div>
+        <div class="sport-empty-title" style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">Cette semaine commence maintenant !</div>
         <div style="font-size:12px;color:var(--text-2);line-height:1.5;">Même une petite activité compte. Tapez un jour pour démarrer.</div>
       </div>
     </div>
@@ -948,7 +948,7 @@ function skipPair() {
   try {
     await auth.sendPasswordResetEmail(email);
     msgEl.style.color = 'var(--green)';
-    msgEl.textContent = '✅ Email envoyé ! Vérifiez votre boîte mail.';
+    msgEl.textContent = '✅ Si cet email est dans notre base, vous recevrez un lien de réinitialisation. Vérifiez aussi vos spams.';
   } catch(e) {
     msgEl.style.color = 'var(--red)';
     msgEl.textContent = e.code === 'auth/user-not-found' ? 'Aucun compte avec cet email' : e.message;
@@ -1602,7 +1602,11 @@ function renderSportScores() {
   const sp = document.querySelector('#sport-scores .pbar-fill');
   if (sp) { sp.classList.remove('flash'); void sp.offsetWidth; sp.classList.add('flash'); }
   const emptyState = document.getElementById('sport-empty-state');
-  if (emptyState) emptyState.style.display = (!viewingPartner && days === 0) ? 'block' : 'none';
+  if (emptyState) {
+    emptyState.style.display = (!viewingPartner && days === 0) ? 'block' : 'none';
+    const title = emptyState.querySelector('.sport-empty-title');
+    if (title) title.textContent = weekOffset < 0 ? 'Aucune activité cette semaine-là.' : 'Cette semaine commence maintenant !';
+  }
 }
 
 function openSportModal(dayIdx) {
