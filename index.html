@@ -1546,11 +1546,18 @@ const { sain, mal, correct } = countMeals(getData(), wk);
       const pCorrect = Math.round(correct / total * 100);
       const pMal = 100 - pSain - pCorrect;
       ratioBar.style.display = 'flex';
-      ratioBar.innerHTML = `
-        ${pSain > 0 ? `<div title="✔ Sain ${pSain}%" style="flex:${pSain};background:var(--green);height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--green-dark);min-width:${pSain > 15 ? 'auto' : '0'};overflow:hidden;">${pSain > 15 ? pSain+'%' : ''}</div>` : ''}
-        ${pCorrect > 0 ? `<div title="≈ Correct ${pCorrect}%" style="flex:${pCorrect};background:var(--amber);height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--amber-dark);overflow:hidden;">${pCorrect > 15 ? pCorrect+'%' : ''}</div>` : ''}
-        ${pMal > 0 ? `<div title="✖ Malbouffe ${pMal}%" style="flex:${pMal};background:var(--red);height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--red-dark);overflow:hidden;">${pMal > 15 ? pMal+'%' : ''}</div>` : ''}
-      `;
+      const segs = [];
+      if (pSain    > 0) segs.push({ pct: pSain,    bg: 'var(--green)', label: `✔ Sain ${pSain}%` });
+      if (pCorrect > 0) segs.push({ pct: pCorrect, bg: 'var(--amber)', label: `≈ Correct ${pCorrect}%` });
+      if (pMal     > 0) segs.push({ pct: pMal,     bg: 'var(--red)',   label: `✖ Malbouffe ${pMal}%` });
+      ratioBar.innerHTML = segs.map(s =>
+        `<div title="${s.label}" style="flex:0;transition:flex .6s cubic-bezier(.4,0,.2,1);background:${s.bg};height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:rgba(255,255,255,0.92);overflow:hidden;"></div>`
+      ).join('');
+      const segEls = ratioBar.querySelectorAll('div');
+      segs.forEach((s, i) => requestAnimationFrame(() => requestAnimationFrame(() => {
+        segEls[i].style.flex = s.pct;
+        if (s.pct > 15) segEls[i].textContent = s.pct + '%';
+      })));
     }
   }
 }
