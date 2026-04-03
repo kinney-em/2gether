@@ -1658,14 +1658,22 @@ function addActivity() {
 
 // ---- STATS ----
 const BADGES = [
-  { id:'first_sain', icon:'🥗', name:'Premier repas sain', cond: d => countTotalSain(d) >= 1 },
-  { id:'sport3', icon:'🏃', name:'3 sports en 1 sem.', cond: d => countSportDays(d, getWeekKey()) >= 3 },
-  { id:'streak3', icon:'🔥', name:'3 jours actifs de suite', cond: d => hasStreak(d, 3) },
-  { id:'sain10', icon:'🥦', name:'10 repas sains', cond: d => countTotalSain(d) >= 10 },
-  { id:'sport5', icon:'💪', name:'5 sports en 1 sem.', cond: d => countSportDays(d, getWeekKey()) >= 5 },
-  { id:'ratio80', icon:'⚖️', name:'Ratio sain > 80%', cond: d => getRatio(d) >= 0.8 },
-  { id:'sport7', icon:'🌟', name:'Sport tous les jours', cond: d => countSportDays(d, getWeekKey()) >= 7 },
-  { id:'sain30', icon:'🏆', name:'30 repas sains', cond: d => countTotalSain(d) >= 30 },
+  { id:'first_sain',    icon:'🥗',  name:'Premier repas sain',               cond: d => countTotalSain(d) >= 1 },
+  { id:'first_sport',   icon:'👟',  name:'1ère activité sportive',            cond: d => countTotalSportDays(d) >= 1 },
+  { id:'sport3',        icon:'🏃',  name:'3 sports en 1 sem.',                cond: d => countSportDays(d, getWeekKey()) >= 3 },
+  { id:'streak3',       icon:'🔥',  name:'3 jours actifs de suite',           cond: d => hasStreak(d, 3) },
+  { id:'sain10',        icon:'🥦',  name:'10 repas sains',                    cond: d => countTotalSain(d) >= 10 },
+  { id:'meals20',       icon:'🍽️', name:'20 repas saisis',                   cond: d => countTotalMeals(d) >= 20 },
+  { id:'sport5',        icon:'💪',  name:'5 sports en 1 sem.',                cond: d => countSportDays(d, getWeekKey()) >= 5 },
+  { id:'ratio80',       icon:'⚖️', name:'Ratio sain > 80%',                  cond: d => getRatio(d) >= 0.8 },
+  { id:'sport7',        icon:'🌟',  name:'Sport tous les jours',              cond: d => countSportDays(d, getWeekKey()) >= 7 },
+  { id:'sain30',        icon:'🏆',  name:'30 repas sains',                    cond: d => countTotalSain(d) >= 30 },
+  { id:'meals50',       icon:'🥘',  name:'50 repas saisis',                   cond: d => countTotalMeals(d) >= 50 },
+  { id:'semaine_full',  icon:'🗓️', name:'Semaine complète (2 sains/jour)',    cond: d => hasFullSainWeek(d) },
+  { id:'new_activity',  icon:'🎯',  name:'Nouvelle activité créée',           cond: d => (d.activities || []).length > DEFAULT_ACTS.length },
+  { id:'meals100',      icon:'🍱',  name:'100 repas saisis',                  cond: d => countTotalMeals(d) >= 100 },
+  { id:'meals150',      icon:'🥙',  name:'150 repas saisis',                  cond: d => countTotalMeals(d) >= 150 },
+  { id:'meals360',      icon:'📅',  name:'360 repas saisis',                  cond: d => countTotalMeals(d) >= 360 },
 ];
 
 function countTotalSain(data) {
@@ -1674,6 +1682,29 @@ function countTotalSain(data) {
     Object.values(wk).forEach(day => Object.values(day).forEach(s => { if(s==='sain') n++; }))
   );
   return n;
+}
+
+function countTotalMeals(data) {
+  let n=0;
+  Object.values(data.meals).forEach(wk =>
+    Object.values(wk).forEach(day => Object.values(day).forEach(s => { if(s && s!=='none') n++; }))
+  );
+  return n;
+}
+
+function countTotalSportDays(data) {
+  let n=0;
+  Object.values(data.sports).forEach(wk => { n += Object.values(wk).filter(a => a.length > 0).length; });
+  return n;
+}
+
+function hasFullSainWeek(data) {
+  const wk = getWeekKey();
+  const days = data.meals[wk] || {};
+  return DAYS.every(day => {
+    const d = days[day] || {};
+    return Object.values(d).filter(v => v === 'sain').length >= 2;
+  });
 }
 
 function getRatio(data) {
