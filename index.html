@@ -176,12 +176,12 @@
 
   /* --- WEEK NAV (compact, in header) --- */
   .week-nav-btn {
-    width: 28px; height: 28px;
+    width: 44px; height: 44px;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border);
     background: var(--surface);
     cursor: pointer;
-    font-size: 16px; font-weight: 700;
+    font-size: 18px; font-weight: 700;
     color: var(--text-2);
     display: flex; align-items: center; justify-content: center;
     font-family: 'Nunito', sans-serif;
@@ -190,7 +190,8 @@
   .week-nav-wrap {
     display: flex; align-items: center; justify-content: center; gap: 4px;
     background: var(--surface); border-radius: 99px;
-    padding: 3px 6px; box-shadow: var(--shadow);
+    padding: 0 4px; box-shadow: var(--shadow);
+    min-height: 44px;
   }
   @keyframes week-flash {
     0%   { background: var(--teal-light); }
@@ -217,6 +218,8 @@
   .score-chip.sport .score-chip-val { color: var(--teal-dark); }
   .pbar { height: 4px; background: rgba(0,0,0,0.08); border-radius: 99px; overflow: hidden; margin-top: 2px; }
   .pbar-fill { height: 100%; border-radius: 99px; transition: width .5s cubic-bezier(.4,0,.2,1); }
+  @keyframes pbar-flash { 0%{filter:brightness(1)} 40%{filter:brightness(1.5)} 100%{filter:brightness(1)} }
+  .pbar-fill.flash { animation: pbar-flash .5s ease; }
 
   /* --- SECTION LABEL --- */
   .sec-label {
@@ -649,7 +652,13 @@
       <p style="font-size:11px;color:var(--text-3);margin-top:8px;">Tapez pour cycler : vide → <b>✔</b> sain → <b>≈</b> correct → <b>✖</b> malbouffe · Appui long pour remettre à zéro</p>
       <div id="meal-ratio-bar" style="display:none;height:20px;border-radius:99px;overflow:hidden;margin-top:10px;border:1px solid var(--border);"></div>
       <div id="meal-empty-state" style="display:none;text-align:center;padding:20px 16px 8px;">
-        <div style="font-size:32px;margin-bottom:8px;">🥗</div>
+        <div style="display:flex;align-items:flex-end;justify-content:center;gap:6px;margin-bottom:10px;">
+          <span style="font-size:24px;opacity:0.6;">🍏</span>
+          <span style="font-size:28px;opacity:0.75;">🍲</span>
+          <span style="font-size:34px;">🍽️</span>
+          <span style="font-size:28px;opacity:0.75;">🥖</span>
+          <span style="font-size:24px;opacity:0.6;">🧋</span>
+        </div>
         <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">C'est parti pour cette semaine !</div>
         <div style="font-size:12px;color:var(--text-2);line-height:1.5;">Appuyez sur une case pour enregistrer votre premier repas.</div>
       </div>
@@ -660,6 +669,17 @@
       <div class="score-strip" id="sport-scores"></div>
       <div class="sec-label">Activités par jour — tapez pour sélectionner</div>
       <div class="week-grid" id="grid-sport"></div>
+      <div id="sport-empty-state" style="display:none;text-align:center;padding:20px 16px 8px;">
+        <div style="display:flex;align-items:flex-end;justify-content:center;gap:6px;margin-bottom:10px;">
+          <span style="font-size:24px;opacity:0.6;">🚲</span>
+          <span style="font-size:28px;opacity:0.75;">🚶🏾‍♀️</span>
+          <span style="font-size:34px;">🧘🏻</span>
+          <span style="font-size:28px;opacity:0.75;">🚶🏼‍➡️</span>
+          <span style="font-size:24px;opacity:0.6;">🛼</span>
+        </div>
+        <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">Cette semaine commence maintenant !</div>
+        <div style="font-size:12px;color:var(--text-2);line-height:1.5;">Même une petite activité compte. Tapez un jour pour démarrer.</div>
+      </div>
     </div>
 
     <!-- PLEINE CONSCIENCE (coming soon) -->
@@ -1233,6 +1253,12 @@ function getData() {
 }
 
 
+function flashPbar(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+}
+
 function setWeekNavColor(color) {
   const lbl = document.getElementById('week-lbl');
   const prev = document.getElementById('week-nav-prev');
@@ -1508,6 +1534,8 @@ const { sain, mal, correct } = countMeals(getData(), wk);
       <div class="score-chip-label">Malbouffe</div>
       <div class="score-chip-val">${mal}</div>
     </div>`;
+  const fp = document.querySelector('#food-scores .pbar-fill');
+  if (fp) { fp.classList.remove('flash'); void fp.offsetWidth; fp.classList.add('flash'); }
 
   // Empty state
   const total = sain + correct + mal;
@@ -1571,6 +1599,10 @@ function renderSportScores() {
       <div class="score-chip-label">Objectif atteint</div>
       <div class="score-chip-val">${pct}%</div>
     </div>`;
+  const sp = document.querySelector('#sport-scores .pbar-fill');
+  if (sp) { sp.classList.remove('flash'); void sp.offsetWidth; sp.classList.add('flash'); }
+  const emptyState = document.getElementById('sport-empty-state');
+  if (emptyState) emptyState.style.display = (!viewingPartner && days === 0) ? 'block' : 'none';
 }
 
 function openSportModal(dayIdx) {
@@ -2307,6 +2339,9 @@ function renderObjectifs() {
       <div class="pbar" style="height:10px;"><div class="pbar-fill" style="width:${sPct}%;background:var(--teal);"></div></div>
       <div class="gp-pct">${sPct}% de l'objectif</div>
     </div>`;
+  document.querySelectorAll('#goal-progress .pbar-fill').forEach(el => {
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  });
 }
 
 function renderGoalsModal() {
@@ -2366,6 +2401,8 @@ function renderAll() {
   const lbl = getWeekLabel();
   const el = document.getElementById('week-lbl');
   if (el) el.textContent = lbl;
+  const next = document.getElementById('week-nav-next');
+  if (next) { next.style.opacity = weekOffset >= 1 ? '0.25' : '1'; next.style.pointerEvents = weekOffset >= 1 ? 'none' : ''; }
   renderMeals(); renderFoodScores();
   renderSportGrid(); renderSportScores();
   renderObjectifs(); renderStats();
