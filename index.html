@@ -559,7 +559,7 @@
 </div>
 
 <!-- APP -->
-<div id="app" style="display:none;">
+<div id="app" style="display:none;overflow-x:hidden;">
 
 	<!-- verification de l'email -->
 		<div id="verify-banner" style="
@@ -1418,23 +1418,95 @@ function changeWeek(d) {
 
 // ---- SWIPE TO CHANGE WEEK ----
 (function() {
-  let tx = 0, ty = 0, locked = false;
+  let tx = 0, ty = 0, locked = false, swiping = false, animating = false;
+  const getMain = () => document.querySelector('.main');
+
+  const snapBack = (m) => {
+    m.style.transition = 'transform 0.22s ease';
+    m.style.transform = 'translateX(0)';
+    setTimeout(() => { m.style.transition = ''; m.style.transform = ''; }, 220);
+  };
+
   document.addEventListener('touchstart', e => {
+    if (animating) return;
     tx = e.touches[0].clientX;
     ty = e.touches[0].clientY;
     locked = false;
+    swiping = false;
   }, { passive: true });
-  document.addEventListener('touchend', e => {
-    if (locked) return;
-    const dx = e.changedTouches[0].clientX - tx;
-    const dy = e.changedTouches[0].clientY - ty;
-    if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return;
-    changeWeek(dx < 0 ? 1 : -1);
-  }, { passive: true });
+
   document.addEventListener('touchmove', e => {
-    const dx = Math.abs(e.touches[0].clientX - tx);
+    if (animating) return;
+    const dx = e.touches[0].clientX - tx;
     const dy = Math.abs(e.touches[0].clientY - ty);
-    if (dy > dx) locked = true;
+    const adx = Math.abs(dx);
+    if (!swiping && !locked) {
+      if (dy > adx) { locked = true; return; }
+      if (adx > 10) swiping = true;
+    }
+    if (locked || !swiping) return;
+    const m = getMain();
+    if (m) { m.style.transition = 'none'; m.style.transform = `translateX(${dx}px)`; }
+  }, { passive: true });
+
+  document.addEventListener('touchend', e => {
+    if (animating) return;
+    const m = getMain();
+    if (!m) return;
+    if (locked || !swiping) { snapBack(m); return; }
+
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) < 40) { snapBack(m); return; }
+
+    const goNext = dx < 0;
+
+    // Bloque si on est déjà à la limite
+    if (goNext && weekOffset >= 1) { snapBack(m); return; }
+
+    animating = true;
+    m.style.transition = 'none';
+    m.style.transform = '';
+
+    const rect = m.getBoundingClientRect();
+    const top = Math.round(rect.top);
+    const h = window.innerHeight - top;
+    const vw = window.innerWidth;
+
+    // Clone le .main sans IDs pour ne pas casser getElementById
+    const makeSnap = () => {
+      const clone = m.cloneNode(true);
+      clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+      clone.style.pointerEvents = 'none';
+      const panel = document.createElement('div');
+      panel.style.cssText = `position:fixed;top:${top}px;width:${vw}px;height:${h}px;`
+        + `overflow:hidden;z-index:500;background:var(--bg,#fff);pointer-events:none;`;
+      panel.appendChild(clone);
+      document.body.appendChild(panel);
+      return panel;
+    };
+
+    // Panel "ancienne semaine" positionné exactement sur .main
+    const pOld = makeSnap();
+    pOld.style.left = '0px';
+
+    // Met à jour le vrai .main avec la nouvelle semaine
+    changeWeek(goNext ? 1 : -1);
+
+    // Panel "nouvelle semaine" positionné hors écran côté opposé
+    const pNew = makeSnap();
+    pNew.style.left = `${goNext ? vw : -vw}px`;
+
+    void pOld.offsetWidth;
+
+    // Les deux panels translatent du même delta pixel → restent collés
+    const dur = 280;
+    const shift = `${goNext ? -vw : vw}px`;
+    [pOld, pNew].forEach(p => {
+      p.style.transition = `transform ${dur}ms ease-out`;
+      p.style.transform = `translateX(${shift})`;
+    });
+
+    setTimeout(() => { pOld.remove(); pNew.remove(); animating = false; }, dur);
   }, { passive: true });
 })();
 
