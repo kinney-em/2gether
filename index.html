@@ -230,6 +230,12 @@
   .day-col { display: flex; flex-direction: column; align-items: center; gap: 3px; }
   .day-lbl { font-size: 10px; font-weight: 700; color: var(--text-3); text-transform: uppercase; }
   .day-lbl.today { color: var(--green); background: var(--green-light); border-radius: 99px; padding: 1px 5px; }
+  @keyframes readonly-flash {
+    0%,100% { background: var(--amber-light); }
+    30%      { background: var(--amber); }
+    60%      { background: var(--amber-light); }
+  }
+  #readonly-banner.flash { animation: readonly-flash 0.5s ease; }
   .meal-btn, .sport-btn {
     width: 100%; aspect-ratio: 1;
     min-width: 44px; min-height: 44px;
@@ -1515,7 +1521,7 @@ function changeWeek(d) {
 let mealLongPressTimer = null, mealLongPressEl = null, mealLongPressHandled = false;
 
 function startMealLongPress(type, day, el) {
-  if (viewingPartner) return;
+  if (viewingPartner) { flashReadonlyBanner(); return; }
   mealLongPressHandled = false;
   mealLongPressEl = el;
   el.classList.add('long-pressing');
@@ -1544,8 +1550,17 @@ function getMeal(type, day) {
   return getData().meals[wk]?.[day]?.[type] || 'none';
 }
 
+function flashReadonlyBanner() {
+  const b = document.getElementById('readonly-banner');
+  if (!b) return;
+  b.classList.remove('flash');
+  void b.offsetWidth;
+  b.classList.add('flash');
+  b.addEventListener('animationend', () => b.classList.remove('flash'), { once: true });
+}
+
 function cycleMeal(type, day) {
-  if (viewingPartner) return;
+  if (viewingPartner) { flashReadonlyBanner(); return; }
   if (mealLongPressHandled) { mealLongPressHandled = false; return; }
   const wk = getWeekKey();
   if (!myData.meals[wk]) myData.meals[wk] = {};
@@ -1718,7 +1733,7 @@ function renderActList() {
 }
 
 function toggleAct(act) {
-  if (viewingPartner) return;
+  if (viewingPartner) { flashReadonlyBanner(); return; }
   const wk = getWeekKey();
   if (!myData.sports[wk]) myData.sports[wk] = {};
   if (!myData.sports[wk][activeDayIdx]) myData.sports[wk][activeDayIdx] = [];
