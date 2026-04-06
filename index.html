@@ -229,6 +229,7 @@
   .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
   .day-col { display: flex; flex-direction: column; align-items: center; gap: 3px; }
   .day-lbl { font-size: 10px; font-weight: 700; color: var(--text-3); text-transform: uppercase; }
+  .day-lbl.today { color: var(--green); background: var(--green-light); border-radius: 99px; padding: 1px 5px; }
   .meal-btn, .sport-btn {
     width: 100%; aspect-ratio: 1;
     min-width: 44px; min-height: 44px;
@@ -1560,13 +1561,14 @@ function renderMeals() {
   MEALS.forEach(type => {
     const g = document.getElementById('grid-' + type);
     if (!g) return;
+    const todayIdx = weekOffset === 0 ? (new Date().getDay() + 6) % 7 : -1;
     g.innerHTML = DAYS.map((d,i) => {
       const state = getMeal(type,i);
       const si = stateOrder.indexOf(state);
       const dots = [1,2,3].map(n => `<span${si >= n ? ' class="on"' : ''}></span>`).join('');
       return `
       <div class="day-col">
-        <div class="day-lbl">${d}</div>
+        <div class="day-lbl${i === todayIdx ? ' today' : ''}">${d}</div>
         <div class="meal-btn ${state}"
           onclick="cycleMeal('${type}',${i})"
           onmousedown="startMealLongPress('${type}',${i},this)"
@@ -1656,10 +1658,11 @@ function countSportDays(data, wk) {
 function renderSportGrid() {
   const g = document.getElementById('grid-sport');
   if (!g) return;
+  const todayIdxS = weekOffset === 0 ? (new Date().getDay() + 6) % 7 : -1;
   g.innerHTML = DAYS.map((d,i) => {
     const acts = getSport(i);
     return `<div class="day-col">
-      <div class="day-lbl">${d}</div>
+      <div class="day-lbl${i === todayIdxS ? ' today' : ''}">${d}</div>
       <div class="sport-btn ${acts.length>0?'done':''}" onclick="openSportModal(${i})">${acts.length>0?acts.length:'·'}</div>
     </div>`;
   }).join('');
