@@ -619,7 +619,16 @@
         <button class="logout-btn" onclick="toggleProfilMenu(event); return false;" id="profil-menu-btn"
           style="padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);
           background:var(--surface);cursor:pointer;font-family:'Nunito',sans-serif;
-          font-size:13px;color:var(--text);-webkit-tap-highlight-color:transparent;white-space:nowrap;">👤 ▾</button>
+          font-size:13px;color:var(--text);-webkit-tap-highlight-color:transparent;white-space:nowrap;display:flex;align-items:center;gap:4px;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="var(--teal)">
+            <circle cx="12" cy="12" r="10" fill="none" stroke="var(--teal)" stroke-width="1.8"/>
+            <circle cx="12" cy="9.5" r="3.5" fill="var(--teal)"/>
+            <path d="M5.5 19.5c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6" fill="var(--teal)"/>
+          </svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 10 10" fill="var(--teal)">
+            <path d="M2 3.5L5 6.5L8 3.5" stroke="var(--teal)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+          </button>
         <div id="profil-dropdown" style="
           display:none; position:absolute; right:0; top:36px;
           background:var(--surface); border-radius:var(--radius);
