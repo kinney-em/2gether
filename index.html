@@ -230,6 +230,11 @@
   .day-col { display: flex; flex-direction: column; align-items: center; gap: 3px; }
   .day-lbl { font-size: 10px; font-weight: 700; color: var(--text-3); text-transform: uppercase; }
   .day-lbl.today { color: var(--green); background: var(--green-light); border-radius: 99px; padding: 1px 5px; }
+  /* --- MEAL TABLE --- */
+  .meal-table-grid { display: grid; grid-template-columns: 36px repeat(7, 1fr); gap: 3px; align-items: center; }
+  .meal-row-lbl { font-size: 9px; font-weight: 700; color: var(--text-3); text-transform: uppercase; text-align: center; line-height: 1.2; }
+  .meal-table-grid .day-lbl { text-align: center; display: block; }
+  .meal-separator { grid-column: 1 / -1; border-top: 1.5px solid var(--border); margin: 4px 0; }
   @keyframes readonly-flash {
     0%,100% { background: var(--amber-light); }
     30%      { background: var(--amber); }
@@ -655,16 +660,9 @@
     <!-- REPAS -->
     <div id="tab-repas" class="screen active">
       <div class="score-strip" id="food-scores"></div>
-      <div class="sec-label">Petit-déjeuner</div>
-      <div class="week-grid" id="grid-pdj"></div>
-      <div class="sec-label">Déjeuner</div>
-      <div class="week-grid" id="grid-dej"></div>
-      <div class="sec-label">Dîner</div>
-      <div class="week-grid" id="grid-din"></div>
-      <div class="sec-label">Snacks</div>
-      <div class="week-grid" id="grid-snack"></div>
-      <p style="font-size:11px;color:var(--text-3);margin-top:8px;">Tapez pour cycler : vide → <b>✔</b> sain → <b>≈</b> correct → <b>✖</b> malbouffe · Appui long pour remettre à zéro</p>
-      <div id="meal-ratio-bar" style="display:none;height:20px;border-radius:99px;overflow:hidden;margin-top:10px;border:1px solid var(--border);"></div>
+      <div id="meal-ratio-bar" style="display:none;height:20px;border-radius:99px;overflow:hidden;margin-bottom:6px;border:1px solid var(--border);"></div>
+      <p style="font-size:11px;color:var(--text-3);margin-bottom:6px;">Tapez pour cycler : vide → <b>✔</b> sain → <b>≈</b> correct → <b>✖</b> malbouffe · Appui long pour remettre à zéro</p>
+      <div id="meal-table"></div>
       <div id="meal-empty-state" style="display:none;text-align:center;padding:20px 16px 8px;">
         <div style="display:flex;align-items:flex-end;justify-content:center;gap:6px;margin-bottom:10px;">
           <span style="font-size:24px;opacity:0.6;">🍏</span>
@@ -1571,30 +1569,38 @@ myData.meals[wk][day][type] = cur === 'none' ? 'sain' : cur === 'sain' ? 'correc
 }
 
 function renderMeals() {
+  const g = document.getElementById('meal-table');
+  if (!g) return;
   const icons = { none:'·', sain:'✔', correct:'≈', malbouffe:'✖', skip:'—' };
   const stateOrder = ['none','sain','correct','malbouffe'];
-  MEALS.forEach(type => {
-    const g = document.getElementById('grid-' + type);
-    if (!g) return;
-    const todayIdx = weekOffset === 0 ? (new Date().getDay() + 6) % 7 : -1;
-    g.innerHTML = DAYS.map((d,i) => {
+  const todayIdx = weekOffset === 0 ? (new Date().getDay() + 6) % 7 : -1;
+  const mealLabels = { pdj:'Matin', dej:'Midi', din:'Soir', snack:'Snack' };
+
+  // En-tête : cellule vide + 7 jours
+  const header = `<div></div>` + DAYS.map((d,i) =>
+    `<div class="day-lbl${i === todayIdx ? ' today' : ''}">${d}</div>`
+  ).join('');
+
+  // Lignes : label repas + 7 boutons
+  const rows = MEALS.map(type =>
+    (type === 'snack' ? '<div class="meal-separator"></div>' : '') +
+    `<div class="meal-row-lbl">${mealLabels[type]}</div>` +
+    DAYS.map((_,i) => {
       const state = getMeal(type,i);
       const si = stateOrder.indexOf(state);
       const dots = [1,2,3].map(n => `<span${si >= n ? ' class="on"' : ''}></span>`).join('');
-      return `
-      <div class="day-col">
-        <div class="day-lbl${i === todayIdx ? ' today' : ''}">${d}</div>
-        <div class="meal-btn ${state}"
-          onclick="cycleMeal('${type}',${i})"
-          onmousedown="startMealLongPress('${type}',${i},this)"
-          onmouseup="cancelMealLongPress()"
-          onmouseleave="cancelMealLongPress()"
-          ontouchstart="startMealLongPress('${type}',${i},this)"
-          ontouchend="cancelMealLongPress()"
-          ontouchmove="cancelMealLongPress()">${icons[state]}<div class="meal-cycle-dots">${dots}</div></div>
-      </div>`;
-    }).join('');
-  });
+      return `<div class="meal-btn ${state}"
+        onclick="cycleMeal('${type}',${i})"
+        onmousedown="startMealLongPress('${type}',${i},this)"
+        onmouseup="cancelMealLongPress()"
+        onmouseleave="cancelMealLongPress()"
+        ontouchstart="startMealLongPress('${type}',${i},this)"
+        ontouchend="cancelMealLongPress()"
+        ontouchmove="cancelMealLongPress()">${icons[state]}<div class="meal-cycle-dots">${dots}</div></div>`;
+    }).join('')
+  ).join('');
+
+  g.innerHTML = `<div class="meal-table-grid">${header}${rows}</div>`;
 }
 
 function countMeals(data, wk) {
