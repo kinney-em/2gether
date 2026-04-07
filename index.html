@@ -22,7 +22,7 @@
     --amber: #BA7517; --amber-light: #FAEEDA; --amber-dark: #633806;
     --red: #D44000; --red-light: #FCEADE; --red-dark: #5A1A00;
     --gray: #888780; --gray-light: #F1EFE8; --gray-dark: #2C2C2A;
-    --coral: #D85A30; --coral-light: #FAECE7;
+    --coral: #E8705A; --coral-light: #FAEDE9;
     --bg: #f8f7f4; --surface: #ffffff; --border: rgba(0,0,0,0.08);
     --text: #1a1a18; --text-2: #666661; --text-3: #999994;
     --radius: 12px; --radius-sm: 8px;
@@ -39,7 +39,7 @@
       --teal: #2AC492; --teal-light: #062318; --teal-dark: #7DE8C4;
       --red: #FF6B35; --red-light: #2e1200; --red-dark: #FFAA85;
       --amber: #E09030; --amber-light: #2a1e06; --amber-dark: #F5C97A;
-      --coral: #E8784A; --coral-light: #2e1508;
+      --coral: #F08870; --coral-light: #2e1508;
       --gray-light: #2e2e2c;
       --shadow: 0 2px 12px rgba(0,0,0,0.25);
     }
@@ -645,7 +645,10 @@
         onmouseup="cancelPartnerLongPress()"
         onmouseleave="cancelPartnerLongPress()">
         <span class="seg-avatar" id="pill-partner-avatar">🌱</span>
-        <span class="seg-name" id="pill-partner-name">Proche</span>
+        <span style="display:flex;flex-direction:column;align-items:flex-start;gap:1px;">
+          <span class="seg-name" id="pill-partner-name">Proche</span>
+          <span id="pill-partner-more" style="display:none;font-size:11px;letter-spacing:3px;opacity:0.9;line-height:1;font-weight:900;">···</span>
+        </span>
       </button>
     </div>
     <!-- Row 3: readonly banner -->
@@ -855,6 +858,7 @@ let unsubscribeMe = null;
 let partnerUids = [];
 let partnersData = {};
 let activePartnerUid = null;
+let lastPartnerUid = null;
 let unsubscribePartners = {};
 
 // ---- AUTH ----
@@ -1087,6 +1091,8 @@ function updatePartnerPill() {
     if (avatarEl) avatarEl.textContent = '🫂';
     if (nameEl) nameEl.textContent = `${partnerUids.length} proches`;
   }
+  const moreEl = document.getElementById('pill-partner-more');
+  if (moreEl) moreEl.style.display = partnerUids.length > 1 ? 'block' : 'none';
   const switcher = document.getElementById('user-switcher');
   if (switcher) switcher.style.display = partnerUids.length > 0 ? 'flex' : 'none';
   const btn = document.getElementById('btn-motivate');
@@ -1105,7 +1111,7 @@ function togglePartnerPill(e) {
     return;
   }
   // Tap simple : bascule vers le dernier partenaire actif (ou le premier)
-  const target = activePartnerUid || partnerUids[0];
+  const target = activePartnerUid || lastPartnerUid || partnerUids[0];
   if (viewingPartner && activePartnerUid === target) setUser('me');
   else setUser('partner', target);
 }
@@ -1342,7 +1348,8 @@ function setUser(who, uid) {
     setWeekNavColor('var(--teal)');
   } else {
     viewingPartner = true;
-    activePartnerUid = uid || partnerUids[0] || null;
+    activePartnerUid = uid || lastPartnerUid || partnerUids[0] || null;
+    if (activePartnerUid) lastPartnerUid = activePartnerUid;
     document.getElementById('pill-me').className = 'seg-btn me';
     document.getElementById('pill-partner').className = 'seg-btn partner active';
     setWeekNavColor('var(--coral)');
