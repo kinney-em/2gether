@@ -229,6 +229,7 @@
   .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
   .day-col { display: flex; flex-direction: column; align-items: center; gap: 3px; }
   .day-lbl { font-size: 10px; font-weight: 700; color: var(--text-3); text-transform: uppercase; }
+  .day-lbl.today { color: var(--green); background: var(--green-light); border-radius: 99px; padding: 1px 5px; }
   .meal-btn, .sport-btn {
     width: 100%; aspect-ratio: 1;
     min-width: 44px; min-height: 44px;
@@ -607,7 +608,16 @@
         <button class="logout-btn" onclick="toggleProfilMenu(event); return false;" id="profil-menu-btn"
           style="padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);
           background:var(--surface);cursor:pointer;font-family:'Nunito',sans-serif;
-          font-size:13px;color:var(--text);-webkit-tap-highlight-color:transparent;white-space:nowrap;">👤 ▾</button>
+          font-size:13px;color:var(--text);-webkit-tap-highlight-color:transparent;white-space:nowrap;">
+          <span style="display:flex;align-items:center;gap:2px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="var(--teal)" style="display:block;">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="var(--teal)" style="display:block;">
+              <path d="M7 10l5 5 5-5z"/>
+            </svg>
+          </span>
+        </button>
         <div id="profil-dropdown" style="
           display:none; position:absolute; right:0; top:36px;
           background:var(--surface); border-radius:var(--radius);
@@ -1485,6 +1495,7 @@ myData.meals[wk][day][type] = cur === 'none' ? 'sain' : cur === 'sain' ? 'correc
 function renderMeals() {
   const icons = { none:'·', sain:'✔', correct:'≈', malbouffe:'✖', skip:'—' };
   const stateOrder = ['none','sain','correct','malbouffe'];
+  const todayIdx = weekOffset === 0 ? (new Date().getDay() + 6) % 7 : -1;
   MEALS.forEach(type => {
     const g = document.getElementById('grid-' + type);
     if (!g) return;
@@ -1494,7 +1505,7 @@ function renderMeals() {
       const dots = [1,2,3].map(n => `<span${si >= n ? ' class="on"' : ''}></span>`).join('');
       return `
       <div class="day-col">
-        <div class="day-lbl">${d}</div>
+        <div class="day-lbl${i === todayIdx ? ' today' : ''}">${d}</div>
         <div class="meal-btn ${state}"
           onclick="cycleMeal('${type}',${i})"
           onmousedown="startMealLongPress('${type}',${i},this)"
@@ -1584,10 +1595,11 @@ function countSportDays(data, wk) {
 function renderSportGrid() {
   const g = document.getElementById('grid-sport');
   if (!g) return;
+  const todayIdx = weekOffset === 0 ? (new Date().getDay() + 6) % 7 : -1;
   g.innerHTML = DAYS.map((d,i) => {
     const acts = getSport(i);
     return `<div class="day-col">
-      <div class="day-lbl">${d}</div>
+      <div class="day-lbl${i === todayIdx ? ' today' : ''}">${d}</div>
       <div class="sport-btn ${acts.length>0?'done':''}" onclick="openSportModal(${i})">${acts.length>0?acts.length:'·'}</div>
     </div>`;
   }).join('');
