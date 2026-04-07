@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
 <title>DuoMotiv</title>
 <link rel="icon" type="image/png" href="LOGO_habits.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#1D9E75">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="DuoMotiv">
+<link rel="apple-touch-icon" href="LOGO_habits.png">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -828,6 +834,11 @@ const CONFIGURED = firebaseConfig.apiKey !== "VOTRE_API_KEY";
 
 if (!CONFIGURED) {
   document.getElementById('config-notice').style.display = 'block';
+}
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(err => console.warn('SW:', err));
 }
 
 // Init Firebase
