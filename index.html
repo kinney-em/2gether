@@ -636,7 +636,14 @@
         <span class="seg-avatar" id="pill-me-avatar">🌱</span>
         <span class="seg-name" id="pill-me-name">Moi</span>
       </button>
-      <button class="seg-btn partner" id="pill-partner" onclick="togglePartnerPill(event)">
+      <button class="seg-btn partner" id="pill-partner"
+        onclick="togglePartnerPill(event)"
+        ontouchstart="startPartnerLongPress(event)"
+        ontouchend="cancelPartnerLongPress()"
+        ontouchmove="cancelPartnerLongPress()"
+        onmousedown="startPartnerLongPress(event)"
+        onmouseup="cancelPartnerLongPress()"
+        onmouseleave="cancelPartnerLongPress()">
         <span class="seg-avatar" id="pill-partner-avatar">🌱</span>
         <span class="seg-name" id="pill-partner-name">Proche</span>
       </button>
@@ -1084,6 +1091,11 @@ function updatePartnerPill() {
   if (switcher) switcher.style.display = partnerUids.length > 0 ? 'flex' : 'none';
   const btn = document.getElementById('btn-motivate');
   if (btn) btn.style.display = partnerUids.length > 0 ? 'flex' : 'none';
+  // Indicateur appui long si plusieurs partenaires
+  const partnerNameEl = document.getElementById('pill-partner-name');
+  if (partnerNameEl && partnerUids.length > 1) {
+    partnerNameEl.title = 'Appui long pour changer de partenaire';
+  }
 }
 
 function togglePartnerPill(e) {
@@ -1092,11 +1104,15 @@ function togglePartnerPill(e) {
     setUser('partner', null);
     return;
   }
-  if (partnerUids.length === 1) {
-    if (viewingPartner && activePartnerUid === partnerUids[0]) setUser('me');
-    else setUser('partner', partnerUids[0]);
-    return;
-  }
+  // Tap simple : bascule vers le dernier partenaire actif (ou le premier)
+  const target = activePartnerUid || partnerUids[0];
+  if (viewingPartner && activePartnerUid === target) setUser('me');
+  else setUser('partner', target);
+}
+
+function openPartnerSheet(e) {
+  if (e) e.stopPropagation();
+  if (partnerUids.length <= 1) return;
   const sheet = document.getElementById('partner-sheet');
   if (sheet.style.display === 'flex') { sheet.style.display = 'none'; return; }
 
@@ -1122,6 +1138,18 @@ function togglePartnerPill(e) {
   setTimeout(() => {
     document.addEventListener('click', closePartnerPillDropdown, { once: true });
   }, 100);
+}
+
+let _partnerLongPressTimer = null;
+function startPartnerLongPress(e) {
+  if (partnerUids.length <= 1) return;
+  _partnerLongPressTimer = setTimeout(() => {
+    if (navigator.vibrate) navigator.vibrate(40);
+    openPartnerSheet(e);
+  }, 500);
+}
+function cancelPartnerLongPress() {
+  clearTimeout(_partnerLongPressTimer);
 }
 
 function selectPartner(uid) {
