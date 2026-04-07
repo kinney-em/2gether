@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-<title>Habitudes ensemble</title>
+<title>DuoMotiv</title>
 <link rel="icon" type="image/png" href="LOGO_habits.png">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
@@ -131,9 +131,9 @@
   .header-title { font-size: 17px; font-weight: 700; }
   .user-pills { display: flex; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; width: 100%; }
   .user-pill {
-    padding: 5px 12px;
+    padding: 7px 14px;
     border-radius: 99px;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     border: 1.5px solid transparent;
@@ -155,13 +155,13 @@
   }
   .tab-bar::-webkit-scrollbar { display: none; }
   .tab {
-    padding: 5px 12px;
+    padding: 7px 14px;
     border-radius: 99px;
     border: 1.5px solid transparent;
     background: var(--gray-light);
     cursor: pointer;
     font-family: 'Nunito', sans-serif;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
     color: var(--text-2);
     transition: all .15s;
@@ -176,17 +176,28 @@
 
   /* --- WEEK NAV (compact, in header) --- */
   .week-nav-btn {
-    width: 28px; height: 28px;
+    width: 44px; height: 44px;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border);
     background: var(--surface);
     cursor: pointer;
-    font-size: 16px; font-weight: 700;
+    font-size: 18px; font-weight: 700;
     color: var(--text-2);
     display: flex; align-items: center; justify-content: center;
     font-family: 'Nunito', sans-serif;
     flex-shrink: 0;
   }
+  .week-nav-wrap {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    background: var(--surface); border-radius: 99px;
+    padding: 0 4px; box-shadow: var(--shadow);
+    min-height: 44px;
+  }
+  @keyframes week-flash {
+    0%   { background: var(--teal-light); }
+    100% { background: var(--surface); }
+  }
+  .week-nav-wrap.flash { animation: week-flash .4s ease; }
 
   /* --- SCORE STRIP --- */
   .score-strip { display: flex; gap: 8px; margin-bottom: 14px; }
@@ -206,7 +217,7 @@
   .score-chip.bad .score-chip-val { color: var(--red-dark); }
   .score-chip.sport .score-chip-val { color: var(--teal-dark); }
   .pbar { height: 4px; background: rgba(0,0,0,0.08); border-radius: 99px; overflow: hidden; margin-top: 2px; }
-  .pbar-fill { height: 100%; border-radius: 99px; transition: width .5s cubic-bezier(.4,0,.2,1); }
+  .pbar-fill { height: 100%; border-radius: 99px; transition: width .6s cubic-bezier(.4,0,.2,1); }
 
   /* --- SECTION LABEL --- */
   .sec-label {
@@ -218,6 +229,11 @@
   .week-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
   .day-col { display: flex; flex-direction: column; align-items: center; gap: 3px; }
   .day-lbl { font-size: 10px; font-weight: 700; color: var(--text-3); text-transform: uppercase; }
+  .day-lbl.today { color: var(--green); background: var(--green-light); border-radius: 99px; padding: 1px 5px; }
+  .meal-table-grid { display: grid; grid-template-columns: 34px repeat(7, 1fr); gap: 3px; align-items: center; }
+  .meal-table-grid .meal-btn { min-width: 0; min-height: 0; }
+  .meal-row-lbl { font-size: 9px; font-weight: 700; color: var(--text-3); text-transform: uppercase; text-align: center; line-height: 1.2; }
+  .meal-separator { grid-column: 1 / -1; border-top: 1.5px solid var(--border); margin: 3px 0; }
   .meal-btn, .sport-btn {
     width: 100%; aspect-ratio: 1;
     min-width: 44px; min-height: 44px;
@@ -246,7 +262,7 @@
     width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: 0.2; transition: opacity .15s;
   }
   .meal-cycle-dots span.on { opacity: 0.7; }
-  .meal-btn.long-pressing { transform: scale(0.88) !important; opacity: 0.65; transition: transform 0.45s ease, opacity 0.45s ease !important; }
+  .meal-btn.long-pressing, .sport-btn.long-pressing { transform: scale(0.88) !important; opacity: 0.65; transition: transform 0.45s ease, opacity 0.45s ease !important; }
 
   /* --- SPORT MODAL --- */
   .modal-overlay {
@@ -329,7 +345,16 @@
     font-size: 11px; font-weight: 700; text-transform: uppercase;
     letter-spacing: .06em; color: var(--text-2);
   }
-  .collapse-chevron { font-size: 13px; color: var(--text-3); transition: transform .25s; }
+  .collapse-chevron {
+    width: 24px; height: 24px; border-radius: 6px;
+    background: var(--teal-light); display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: transform .25s, background .2s;
+  }
+  .collapse-chevron::after {
+    content: ''; display: block;
+    border-left: 5px solid transparent; border-right: 5px solid transparent;
+    border-top: 6px solid var(--teal); transition: border-top-color .2s;
+  }
   .collapse-chevron.open { transform: rotate(180deg); }
   .collapse-body { overflow: hidden; max-height: 0; transition: max-height .35s ease; }
   .collapse-body.open { max-height: 2000px; }
@@ -478,21 +503,17 @@
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="login-logo"><img src="LOGO_habits.png" alt="2gether" style="width:90px;height:auto;"></div>
-  <div class="login-title">Habitudes ensemble</div>
+  <div class="login-title">DuoMotiv</div>
   <div class="login-sub">Suivez vos objectifs à deux</div>
 
   <div id="login-pitch" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:340px;margin-bottom:4px;">
-    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);">
-      <span style="font-size:22px;">🥗</span>
-      <span style="font-size:13px;color:var(--text-2);">Notez vos repas et votre sport chaque jour</span>
+    <div style="display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);">
+      <span style="font-size:20px;">🥗</span><span style="font-size:20px;">📊</span>
+      <span style="font-size:13px;color:var(--text-2);">Notez repas &amp; sport, visualisez vos tendances</span>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);">
-      <span style="font-size:22px;">📊</span>
-      <span style="font-size:13px;color:var(--text-2);">Visualisez vos tendances sur la semaine, le mois…</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);">
+    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);border-left:3px solid var(--teal);">
       <span style="font-size:22px;">🔗</span>
-      <span style="font-size:13px;color:var(--text-2);">Jumelez-vous avec un proche pour vous motiver ensemble</span>
+      <span style="font-size:13px;color:var(--text-2);">Jumelez-vous avec un.e proche pour vous motiver ensemble</span>
     </div>
   </div>
 
@@ -500,14 +521,12 @@
     <h2>Se connecter</h2>
     <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="votre@email.com"/></div>
     <div class="field"><label>Mot de passe</label><input type="password" id="login-pwd" placeholder="••••••••"/></div>
+    <div id="login-error"></div>
     <button class="btn btn-primary" onclick="doLogin()">Connexion</button>
     <div class="login-sep">— ou —</div>
-	 
-	  <button class="btn btn-secondary" onclick="resendVerification()">Renvoyer l'email de confirmation</button>
-
+    <button class="btn btn-secondary" onclick="resendVerification()">Renvoyer l'email de confirmation</button>
     <button class="btn btn-secondary" onclick="showCard('register')">Créer un compte</button>
     <button class="btn btn-secondary" onclick="showCard('reset')">Mot de passe oublié ?</button>
-	  <div id="login-error"></div>
   </div>
 
 	<div class="login-card" id="card-reset" style="display:none;">
@@ -578,7 +597,7 @@
       <img src="LOGO_habits.png" alt="" style="width:20px;height:auto;opacity:0.4;flex-shrink:0;">
       <div style="position:relative;min-width:0;flex-shrink:1;">
         <div class="user-pill" onclick="togglePartnerPill(event)" id="pill-partner" style="min-width:0;overflow:hidden;">
-          <span id="pill-partner-avatar">🌱</span> <span id="pill-partner-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Partenaires</span>
+          <span id="pill-partner-avatar">🌱</span> <span id="pill-partner-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Partenaires</span><span id="pill-partner-meta" style="font-size:11px;color:var(--text-3);margin-left:3px;flex-shrink:0;"></span>
         </div>
         <div id="partner-pill-dropdown" style="
           display:none; position:absolute; left:0; top:36px;
@@ -593,13 +612,22 @@
         <button class="logout-btn" onclick="toggleProfilMenu(event); return false;" id="profil-menu-btn"
           style="padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);
           background:var(--surface);cursor:pointer;font-family:'Nunito',sans-serif;
-          font-size:13px;color:var(--text);-webkit-tap-highlight-color:transparent;white-space:nowrap;">👤 ▾</button>
+          font-size:13px;color:var(--text);-webkit-tap-highlight-color:transparent;white-space:nowrap;">
+          <span style="display:flex;align-items:center;gap:2px;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="var(--teal)" style="display:block;">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="var(--teal)" style="display:block;">
+              <path d="M7 10l5 5 5-5z"/>
+            </svg>
+          </span>
+        </button>
         <div id="profil-dropdown" style="
           display:none; position:absolute; right:0; top:36px;
           background:var(--surface); border-radius:var(--radius);
           box-shadow:0 4px 20px rgba(0,0,0,0.12);
           border:1px solid var(--border);
-          min-width:220px; z-index:100; overflow:hidden;">
+          min-width:260px; z-index:100; overflow:hidden;font-size:14px;">
           <div id="profil-dropdown-content"></div>
         </div>
       </div>
@@ -611,10 +639,12 @@
       <button class="tab" onclick="showTab('sport',this)">🏃 Sport</button>
     </div>
     <!-- Row 3: week nav slim -->
-    <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
-      <button onclick="changeWeek(-1)" class="week-nav-btn" id="week-nav-prev">‹</button>
-      <span id="week-lbl" style="font-size:11px;font-weight:700;color:var(--text-2);white-space:nowrap;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:200px;">Cette semaine</span>
-      <button onclick="changeWeek(1)" class="week-nav-btn" id="week-nav-next">›</button>
+    <div style="display:flex;align-items:center;justify-content:center;">
+      <div class="week-nav-wrap" id="week-nav-wrap">
+        <button onclick="changeWeek(-1)" class="week-nav-btn" id="week-nav-prev">‹</button>
+        <span id="week-lbl" style="font-size:14px;font-weight:700;color:var(--text-2);white-space:nowrap;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:200px;">Cette semaine</span>
+        <button onclick="changeWeek(1)" class="week-nav-btn" id="week-nav-next">›</button>
+      </div>
     </div>
   </div>
 
@@ -632,18 +662,17 @@
     <!-- REPAS -->
     <div id="tab-repas" class="screen active">
       <div class="score-strip" id="food-scores"></div>
-      <div class="sec-label">Petit-déjeuner</div>
-      <div class="week-grid" id="grid-pdj"></div>
-      <div class="sec-label">Déjeuner</div>
-      <div class="week-grid" id="grid-dej"></div>
-      <div class="sec-label">Dîner</div>
-      <div class="week-grid" id="grid-din"></div>
-      <div class="sec-label">Snacks</div>
-      <div class="week-grid" id="grid-snack"></div>
-      <p style="font-size:11px;color:var(--text-3);margin-top:8px;">Tapez pour cycler : vide → <b>✔</b> sain → <b>≈</b> correct → <b>✖</b> malbouffe · Appui long pour remettre à zéro</p>
-      <div id="meal-ratio-bar" style="display:none;height:20px;border-radius:99px;overflow:hidden;margin-top:10px;border:1px solid var(--border);"></div>
+      <div id="meal-ratio-bar" style="display:flex;visibility:hidden;height:20px;border-radius:99px;overflow:hidden;margin-bottom:6px;border:1px solid var(--border);"></div>
+      <p style="font-size:11px;color:var(--text-3);margin-bottom:6px;">Tapez pour cycler : vide → <b>✔</b> sain → <b>≈</b> correct → <b>✖</b> malbouffe <br>· Appui long pour remettre à zéro</p>
+      <div id="meal-table"></div>
       <div id="meal-empty-state" style="display:none;text-align:center;padding:20px 16px 8px;">
-        <div style="font-size:32px;margin-bottom:8px;">🥗</div>
+        <div style="display:flex;align-items:flex-end;justify-content:center;gap:6px;margin-bottom:10px;">
+          <span style="font-size:24px;opacity:0.6;">🍏</span>
+          <span style="font-size:28px;opacity:0.75;">🍲</span>
+          <span style="font-size:34px;">🍽️</span>
+          <span style="font-size:28px;opacity:0.75;">🥖</span>
+          <span style="font-size:24px;opacity:0.6;">🧋</span>
+        </div>
         <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">C'est parti pour cette semaine !</div>
         <div style="font-size:12px;color:var(--text-2);line-height:1.5;">Appuyez sur une case pour enregistrer votre premier repas.</div>
       </div>
@@ -652,8 +681,19 @@
     <!-- SPORT -->
     <div id="tab-sport" class="screen">
       <div class="score-strip" id="sport-scores"></div>
-      <div class="sec-label">Activités par jour — tapez pour sélectionner</div>
+      <p style="font-size:11px;color:var(--text-3);margin-bottom:6px;">Activités par jour — tapez pour sélectionner · Appui long pour remettre à zéro</p>
       <div class="week-grid" id="grid-sport"></div>
+      <div id="sport-empty-state" style="display:none;text-align:center;padding:20px 16px 8px;">
+        <div style="display:flex;align-items:flex-end;justify-content:center;gap:6px;margin-bottom:10px;">
+          <span style="font-size:24px;opacity:0.6;">🚲</span>
+          <span style="font-size:28px;opacity:0.75;">🚶🏾‍♀️</span>
+          <span style="font-size:34px;">🧘🏻</span>
+          <span style="font-size:28px;opacity:0.75;">🚶🏼‍➡️</span>
+          <span style="font-size:24px;opacity:0.6;">🛼</span>
+        </div>
+        <div class="sport-empty-title" style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">Cette semaine commence maintenant !</div>
+        <div style="font-size:12px;color:var(--text-2);line-height:1.5;">Même une petite activité compte. Tapez un jour pour démarrer.</div>
+      </div>
     </div>
 
     <!-- PLEINE CONSCIENCE (coming soon) -->
@@ -666,40 +706,6 @@
     </div>
 
 
-<!-- GOALS MODAL -->
-<div id="goals-modal" style="
-  display:none; position:fixed; inset:0; z-index:90;
-  background:rgba(0,0,0,0.35);" onclick="closeGoalsModal(event)">
-  <div style="
-    position:absolute; right:0; top:0; bottom:0; width:min(320px, 100vw);
-    background:var(--bg); overflow-y:auto; padding:20px 16px 40px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-      <span style="font-size:16px; font-weight:700;">Mes objectifs</span>
-      <button onclick="closeGoalsModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-2);">✕</button>
-    </div>
-    <div class="sec-label">Objectifs hebdomadaires</div>
-    <div id="goals-modal-list"></div>
-  </div>
-</div>
-
-<!-- PROFIL PANEL -->
-<div id="profil-panel" style="
-  display:none; position:fixed; inset:0; z-index:90;
-  background:rgba(0,0,0,0.35);" onclick="closeProfilPanel(event)">
-  <div style="
-    position:absolute; right:0; top:0; bottom:0; width:min(320px, 100vw);
-    background:var(--bg); overflow-y:auto; padding:20px 16px 40px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-      <span style="font-size:16px; font-weight:700;">Mon profil</span>
-      <button onclick="closeProfilPanel()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-2);">✕</button>
-    </div>
-    <div class="sec-label">Mon compte</div>
-    <div class="profil-card" id="profil-info"></div>
-    <div class="sec-label" style="margin-top:16px;">Mon partenaire</div>
-    <div class="profil-card" id="profil-partner"></div>
-  </div>
-</div>
-	  
     <!-- RECAP SEMAINE -->
     <div id="tab-objectifs" class="screen">
       <div class="sec-label" id="goals-label">Récap de la semaine</div>
@@ -707,9 +713,10 @@
 
       <div class="collapse-header" onclick="toggleCollapse('stats-body','stats-chev')">
         <span class="collapse-title">Récap Global</span>
-        <span class="collapse-chevron open" id="stats-chev">▾</span>
+        <span class="collapse-chevron open" id="stats-chev"></span>
       </div>
       <div class="collapse-body open" id="stats-body">
+        <div id="ratio-gauge" style="margin-top:10px;"></div>
         <div class="period-bar" style="margin-top:10px;">
           <button class="ptab active" onclick="setPeriod('7j',this)">7 jours</button>
           <button class="ptab" onclick="setPeriod('sem',this)">Semaine</button>
@@ -723,7 +730,7 @@
 
       <div class="collapse-header" onclick="toggleCollapse('compare-body','compare-chev')">
         <span class="collapse-title" id="compare-label">Comparaison avec vos proches</span>
-        <span class="collapse-chevron open" id="compare-chev">▾</span>
+        <span class="collapse-chevron open" id="compare-chev"></span>
       </div>
       <div class="collapse-body open" id="compare-body">
         <div id="compare-section" style="margin-top:6px;"></div>
@@ -731,12 +738,61 @@
 
       <div class="collapse-header" onclick="toggleCollapse('badges-body','badges-chev')">
         <span class="collapse-title">Badges</span>
-        <span class="collapse-chevron" id="badges-chev">▾</span>
+        <span class="collapse-chevron" id="badges-chev"></span>
       </div>
       <div class="collapse-body" id="badges-body">
         <div class="badge-grid" id="badge-grid" style="margin-top:10px;"></div>
       </div>
     </div>
+  </div>
+</div>
+
+
+<!-- PROFIL PANEL -->
+<div id="profil-panel" onclick="closeProfilPanel()" style="
+  display:none; position:fixed; inset:0; z-index:90;
+  background:rgba(0,0,0,0.35);">
+  <div onclick="event.stopPropagation()" style="
+    position:absolute; right:0; top:0; bottom:0; width:min(320px, 100vw);
+    background:var(--bg); overflow-y:auto; padding:20px 16px 40px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <span style="font-size:16px; font-weight:700;">Mon profil</span>
+      <button onclick="closeProfilPanel()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-2);">✕</button>
+    </div>
+    <div class="profil-card" id="profil-info"></div>
+  </div>
+</div>
+
+<!-- PARTENAIRES PANEL -->
+<div id="partenaires-panel" onclick="closePartenairesPanel()" style="
+  display:none; position:fixed; inset:0; z-index:90;
+  background:rgba(0,0,0,0.35);">
+  <div onclick="event.stopPropagation()" style="
+    position:absolute; right:0; top:0; bottom:0; width:min(320px, 100vw);
+    background:var(--bg); overflow-y:auto; padding:20px 16px 40px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <span style="font-size:16px; font-weight:700;">Partenaires</span>
+      <button onclick="closePartenairesPanel()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-2);">✕</button>
+    </div>
+    <div class="profil-card" id="partenaires-content"></div>
+  </div>
+</div>
+
+<!-- PARAMETRES PANEL -->
+<div id="parametres-panel" onclick="closeParametresPanel()" style="
+  display:none; position:fixed; inset:0; z-index:90;
+  background:rgba(0,0,0,0.35);">
+  <div onclick="event.stopPropagation()" style="
+    position:absolute; right:0; top:0; bottom:0; width:min(320px, 100vw);
+    background:var(--bg); overflow-y:auto; padding:20px 16px 40px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <span style="font-size:16px; font-weight:700;">Paramètres</span>
+      <button onclick="closeParametresPanel()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-2);">✕</button>
+    </div>
+    <div class="sec-label">Objectifs hebdomadaires</div>
+    <div id="parametres-goals"></div>
+    <div class="sec-label" style="margin-top:16px;">Activités sportives</div>
+    <div id="parametres-acts"></div>
   </div>
 </div>
 
@@ -746,10 +802,6 @@
     <div class="modal-handle"></div>
     <div class="modal-title" id="sport-modal-title">Activités</div>
     <div id="sport-act-list"></div>
-    <div class="add-row">
-      <input id="new-act-input" placeholder="Ajouter une activité..." onkeydown="if(event.key==='Enter')addActivity()"/>
-      <button class="btn btn-primary" style="padding:9px 14px;" onclick="addActivity()">+</button>
-    </div>
   </div>
 </div>
 
@@ -794,7 +846,7 @@ let weekOffset = 0;
 let activeDayIdx = null;
 let currentPeriod = '7j';
 let statsChart = null;
-let myData = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
+let myData = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 }, disabledActs: [] };
 let unsubscribeMe = null;
 let partnerUids = [];
 let partnersData = {};
@@ -921,7 +973,7 @@ function skipPair() {
   try {
     await auth.sendPasswordResetEmail(email);
     msgEl.style.color = 'var(--green)';
-    msgEl.textContent = '✅ Email envoyé ! Vérifiez votre boîte mail.';
+    msgEl.textContent = '✅ Si cet email est dans notre base, vous recevrez un lien de réinitialisation. Vérifiez aussi vos spams.';
   } catch(e) {
     msgEl.style.color = 'var(--red)';
     msgEl.textContent = e.code === 'auth/user-not-found' ? 'Aucun compte avec cet email' : e.message;
@@ -955,6 +1007,7 @@ async function loadUserProfile() {
   partnerUids = d.partnerIds || (d.partnerId ? [d.partnerId] : []);
   myData.activities = d.activities || [...DEFAULT_ACTS];
   myData.goals = d.goals || { repas: 14, sport: 3 };
+  myData.disabledActs = d.disabledActs || [];
   myData.avatar = d.avatar || '🌱';
   const earned = d.badges || [];
   BADGES.forEach(b => { if (earned.includes(b.id)) b.earnedMe = true; });
@@ -1018,15 +1071,20 @@ async function loadPartnerProfile(uid) {
 function updatePartnerPill() {
   const avatarEl = document.getElementById('pill-partner-avatar');
   const nameEl = document.getElementById('pill-partner-name');
+  const metaEl = document.getElementById('pill-partner-meta');
   if (partnerUids.length === 0) {
     if (avatarEl) avatarEl.textContent = '🌱';
     if (nameEl) nameEl.textContent = 'Partenaires';
+    if (metaEl) metaEl.textContent = '';
   } else if (activePartnerUid && partnersData[activePartnerUid]) {
     if (avatarEl) avatarEl.textContent = partnersData[activePartnerUid].avatar || '🌱';
     if (nameEl) nameEl.textContent = partnersData[activePartnerUid].name || 'Partenaire';
+    const idx = partnerUids.indexOf(activePartnerUid) + 1;
+    if (metaEl) metaEl.textContent = partnerUids.length > 1 ? ` ${idx}/${partnerUids.length} ▾` : ' ▾';
   } else {
     if (avatarEl) avatarEl.textContent = '🌱';
     if (nameEl) nameEl.textContent = `${partnerUids.length} partenaire${partnerUids.length > 1 ? 's' : ''}`;
+    if (metaEl) metaEl.textContent = ' ▾';
   }
 }
 
@@ -1186,7 +1244,8 @@ async function saveProfile() {
   if (!currentUid) return;
   await db.collection('users').doc(currentUid).update({
     activities: myData.activities,
-    goals: myData.goals
+    goals: myData.goals,
+    disabledActs: myData.disabledActs
   });
 }
 
@@ -1224,6 +1283,7 @@ function getData() {
   }
   return myData;
 }
+
 
 
 function setWeekNavColor(color) {
@@ -1286,87 +1346,84 @@ function showTab(name, btn) {
   if (name === 'objectifs') { renderObjectifs(); renderStats(); }
 }
 
+function _ddMenuItem(label, fn) {
+  return `<div onclick="${fn}" style="padding:9px 12px;cursor:pointer;font-size:14px;
+    border-radius:var(--radius-sm);color:var(--text);"
+    onmouseover="this.style.background='var(--gray-light)'"
+    onmouseout="this.style.background='none'">${label}</div>`;
+}
+
 function toggleProfilMenu(e) {
   if (e) { e.stopPropagation(); e.preventDefault(); }
   const dd = document.getElementById('profil-dropdown');
   if (!dd) return;
   if (dd.style.display === 'block') { dd.style.display = 'none'; return; }
 
-  const myName = document.getElementById('pill-me').textContent || 'Moi';
-  const partName = document.getElementById('pill-partner').textContent || 'Mon proche';
-  const initials = myName.charAt(0).toUpperCase();
-    const myAvatar = myData.avatar || '🌱';
+  const myName = document.getElementById('pill-me-name').textContent || 'Moi';
+  const myAvatar = myData.avatar || '🌱';
 
   document.getElementById('profil-dropdown-content').innerHTML = `
     <div style="padding:14px 16px; border-bottom:1px solid var(--border);">
       <div style="display:flex;align-items:center;gap:10px;">
-<div style="width:36px;height:36px;border-radius:50%;background:var(--teal-light);
-          display:flex;align-items:center;justify-content:center;
-          font-size:20px;">${myAvatar}</div>
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--teal-light);
+          display:flex;align-items:center;justify-content:center;font-size:20px;">${myAvatar}</div>
         <div>
           <div style="font-weight:700;font-size:14px;">${myName}</div>
-          <div style="font-size:11px;color:var(--text-3);">Mon compte</div>
+          <div style="font-size:11px;color:var(--text-3);">${auth.currentUser?.email || ''}</div>
         </div>
       </div>
     </div>
-
-     <div style="padding:10px 16px; border-bottom:1px solid var(--border);">
-      <div style="font-size:11px;color:var(--text-3);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Partenaires (${partnerUids.length}/5)</div>
-      ${partnerUids.length === 0
-        ? `<div style="font-size:12px;color:var(--text-3);">Aucun partenaire lié</div>`
-        : partnerUids.map(uid => {
-            const p = partnersData[uid] || {};
-            return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
-              <span style="font-size:16px;">${p.avatar || '🌱'}</span>
-              <span style="font-size:13px;font-weight:600;">${p.name || 'Partenaire'}</span>
-            </div>`;
-          }).join('')
-      }
-    </div>  
     <div style="padding:6px 8px;">
-      <div onclick="openProfilPanel()" style="padding:9px 12px;cursor:pointer;font-size:13px;
-        border-radius:var(--radius-sm);color:var(--text);"
-        onmouseover="this.style.background='var(--gray-light)'"
-        onmouseout="this.style.background='none'">
-        ⚙️ Voir mon profil complet
-      </div>
-      <div onclick="openGoalsModal()" style="padding:9px 12px;cursor:pointer;font-size:13px;
-        border-radius:var(--radius-sm);color:var(--text);"
-        onmouseover="this.style.background='var(--gray-light)'"
-        onmouseout="this.style.background='none'">
-        🎯 Définir mes objectifs
-      </div>
-      <div style="padding:9px 12px;font-size:13px;border-radius:var(--radius-sm);
-        color:var(--text-3);cursor:default;">
-        🏅 Ma liste d'activités <span style="font-size:11px;">(coming soon)</span>
-      </div>
-      <div onclick="doLogout()" style="padding:9px 12px;cursor:pointer;font-size:13px;
+      ${_ddMenuItem('<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" style="display:inline-block;vertical-align:middle;margin-right:6px;"><rect x="2" y="2" width="20" height="20" rx="4" fill="none" stroke="var(--teal)" stroke-width="1.8"/><path fill="var(--teal)" d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm0 6a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/><path fill="var(--teal)" d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1a7.37 7.37 0 0 0-1.69-.98l-.38-2.65A.49.49 0 0 0 14 2h-4a.49.49 0 0 0-.49.42l-.38 2.65a7.37 7.37 0 0 0-1.69.98l-2.49-1a.5.5 0 0 0-.61.22l-2 3.46a.49.49 0 0 0 .12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98L2.46 14.63a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .61.22l2.49-1c.52.38 1.08.7 1.69.98l.38 2.65c.07.24.28.42.49.42h4c.24 0 .44-.18.49-.42l.38-2.65a7.37 7.37 0 0 0 1.69-.98l2.49 1a.5.5 0 0 0 .61-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.65zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>Paramètres', 'openParametresPanel()')}
+      ${_ddMenuItem('<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" style="display:inline-block;vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10" fill="none" stroke="var(--teal)" stroke-width="1.8"/><circle cx="12" cy="9.5" r="3.5" fill="var(--teal)"/><path d="M5.5 19.5c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6" fill="var(--teal)"/></svg>Profil', 'openProfilPanel()')}
+      ${_ddMenuItem(`<svg xmlns="http://www.w3.org/2000/svg" width="22" height="16" viewBox="0 0 22 16" style="display:inline-block;vertical-align:middle;margin-right:4px;"><g transform="scale(0.667)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" fill="var(--teal)"/></g><g transform="translate(6,0) scale(0.667)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" fill="var(--coral)"/></g></svg>Partenaires (${partnerUids.length}/5)`, 'openPartenairesPanel()')}
+      <div onclick="doLogout()" style="padding:9px 12px;cursor:pointer;font-size:14px;
         border-radius:var(--radius-sm);color:var(--red);"
         onmouseover="this.style.background='var(--red-light)'"
         onmouseout="this.style.background='none'">
-        → Se déconnecter
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" style="display:inline-block;vertical-align:middle;margin-right:6px;"><rect x="2" y="2" width="20" height="20" rx="4" fill="none" stroke="var(--coral)" stroke-width="1.8"/><path fill="var(--coral)" d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59z"/><path fill="var(--coral)" d="M19 3H5a2 2 0 0 0-2 2v4h2V5h14v14H5v-4H3v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg>Se déconnecter
       </div>
     </div>`;
 
   dd.style.display = 'block';
-  setTimeout(() => {
-    document.addEventListener('click', closeDropdown, { once: true });
-  }, 100);
+  setTimeout(() => { document.addEventListener('click', closeDropdown, { once: true }); }, 100);
 }
 
 function closeDropdown() {
   document.getElementById('profil-dropdown').style.display = 'none';
 }
 
+// ---- PROFIL PANEL ----
 function openProfilPanel() {
   document.getElementById('profil-dropdown').style.display = 'none';
   document.getElementById('profil-panel').style.display = 'block';
   renderProfil();
 }
 
-function closeProfilPanel(e) {
-  if (!e || e.target === document.getElementById('profil-panel'))
-    document.getElementById('profil-panel').style.display = 'none';
+function closeProfilPanel() {
+  document.getElementById('profil-panel').style.display = 'none';
+}
+
+// ---- PARTENAIRES PANEL ----
+function openPartenairesPanel() {
+  document.getElementById('profil-dropdown').style.display = 'none';
+  document.getElementById('partenaires-panel').style.display = 'block';
+  renderPartenaires();
+}
+
+function closePartenairesPanel() {
+  document.getElementById('partenaires-panel').style.display = 'none';
+}
+
+// ---- PARAMETRES PANEL ----
+function openParametresPanel() {
+  document.getElementById('profil-dropdown').style.display = 'none';
+  document.getElementById('parametres-panel').style.display = 'block';
+  renderParametres();
+}
+
+function closeParametresPanel() {
+  document.getElementById('parametres-panel').style.display = 'none';
 }
 
 function toggleCollapse(bodyId, chevId) {
@@ -1377,27 +1434,120 @@ function toggleCollapse(bodyId, chevId) {
 function changeWeek(d) {
   weekOffset = Math.min(1, weekOffset + d);
   renderAll();
+  const wrap = document.getElementById('week-nav-wrap');
+  if (wrap) { wrap.classList.remove('flash'); void wrap.offsetWidth; wrap.classList.add('flash'); }
 }
 
 // ---- SWIPE TO CHANGE WEEK ----
 (function() {
-  let tx = 0, ty = 0, locked = false;
+  let tx = 0, ty = 0, locked = false, swiping = false, animating = false;
+  const DUR = 260;
+  const getMain = () => document.querySelector('.main');
+
   document.addEventListener('touchstart', e => {
+    // Always reset state on new touch
+    locked = false;
+    swiping = false;
+    if (animating) { locked = true; return; }
+    const m = getMain();
+    // Lock immediately if touch starts outside .main (header, pills, modals)
+    if (!m || !m.contains(e.target)) { locked = true; return; }
     tx = e.touches[0].clientX;
     ty = e.touches[0].clientY;
-    locked = false;
   }, { passive: true });
-  document.addEventListener('touchend', e => {
-    if (locked) return;
-    const dx = e.changedTouches[0].clientX - tx;
-    const dy = e.changedTouches[0].clientY - ty;
-    if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return;
-    changeWeek(dx < 0 ? 1 : -1);
-  }, { passive: true });
+
   document.addEventListener('touchmove', e => {
-    const dx = Math.abs(e.touches[0].clientX - tx);
-    const dy = Math.abs(e.touches[0].clientY - ty);
-    if (dy > dx) locked = true;
+    if (animating || locked) return;
+    const m = getMain();
+    if (!m || !m.contains(e.target)) return;
+    const dx = e.touches[0].clientX - tx;
+    const adx = Math.abs(dx);
+    const ady = Math.abs(e.touches[0].clientY - ty);
+    if (!swiping) {
+      if (ady > adx) { locked = true; return; }
+      if (adx > 8) swiping = true;
+    }
+    if (!swiping) return;
+    m.style.transition = 'none';
+    m.style.transform = `translateX(${dx}px)`;
+  }, { passive: true });
+
+  document.addEventListener('touchend', e => {
+    if (animating) return;
+    const m = getMain();
+    if (!m) return;
+
+    // Snap back if no swipe was in progress
+    if (!swiping) {
+      if (m.style.transform) {
+        m.style.transition = `transform 0.2s ease`;
+        m.style.transform = 'translateX(0)';
+        setTimeout(() => { m.style.transition = ''; m.style.transform = ''; }, 200);
+      }
+      return;
+    }
+
+    const dx = e.changedTouches[0].clientX - tx;
+    const goNext = dx < 0;
+
+    // Snap back if swipe too short or at limit
+    if (Math.abs(dx) < 40 || (goNext && weekOffset >= 1)) {
+      m.style.transition = `transform 0.2s ease`;
+      m.style.transform = 'translateX(0)';
+      setTimeout(() => { m.style.transition = ''; m.style.transform = ''; }, 200);
+      return;
+    }
+
+    animating = true;
+    const vw = window.innerWidth;
+    const rect = m.getBoundingClientRect();
+
+    // Reset drag transform before snapshotting
+    m.style.transition = 'none';
+    m.style.transform = '';
+
+    // Snapshot old week content
+    const makePanel = (translateX) => {
+      const clone = m.cloneNode(true);
+      clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+      clone.style.cssText += ';pointer-events:none;margin:0;';
+      const p = document.createElement('div');
+      p.style.cssText = `position:fixed;top:${Math.round(rect.top)}px;left:0;`
+        + `width:${vw}px;height:${window.innerHeight - Math.round(rect.top)}px;`
+        + `overflow:hidden;z-index:50;background:var(--bg,#fff);pointer-events:none;`
+        + `transform:translateX(${translateX}px);`;
+      p.appendChild(clone);
+      document.body.appendChild(p);
+      return p;
+    };
+
+    const pOld = makePanel(0); // old week at rest position
+
+    // Update .main to new week
+    changeWeek(goNext ? 1 : -1);
+
+    const pNew = makePanel(goNext ? vw : -vw); // new week starts off-screen
+
+    // Hide .main during animation (panels handle visuals)
+    m.style.visibility = 'hidden';
+
+    // Force reflow so transitions fire
+    void pOld.offsetWidth;
+
+    // Slide both simultaneously
+    const shift = `${goNext ? -vw : vw}px`;
+    [pOld, pNew].forEach(p => {
+      p.style.transition = `transform ${DUR}ms ease-out`;
+    });
+    pOld.style.transform = `translateX(${shift})`;
+    pNew.style.transform = 'translateX(0)';
+
+    setTimeout(() => {
+      pOld.remove();
+      pNew.remove();
+      m.style.visibility = '';
+      animating = false;
+    }, DUR + 30);
   }, { passive: true });
 })();
 
@@ -1446,29 +1596,43 @@ myData.meals[wk][day][type] = cur === 'none' ? 'sain' : cur === 'sain' ? 'correc
 }
 
 function renderMeals() {
+  const t = document.getElementById('meal-table');
+  if (!t) return;
   const icons = { none:'·', sain:'✔', correct:'≈', malbouffe:'✖', skip:'—' };
   const stateOrder = ['none','sain','correct','malbouffe'];
-  MEALS.forEach(type => {
-    const g = document.getElementById('grid-' + type);
-    if (!g) return;
-    g.innerHTML = DAYS.map((d,i) => {
-      const state = getMeal(type,i);
-      const si = stateOrder.indexOf(state);
-      const dots = [1,2,3].map(n => `<span${si >= n ? ' class="on"' : ''}></span>`).join('');
-      return `
-      <div class="day-col">
-        <div class="day-lbl">${d}</div>
-        <div class="meal-btn ${state}"
-          onclick="cycleMeal('${type}',${i})"
-          onmousedown="startMealLongPress('${type}',${i},this)"
-          onmouseup="cancelMealLongPress()"
-          onmouseleave="cancelMealLongPress()"
-          ontouchstart="startMealLongPress('${type}',${i},this)"
-          ontouchend="cancelMealLongPress()"
-          ontouchmove="cancelMealLongPress()">${icons[state]}<div class="meal-cycle-dots">${dots}</div></div>
-      </div>`;
-    }).join('');
-  });
+  const todayIdx = weekOffset === 0 ? (new Date().getDay() + 6) % 7 : -1;
+  const labels = { pdj:'Matin', dej:'Midi', din:'Soir', snack:'Snack' };
+
+  const cellHtml = (type, i) => {
+    const state = getMeal(type, i);
+    const si = stateOrder.indexOf(state);
+    const dots = [1,2,3].map(n => `<span${si >= n ? ' class="on"' : ''}></span>`).join('');
+    return `<div class="meal-btn ${state}"
+      onclick="cycleMeal('${type}',${i})"
+      onmousedown="startMealLongPress('${type}',${i},this)"
+      onmouseup="cancelMealLongPress()"
+      onmouseleave="cancelMealLongPress()"
+      ontouchstart="startMealLongPress('${type}',${i},this)"
+      ontouchend="cancelMealLongPress()"
+      ontouchmove="cancelMealLongPress()">${icons[state]}<div class="meal-cycle-dots">${dots}</div></div>`;
+  };
+
+  const headerRow = `<div></div>` + DAYS.map((d,i) =>
+    `<div class="day-lbl${i === todayIdx ? ' today' : ''}" style="text-align:center;">${d}</div>`
+  ).join('');
+
+  const mealRow = (type) =>
+    `<div class="meal-row-lbl">${labels[type]}</div>` +
+    DAYS.map((_,i) => cellHtml(type, i)).join('');
+
+  t.innerHTML = `<div class="meal-table-grid">
+    ${headerRow}
+    ${mealRow('pdj')}
+    ${mealRow('dej')}
+    ${mealRow('din')}
+    <div class="meal-separator"></div>
+    ${mealRow('snack')}
+  </div>`;
 }
 
 function countMeals(data, wk) {
@@ -1488,17 +1652,19 @@ const { sain, mal, correct } = countMeals(getData(), wk);
     <div class="score-chip food">
       <div class="score-chip-label">Repas sains</div>
       <div class="score-chip-val">${sain}</div>
-      <div class="pbar"><div class="pbar-fill" style="width:${pct}%;background:var(--green);"></div></div>
+      <div class="pbar"><div class="pbar-fill" style="width:0%;background:var(--green);"></div></div>
     </div>
 	<div class="score-chip" style="background:var(--amber-light);">
       <div class="score-chip-label" style="color:var(--amber);">Corrects</div>
       <div class="score-chip-val" style="color:var(--amber-dark);">${correct}</div>
     </div>
-	
+
     <div class="score-chip bad">
       <div class="score-chip-label">Malbouffe</div>
       <div class="score-chip-val">${mal}</div>
     </div>`;
+  const fp = document.querySelector('#food-scores .pbar-fill');
+  if (fp) requestAnimationFrame(() => requestAnimationFrame(() => { fp.style.width = pct + '%'; }));
 
   // Empty state
   const total = sain + correct + mal;
@@ -1510,22 +1676,54 @@ const { sain, mal, correct } = countMeals(getData(), wk);
   const ratioBar = document.getElementById('meal-ratio-bar');
   if (ratioBar) {
     if (total === 0) {
-      ratioBar.style.display = 'none';
+      ratioBar.style.visibility = 'hidden';
     } else {
       const pSain = Math.round(sain / total * 100);
       const pCorrect = Math.round(correct / total * 100);
       const pMal = 100 - pSain - pCorrect;
-      ratioBar.style.display = 'flex';
-      ratioBar.innerHTML = `
-        ${pSain > 0 ? `<div title="✔ Sain ${pSain}%" style="flex:${pSain};background:var(--green);height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--green-dark);min-width:${pSain > 15 ? 'auto' : '0'};overflow:hidden;">${pSain > 15 ? pSain+'%' : ''}</div>` : ''}
-        ${pCorrect > 0 ? `<div title="≈ Correct ${pCorrect}%" style="flex:${pCorrect};background:var(--amber);height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--amber-dark);overflow:hidden;">${pCorrect > 15 ? pCorrect+'%' : ''}</div>` : ''}
-        ${pMal > 0 ? `<div title="✖ Malbouffe ${pMal}%" style="flex:${pMal};background:var(--red);height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--red-dark);overflow:hidden;">${pMal > 15 ? pMal+'%' : ''}</div>` : ''}
-      `;
+      ratioBar.style.visibility = 'visible';
+      const segs = [];
+      if (pSain    > 0) segs.push({ pct: pSain,    bg: 'var(--green)', label: `✔ Sain ${pSain}%` });
+      if (pCorrect > 0) segs.push({ pct: pCorrect, bg: 'var(--amber)', label: `≈ Correct ${pCorrect}%` });
+      if (pMal     > 0) segs.push({ pct: pMal,     bg: 'var(--red)',   label: `✖ Malbouffe ${pMal}%` });
+      ratioBar.innerHTML = segs.map(s =>
+        `<div title="${s.label}" style="flex:0;transition:flex .6s cubic-bezier(.4,0,.2,1);background:${s.bg};height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:rgba(255,255,255,0.92);overflow:hidden;"></div>`
+      ).join('');
+      const segEls = ratioBar.querySelectorAll('div');
+      segs.forEach((s, i) => requestAnimationFrame(() => requestAnimationFrame(() => {
+        segEls[i].style.flex = s.pct;
+        if (s.pct > 15) segEls[i].textContent = s.pct + '%';
+      })));
     }
   }
 }
 
 // ---- SPORT ----
+let sportLongPressTimer = null, sportLongPressEl = null, sportLongPressHandled = false;
+
+function startSportLongPress(dayIdx, el) {
+  if (viewingPartner) return;
+  sportLongPressHandled = false;
+  sportLongPressEl = el;
+  el.classList.add('long-pressing');
+  sportLongPressTimer = setTimeout(() => {
+    sportLongPressHandled = true;
+    sportLongPressEl = null;
+    el.classList.remove('long-pressing');
+    const wk = getWeekKey();
+    if (myData.sports[wk]) delete myData.sports[wk][dayIdx];
+    renderSportGrid(); renderSportScores();
+    saveEntry();
+    if (navigator.vibrate) navigator.vibrate([30]);
+  }, 500);
+}
+
+function cancelSportLongPress() {
+  clearTimeout(sportLongPressTimer);
+  sportLongPressTimer = null;
+  if (sportLongPressEl) { sportLongPressEl.classList.remove('long-pressing'); sportLongPressEl = null; }
+}
+
 function getSport(day) {
   const wk = getWeekKey();
   return getData().sports[wk]?.[day] || [];
@@ -1538,11 +1736,16 @@ function countSportDays(data, wk) {
 function renderSportGrid() {
   const g = document.getElementById('grid-sport');
   if (!g) return;
+  const todayIdx = weekOffset === 0 ? (new Date().getDay() + 6) % 7 : -1;
   g.innerHTML = DAYS.map((d,i) => {
     const acts = getSport(i);
     return `<div class="day-col">
-      <div class="day-lbl">${d}</div>
-      <div class="sport-btn ${acts.length>0?'done':''}" onclick="openSportModal(${i})">${acts.length>0?acts.length:'·'}</div>
+      <div class="day-lbl${i === todayIdx ? ' today' : ''}">${d}</div>
+      <div class="sport-btn ${acts.length>0?'done':''}"
+        onclick="if(!sportLongPressHandled)openSportModal(${i});sportLongPressHandled=false;"
+        onmousedown="startSportLongPress(${i},this)" onmouseup="cancelSportLongPress()" onmouseleave="cancelSportLongPress()"
+        ontouchstart="startSportLongPress(${i},this)" ontouchend="cancelSportLongPress()" ontouchmove="cancelSportLongPress()"
+      >${acts.length>0?acts.length:'·'}</div>
     </div>`;
   }).join('');
 }
@@ -1556,12 +1759,20 @@ function renderSportScores() {
     <div class="score-chip sport">
       <div class="score-chip-label">Jours actifs</div>
       <div class="score-chip-val">${days} / ${goal}</div>
-      <div class="pbar"><div class="pbar-fill" style="width:${pct}%;background:var(--teal);"></div></div>
+      <div class="pbar"><div class="pbar-fill" style="width:0%;background:var(--teal);"></div></div>
     </div>
     <div class="score-chip food">
       <div class="score-chip-label">Objectif atteint</div>
       <div class="score-chip-val">${pct}%</div>
     </div>`;
+  const sp = document.querySelector('#sport-scores .pbar-fill');
+  if (sp) requestAnimationFrame(() => requestAnimationFrame(() => { sp.style.width = pct + '%'; }));
+  const emptyState = document.getElementById('sport-empty-state');
+  if (emptyState) {
+    emptyState.style.display = (!viewingPartner && days === 0) ? 'block' : 'none';
+    const title = emptyState.querySelector('.sport-empty-title');
+    if (title) title.textContent = weekOffset < 0 ? 'Aucune activité cette semaine-là.' : 'Cette semaine commence maintenant !';
+  }
 }
 
 function openSportModal(dayIdx) {
@@ -1576,16 +1787,21 @@ function closeSportModal(e) {
     document.getElementById('sport-modal-overlay').classList.remove('show');
 }
 
+function getActiveActs() {
+  // Default acts minus disabled + custom acts (not in DEFAULT_ACTS)
+  const disabled = myData.disabledActs || [];
+  const custom = myData.activities.filter(a => !DEFAULT_ACTS.includes(a));
+  return [...DEFAULT_ACTS.filter(a => !disabled.includes(a)), ...custom];
+}
+
 function renderActList() {
-  const acts = getData().activities;
   const sel = getSport(activeDayIdx);
-  const list = viewingPartner ? sel : acts;
+  const list = viewingPartner ? sel : getActiveActs();
   document.getElementById('sport-act-list').innerHTML = list.map(a => `
     <div class="act-item" onclick="${viewingPartner ? '' : `toggleAct('${a}')`}">
       <div class="act-check ${sel.includes(a)?'on':''}">${sel.includes(a)?'✓':''}</div>
       <span>${a}</span>
     </div>`).join('');
-  document.querySelector('.add-row').style.display = viewingPartner ? 'none' : 'flex';
 }
 
 function toggleAct(act) {
@@ -1613,14 +1829,22 @@ function addActivity() {
 
 // ---- STATS ----
 const BADGES = [
-  { id:'first_sain', icon:'🥗', name:'Premier repas sain', cond: d => countTotalSain(d) >= 1 },
-  { id:'sport3', icon:'🏃', name:'3 sports en 1 sem.', cond: d => countSportDays(d, getWeekKey()) >= 3 },
-  { id:'streak3', icon:'🔥', name:'3 jours actifs de suite', cond: d => hasStreak(d, 3) },
-  { id:'sain10', icon:'🥦', name:'10 repas sains', cond: d => countTotalSain(d) >= 10 },
-  { id:'sport5', icon:'💪', name:'5 sports en 1 sem.', cond: d => countSportDays(d, getWeekKey()) >= 5 },
-  { id:'ratio80', icon:'⚖️', name:'Ratio sain > 80%', cond: d => getRatio(d) >= 0.8 },
-  { id:'sport7', icon:'🌟', name:'Sport tous les jours', cond: d => countSportDays(d, getWeekKey()) >= 7 },
-  { id:'sain30', icon:'🏆', name:'30 repas sains', cond: d => countTotalSain(d) >= 30 },
+  { id:'first_sain',    icon:'🥗',  name:'Premier repas sain',               cond: d => countTotalSain(d) >= 1 },
+  { id:'first_sport',   icon:'👟',  name:'1ère activité sportive',            cond: d => countTotalSportDays(d) >= 1 },
+  { id:'sport3',        icon:'🏃',  name:'3 sports en 1 sem.',                cond: d => countSportDays(d, getWeekKey()) >= 3 },
+  { id:'streak3',       icon:'🔥',  name:'3 jours actifs de suite',           cond: d => hasStreak(d, 3) },
+  { id:'sain10',        icon:'🥦',  name:'10 repas sains',                    cond: d => countTotalSain(d) >= 10 },
+  { id:'meals20',       icon:'🍽️', name:'20 repas saisis',                   cond: d => countTotalMeals(d) >= 20 },
+  { id:'sport5',        icon:'💪',  name:'5 sports en 1 sem.',                cond: d => countSportDays(d, getWeekKey()) >= 5 },
+  { id:'ratio80',       icon:'⚖️', name:'Ratio sain > 80%',                  cond: d => getRatio(d) >= 0.8 },
+  { id:'sport7',        icon:'🌟',  name:'Sport tous les jours',              cond: d => countSportDays(d, getWeekKey()) >= 7 },
+  { id:'sain30',        icon:'🏆',  name:'30 repas sains',                    cond: d => countTotalSain(d) >= 30 },
+  { id:'meals50',       icon:'🥘',  name:'50 repas saisis',                   cond: d => countTotalMeals(d) >= 50 },
+  { id:'semaine_full',  icon:'🗓️', name:'Semaine complète (2 sains/jour)',    cond: d => hasFullSainWeek(d) },
+  { id:'new_activity',  icon:'🎯',  name:'Nouvelle activité créée',           cond: d => (d.activities || []).length > DEFAULT_ACTS.length },
+  { id:'meals100',      icon:'🍱',  name:'100 repas saisis',                  cond: d => countTotalMeals(d) >= 100 },
+  { id:'meals150',      icon:'🥙',  name:'150 repas saisis',                  cond: d => countTotalMeals(d) >= 150 },
+  { id:'meals360',      icon:'📅',  name:'360 repas saisis',                  cond: d => countTotalMeals(d) >= 360 },
 ];
 
 function countTotalSain(data) {
@@ -1629,6 +1853,29 @@ function countTotalSain(data) {
     Object.values(wk).forEach(day => Object.values(day).forEach(s => { if(s==='sain') n++; }))
   );
   return n;
+}
+
+function countTotalMeals(data) {
+  let n=0;
+  Object.values(data.meals).forEach(wk =>
+    Object.values(wk).forEach(day => Object.values(day).forEach(s => { if(s && s!=='none') n++; }))
+  );
+  return n;
+}
+
+function countTotalSportDays(data) {
+  let n=0;
+  Object.values(data.sports).forEach(wk => { n += Object.values(wk).filter(a => a.length > 0).length; });
+  return n;
+}
+
+function hasFullSainWeek(data) {
+  const wk = getWeekKey();
+  const days = data.meals[wk] || {};
+  return DAYS.every(day => {
+    const d = days[day] || {};
+    return Object.values(d).filter(v => v === 'sain').length >= 2;
+  });
 }
 
 function getRatio(data) {
@@ -1680,15 +1927,16 @@ function renderStats() {
   const gaugeColor = ratio >= 70 ? 'var(--green)' : ratio >= 40 ? '#F4A261' : 'var(--red)';
   const r = 40, stroke = 8, circ = Math.PI * r;
   const dash = (ratio / 100) * circ;
-  document.getElementById('stat-cards').innerHTML = `
-    <div style="grid-column:1/-1;display:flex;flex-direction:column;align-items:center;padding:16px 0;">
+  document.getElementById('stat-cards').innerHTML = '';
+  document.getElementById('ratio-gauge').innerHTML = `
+    <div style="display:flex;flex-direction:column;align-items:center;padding:12px 0;background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);">
       <svg width="110" height="70" viewBox="0 0 110 70">
         <path d="M10,65 A${r},${r} 0 0,1 100,65" fill="none" stroke="rgba(0,0,0,0.08)" stroke-width="${stroke}" stroke-linecap="round"/>
         <path d="M10,65 A${r},${r} 0 0,1 100,65" fill="none" stroke="${gaugeColor}" stroke-width="${stroke}" stroke-linecap="round"
           stroke-dasharray="${dash} ${circ}" style="transition:stroke-dasharray .6s cubic-bezier(.4,0,.2,1);"/>
       </svg>
       <div style="margin-top:-18px;font-size:26px;font-weight:800;color:${gaugeColor};">${ratio}%</div>
-      <div style="font-size:11px;color:var(--text-2);font-weight:600;margin-top:4px;">Ratio repas sains</div>
+      <div style="font-size:11px;color:var(--text-2);font-weight:600;margin-top:4px;">Ratio repas sains (tous temps)</div>
       <div style="font-size:11px;color:var(--text-3);margin-top:2px;">${sain} repas sains au total</div>
     </div>`;
 
@@ -2111,30 +2359,22 @@ async function renderProfil() {
   const doc = await db.collection('users').doc(currentUid).get();
   if (!doc.exists) return;
   const d = doc.data();
-
   const authUser = auth.currentUser;
   const createdAt = authUser?.metadata?.creationTime
     ? new Date(authUser.metadata.creationTime).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})
     : 'Non disponible';
-
   const avatar = d.avatar || '🌱';
 
   document.getElementById('profil-info').innerHTML = `
-<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;width:100%;overflow:hidden;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;width:100%;overflow:hidden;">
       <div style="font-size:32px;flex-shrink:0;">${avatar}</div>
       <div style="flex:1;min-width:0;overflow:hidden;">
         <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.name || '—'}</div>
         <div style="font-size:11px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.email || '—'}</div>
       </div>
-      <!-- bouton modifier le profil -->
-	  <button onclick="openEditProfil()" style="
-        flex-shrink:0;
-        padding:5px 10px;border-radius:var(--radius-sm);
-        border:1px solid var(--border);background:var(--bg);
-        cursor:pointer;font-size:11px;font-weight:600;
-        color:var(--text-2);font-family:'Nunito',sans-serif;">
-        ✏️
-      </button>
+      <button onclick="openEditProfil()" style="flex-shrink:0;padding:5px 10px;border-radius:var(--radius-sm);
+        border:1px solid var(--border);background:var(--bg);cursor:pointer;font-size:11px;font-weight:600;
+        color:var(--text-2);font-family:'Nunito',sans-serif;">✏️</button>
     </div>
     <div class="profil-row">
       <span class="profil-row-label">Membre depuis</span>
@@ -2148,64 +2388,187 @@ async function renderProfil() {
       <span class="profil-row-label">Synchronisation</span>
       <span id="sync-label" style="font-size:12px;font-weight:600;">
         <span id="sync-dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;
-          background:var(--green);margin-right:4px;vertical-align:middle;"></span>
-        Synchro ✓
+          background:var(--green);margin-right:4px;vertical-align:middle;"></span>Synchro ✓
       </span>
-    </div>`;
-
- const partnerBox = document.getElementById('profil-partner');
-
-  if (partnerUids.length === 0) {
-    partnerBox.innerHTML = `
-      <p style="font-size:13px;color:var(--text-2);margin-bottom:4px;">Aucun partenaire lié pour le moment.</p>
-      <p style="font-size:12px;color:var(--text-3);margin-bottom:0;">Entrez le code de jumelage de votre proche :</p>
-      <div class="pair-input-row">
-        <input id="pair-code-profil" type="text" placeholder="ex: 4729" maxlength="6"/>
-        <button class="btn btn-primary" onclick="doPairFromProfil()">Lier</button>
+    </div>
+    <div style="margin-top:16px;">
+      <div class="sec-label">Mot de passe</div>
+      <div id="change-pwd-form">
+        <input id="pwd-current" type="password" placeholder="Mot de passe actuel"
+          style="width:100%;box-sizing:border-box;padding:8px 10px;border-radius:var(--radius-sm);
+          border:1px solid var(--border);font-family:'Nunito',sans-serif;font-size:13px;margin-bottom:6px;"/>
+        <input id="pwd-new" type="password" placeholder="Nouveau mot de passe (8 car. min.)"
+          style="width:100%;box-sizing:border-box;padding:8px 10px;border-radius:var(--radius-sm);
+          border:1px solid var(--border);font-family:'Nunito',sans-serif;font-size:13px;margin-bottom:6px;"/>
+        <input id="pwd-confirm" type="password" placeholder="Confirmer le nouveau mot de passe"
+          style="width:100%;box-sizing:border-box;padding:8px 10px;border-radius:var(--radius-sm);
+          border:1px solid var(--border);font-family:'Nunito',sans-serif;font-size:13px;margin-bottom:8px;"/>
+        <button class="btn btn-primary" style="width:100%;" onclick="changePassword()">Modifier le mot de passe</button>
+        <div id="pwd-error" style="font-size:12px;color:var(--red);text-align:center;margin-top:6px;"></div>
+        <div id="pwd-ok" style="font-size:12px;color:var(--green);text-align:center;margin-top:6px;"></div>
       </div>
-      <div id="pair-profil-error" style="font-size:12px;color:var(--red);margin-top:6px;"></div>`;
+    </div>`;
+}
+
+async function changePassword() {
+  const current = document.getElementById('pwd-current').value;
+  const newPwd = document.getElementById('pwd-new').value;
+  const confirm = document.getElementById('pwd-confirm').value;
+  const errEl = document.getElementById('pwd-error');
+  const okEl = document.getElementById('pwd-ok');
+  errEl.textContent = ''; okEl.textContent = '';
+  if (!current || !newPwd || !confirm) { errEl.textContent = 'Remplissez tous les champs.'; return; }
+  if (newPwd.length < 8) { errEl.textContent = 'Le mot de passe doit faire au moins 8 caractères.'; return; }
+  if (newPwd !== confirm) { errEl.textContent = 'Les mots de passe ne correspondent pas.'; return; }
+  try {
+    const user = auth.currentUser;
+    const cred = firebase.auth.EmailAuthProvider.credential(user.email, current);
+    await user.reauthenticateWithCredential(cred);
+    await user.updatePassword(newPwd);
+    document.getElementById('pwd-current').value = '';
+    document.getElementById('pwd-new').value = '';
+    document.getElementById('pwd-confirm').value = '';
+    okEl.textContent = '✓ Mot de passe modifié avec succès.';
+  } catch(e) {
+    if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential')
+      errEl.textContent = 'Mot de passe actuel incorrect.';
+    else
+      errEl.textContent = 'Erreur : ' + e.message;
+  }
+}
+
+async function renderPartenaires() {
+  const doc = await db.collection('users').doc(currentUid).get();
+  const d = doc.exists ? doc.data() : {};
+  const box = document.getElementById('partenaires-content');
+
+  let html = '';
+  if (partnerUids.length === 0) {
+    html = `<p style="font-size:13px;color:var(--text-2);margin-bottom:4px;">Aucun partenaire lié pour le moment.</p>`;
   } else {
-    const partnersHtml = await Promise.all(partnerUids.map(async uid => {
+    const parts = await Promise.all(partnerUids.map(async uid => {
       const pd = partnersData[uid] || {};
-      const partnerDoc = await db.collection('users').doc(uid).get();
-      const pdd = partnerDoc.exists ? partnerDoc.data() : {};
+      const pdoc = await db.collection('users').doc(uid).get();
+      const pdd = pdoc.exists ? pdoc.data() : {};
       const pairedAt = d.pairedAt?.toDate
         ? d.pairedAt.toDate().toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})
         : 'Date inconnue';
-      return `
-        <div style="border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:12px;">
-          <div class="partner-linked">
-            <div style="font-size:28px;">${pd.avatar || '🌱'}</div>
-            <div>
-              <div style="font-weight:700;font-size:15px;">${pd.name || 'Partenaire'}</div>
-              <div style="font-size:12px;color:var(--text-3);">${pdd.email || ''}</div>
-            </div>
+      return `<div style="border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:12px;">
+        <div class="partner-linked">
+          <div style="font-size:28px;">${pd.avatar || '🌱'}</div>
+          <div>
+            <div style="font-weight:700;font-size:15px;">${pd.name || 'Partenaire'}</div>
+            <div style="font-size:12px;color:var(--text-3);">${pdd.email || ''}</div>
           </div>
-          <div class="profil-row">
-            <span class="profil-row-label">Lié depuis</span>
-            <span class="profil-row-val">${pairedAt}</span>
-          </div>
-          <button onclick="confirmUnpair('${uid}')" class="btn" style="
-            width:100%;margin-top:8px;font-size:12px;
-            background:var(--red-light);color:var(--red-dark);
-            border:1px solid var(--red);">
-            🔗 Dissocier ${pd.name || 'ce partenaire'}
-          </button>
-        </div>`;
-    }));
-
-    partnerBox.innerHTML = partnersHtml.join('');
-
-    if (partnerUids.length < 5) {
-      partnerBox.innerHTML += `
-        <p style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Ajouter un partenaire (${partnerUids.length}/5) :</p>
-        <div class="pair-input-row">
-          <input id="pair-code-profil" type="text" placeholder="ex: 4729" maxlength="6"/>
-          <button class="btn btn-primary" onclick="doPairFromProfil()">Lier</button>
         </div>
-        <div id="pair-profil-error" style="font-size:12px;color:var(--red);margin-top:6px;"></div>`;
-    }
+        <div class="profil-row"><span class="profil-row-label">Lié depuis</span><span class="profil-row-val">${pairedAt}</span></div>
+        <button onclick="confirmUnpair('${uid}')" class="btn" style="width:100%;margin-top:8px;font-size:12px;
+          background:var(--red-light);color:var(--red-dark);border:1px solid var(--red);">
+          🔗 Dissocier ${pd.name || 'ce partenaire'}
+        </button>
+      </div>`;
+    }));
+    html = parts.join('');
   }
+
+  if (partnerUids.length < 5) {
+    html += `<p style="font-size:12px;color:var(--text-3);margin-bottom:8px;">
+      ${partnerUids.length > 0 ? `Ajouter un partenaire (${partnerUids.length}/5) :` : 'Entrez le code de jumelage de votre proche :'}
+    </p>
+    <div class="pair-input-row">
+      <input id="pair-code-profil" type="text" placeholder="ex: 4729" maxlength="6"/>
+      <button class="btn btn-primary" onclick="doPairFromProfil()">Lier</button>
+    </div>
+    <div id="pair-profil-error" style="font-size:12px;color:var(--red);margin-top:6px;"></div>`;
+  }
+  box.innerHTML = html;
+}
+
+function renderParametres() {
+  // Objectifs
+  const data = myData;
+  document.getElementById('parametres-goals').innerHTML = `
+    <div class="goal-row">
+      <span class="goal-label">🥗 Repas sains / semaine</span>
+      <div class="goal-ctrl">
+        <button onclick="adjustGoal('repas',-1);renderParametres()">−</button>
+        <span class="goal-val">${data.goals.repas}</span>
+        <button onclick="adjustGoal('repas',1);renderParametres()">+</button>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-label">🏃 Jours sport / semaine</span>
+      <div class="goal-ctrl">
+        <button onclick="adjustGoal('sport',-1);renderParametres()">−</button>
+        <span class="goal-val">${data.goals.sport}</span>
+        <button onclick="adjustGoal('sport',1);renderParametres()">+</button>
+      </div>
+    </div>`;
+
+  // Activités
+  const disabled = myData.disabledActs || [];
+  const custom = myData.activities.filter(a => !DEFAULT_ACTS.includes(a));
+  const customCount = custom.length;
+
+  const defaultRows = DEFAULT_ACTS.map(a => {
+    const isOff = disabled.includes(a);
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+      <span style="font-size:13px;${isOff ? 'color:var(--text-3);text-decoration:line-through;' : ''}">${a}</span>
+      <button onclick="toggleDefaultAct('${a}')" style="font-size:12px;padding:3px 10px;border-radius:99px;cursor:pointer;font-family:'Nunito',sans-serif;
+        border:1.5px solid ${isOff ? 'var(--border)' : 'var(--teal)'};
+        background:${isOff ? 'var(--gray-light)' : 'var(--teal-light)'};
+        color:${isOff ? 'var(--text-3)' : 'var(--teal-dark)'};">
+        ${isOff ? 'Activé' : 'Actif'}
+      </button>
+    </div>`;
+  }).join('');
+
+  const customRows = custom.map(a => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+      <span style="font-size:13px;">${a}</span>
+      <button onclick="deleteCustomAct('${a}')" style="font-size:16px;background:none;border:none;cursor:pointer;color:var(--text-3);padding:0 4px;">✕</button>
+    </div>`).join('');
+
+  const addRow = customCount < 10
+    ? `<div class="add-row" style="margin-top:10px;">
+        <input id="new-act-params" placeholder="Nouvelle activité..." style="font-family:'Nunito',sans-serif;font-size:13px;"/>
+        <button class="btn btn-primary" style="padding:9px 14px;" onclick="addCustomAct()">+</button>
+      </div>
+      <div id="act-error" style="font-size:12px;color:var(--red);margin-top:4px;"></div>`
+    : `<p style="font-size:12px;color:var(--text-3);margin-top:8px;">Maximum 10 activités personnalisées atteint.</p>`;
+
+  document.getElementById('parametres-acts').innerHTML = defaultRows + customRows + addRow;
+}
+
+function toggleDefaultAct(act) {
+  const disabled = myData.disabledActs || [];
+  const idx = disabled.indexOf(act);
+  if (idx >= 0) disabled.splice(idx, 1);
+  else disabled.push(act);
+  myData.disabledActs = disabled;
+  saveProfile();
+  renderParametres();
+}
+
+function deleteCustomAct(act) {
+  myData.activities = myData.activities.filter(a => a !== act);
+  saveProfile();
+  renderParametres();
+}
+
+function addCustomAct() {
+  const inp = document.getElementById('new-act-params');
+  const val = inp.value.trim();
+  const errEl = document.getElementById('act-error');
+  errEl.textContent = '';
+  if (!val) return;
+  const custom = myData.activities.filter(a => !DEFAULT_ACTS.includes(a));
+  if (custom.length >= 10) { errEl.textContent = 'Maximum 10 activités personnalisées.'; return; }
+  if (myData.activities.includes(val)) { errEl.textContent = 'Cette activité existe déjà.'; return; }
+  myData.activities.push(val);
+  inp.value = '';
+  saveProfile();
+  renderParametres();
 }
 
 
@@ -2233,8 +2596,8 @@ async function doPairFromProfil() {
     subscribeToPartner(partnerDoc.id);
     activePartnerUid = activePartnerUid || partnerDoc.id;
     updatePartnerPill();
-    renderProfil();
-    
+    renderPartenaires();
+
   } catch(e) { errEl.textContent = e.message; }
 }
 
@@ -2263,7 +2626,7 @@ async function doUnpair(uid) {
       if (!activePartnerUid) setUser('me');
     }
     updatePartnerPill();
-    renderProfil();
+    renderPartenaires();
   } catch(e) {
     console.error(e);
     const errEl = document.getElementById('unpair-error');
@@ -2289,51 +2652,21 @@ function renderObjectifs() {
   document.getElementById('goal-progress').innerHTML = `
     <div class="goal-progress">
       <div class="gp-row"><span>Repas sains (sem.)</span><span style="font-weight:700;color:var(--green);">${sainWk} / ${data.goals.repas}</span></div>
-      <div class="pbar" style="height:10px;"><div class="pbar-fill" style="width:${fPct}%;background:var(--green);"></div></div>
+      <div class="pbar" style="height:10px;"><div class="pbar-fill" style="width:0%;background:var(--green);"></div></div>
       <div class="gp-pct">${fPct}% de l'objectif</div>
     </div>
     <div class="goal-progress">
       <div class="gp-row"><span>Jours sport (sem.)</span><span style="font-weight:700;color:var(--teal);">${sportWk} / ${data.goals.sport}</span></div>
-      <div class="pbar" style="height:10px;"><div class="pbar-fill" style="width:${sPct}%;background:var(--teal);"></div></div>
+      <div class="pbar" style="height:10px;"><div class="pbar-fill" style="width:0%;background:var(--teal);"></div></div>
       <div class="gp-pct">${sPct}% de l'objectif</div>
     </div>`;
-}
-
-function renderGoalsModal() {
-  const data = myData;
-  document.getElementById('goals-modal-list').innerHTML = `
-    <div class="goal-row">
-      <span class="goal-label">🥗 Repas sains / semaine</span>
-      <div class="goal-ctrl">
-        <button onclick="adjustGoal('repas',-1)">−</button>
-        <span class="goal-val">${data.goals.repas}</span>
-        <button onclick="adjustGoal('repas',1)">+</button>
-      </div>
-    </div>
-    <div class="goal-row">
-      <span class="goal-label">🏃 Jours sport / semaine</span>
-      <div class="goal-ctrl">
-        <button onclick="adjustGoal('sport',-1)">−</button>
-        <span class="goal-val">${data.goals.sport}</span>
-        <button onclick="adjustGoal('sport',1)">+</button>
-      </div>
-    </div>`;
-}
-
-function openGoalsModal() {
-  document.getElementById('profil-dropdown').style.display = 'none';
-  renderGoalsModal();
-  document.getElementById('goals-modal').style.display = 'block';
-}
-
-function closeGoalsModal(e) {
-  if (!e || e.target === document.getElementById('goals-modal'))
-    document.getElementById('goals-modal').style.display = 'none';
+  const fills = document.querySelectorAll('#goal-progress .pbar-fill');
+  const targets = [fPct, sPct];
+  fills.forEach((el, i) => requestAnimationFrame(() => requestAnimationFrame(() => { el.style.width = targets[i] + '%'; })));
 }
 
 function adjustGoal(type, d) {
   myData.goals[type] = Math.max(1, myData.goals[type] + d);
-  renderGoalsModal();
   renderObjectifs();
   saveProfile();
 }
@@ -2356,6 +2689,8 @@ function renderAll() {
   const lbl = getWeekLabel();
   const el = document.getElementById('week-lbl');
   if (el) el.textContent = lbl;
+  const next = document.getElementById('week-nav-next');
+  if (next) { next.style.opacity = weekOffset >= 1 ? '0.25' : '1'; next.style.pointerEvents = weekOffset >= 1 ? 'none' : ''; }
   renderMeals(); renderFoodScores();
   renderSportGrid(); renderSportScores();
   renderObjectifs(); renderStats();
