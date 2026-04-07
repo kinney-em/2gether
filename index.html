@@ -262,7 +262,7 @@
     width: 4px; height: 4px; border-radius: 50%; background: currentColor; opacity: 0.2; transition: opacity .15s;
   }
   .meal-cycle-dots span.on { opacity: 0.7; }
-  .meal-btn.long-pressing { transform: scale(0.88) !important; opacity: 0.65; transition: transform 0.45s ease, opacity 0.45s ease !important; }
+  .meal-btn.long-pressing, .sport-btn.long-pressing { transform: scale(0.88) !important; opacity: 0.65; transition: transform 0.45s ease, opacity 0.45s ease !important; }
 
   /* --- SPORT MODAL --- */
   .modal-overlay {
@@ -663,7 +663,7 @@
     <div id="tab-repas" class="screen active">
       <div class="score-strip" id="food-scores"></div>
       <div id="meal-ratio-bar" style="display:flex;visibility:hidden;height:20px;border-radius:99px;overflow:hidden;margin-bottom:6px;border:1px solid var(--border);"></div>
-      <p style="font-size:11px;color:var(--text-3);margin-bottom:6px;">Tapez pour cycler : vide → <b>✔</b> sain → <b>≈</b> correct → <b>✖</b> malbouffe · Appui long pour remettre à zéro</p>
+      <p style="font-size:11px;color:var(--text-3);margin-bottom:6px;">Tapez pour cycler : vide → <b>✔</b> sain → <b>≈</b> correct → <b>✖</b> malbouffe <br>· Appui long pour remettre à zéro</p>
       <div id="meal-table"></div>
       <div id="meal-empty-state" style="display:none;text-align:center;padding:20px 16px 8px;">
         <div style="display:flex;align-items:flex-end;justify-content:center;gap:6px;margin-bottom:10px;">
@@ -681,7 +681,7 @@
     <!-- SPORT -->
     <div id="tab-sport" class="screen">
       <div class="score-strip" id="sport-scores"></div>
-      <div class="sec-label">Activités par jour — tapez pour sélectionner</div>
+      <p style="font-size:11px;color:var(--text-3);margin-bottom:6px;">Activités par jour — tapez pour sélectionner · Appui long pour remettre à zéro</p>
       <div class="week-grid" id="grid-sport"></div>
       <div id="sport-empty-state" style="display:none;text-align:center;padding:20px 16px 8px;">
         <div style="display:flex;align-items:flex-end;justify-content:center;gap:6px;margin-bottom:10px;">
@@ -1699,6 +1699,31 @@ const { sain, mal, correct } = countMeals(getData(), wk);
 }
 
 // ---- SPORT ----
+let sportLongPressTimer = null, sportLongPressEl = null, sportLongPressHandled = false;
+
+function startSportLongPress(dayIdx, el) {
+  if (viewingPartner) return;
+  sportLongPressHandled = false;
+  sportLongPressEl = el;
+  el.classList.add('long-pressing');
+  sportLongPressTimer = setTimeout(() => {
+    sportLongPressHandled = true;
+    sportLongPressEl = null;
+    el.classList.remove('long-pressing');
+    const wk = getWeekKey();
+    if (myData.sports[wk]) delete myData.sports[wk][dayIdx];
+    renderSportGrid(); renderSportScores();
+    saveEntry();
+    if (navigator.vibrate) navigator.vibrate([30]);
+  }, 500);
+}
+
+function cancelSportLongPress() {
+  clearTimeout(sportLongPressTimer);
+  sportLongPressTimer = null;
+  if (sportLongPressEl) { sportLongPressEl.classList.remove('long-pressing'); sportLongPressEl = null; }
+}
+
 function getSport(day) {
   const wk = getWeekKey();
   return getData().sports[wk]?.[day] || [];
@@ -1716,7 +1741,11 @@ function renderSportGrid() {
     const acts = getSport(i);
     return `<div class="day-col">
       <div class="day-lbl${i === todayIdx ? ' today' : ''}">${d}</div>
-      <div class="sport-btn ${acts.length>0?'done':''}" onclick="openSportModal(${i})">${acts.length>0?acts.length:'·'}</div>
+      <div class="sport-btn ${acts.length>0?'done':''}"
+        onclick="if(!sportLongPressHandled)openSportModal(${i});sportLongPressHandled=false;"
+        onmousedown="startSportLongPress(${i},this)" onmouseup="cancelSportLongPress()" onmouseleave="cancelSportLongPress()"
+        ontouchstart="startSportLongPress(${i},this)" ontouchend="cancelSportLongPress()" ontouchmove="cancelSportLongPress()"
+      >${acts.length>0?acts.length:'·'}</div>
     </div>`;
   }).join('');
 }
