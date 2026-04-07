@@ -158,6 +158,25 @@
   .user-pill.partner .pill-label { color: var(--red-dark); }
   .logout-btn { font-size: 12px; color: var(--text-3); cursor: pointer; background: none; border: none; font-family: 'Nunito', sans-serif; }
 
+  /* --- SEGMENTED SWITCHER --- */
+  #user-switcher {
+    display: none; /* shown only when partner exists */
+    background: var(--gray-light); border-radius: 99px;
+    padding: 3px; gap: 2px;
+  }
+  .seg-btn {
+    flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px;
+    padding: 7px 12px; border-radius: 99px; border: none; cursor: pointer;
+    font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
+    color: var(--text-3); background: none;
+    transition: background .2s, color .2s; -webkit-tap-highlight-color: transparent;
+    white-space: nowrap; overflow: hidden;
+  }
+  .seg-btn .seg-avatar { font-size: 18px; line-height: 1; flex-shrink: 0; }
+  .seg-btn .seg-name { overflow: hidden; text-overflow: ellipsis; max-width: 80px; }
+  .seg-btn.me.active { background: var(--teal); color: white; }
+  .seg-btn.partner.active { background: var(--coral, #e07060); color: white; }
+
   /* --- BOTTOM NAV --- */
   .bottom-nav {
     position: fixed; bottom: 0; left: 0; right: 0; z-index: 300;
@@ -602,27 +621,27 @@
 		</div>
 	
   <div class="header">
-    <!-- Row 1: pills + user menu -->
-    <div style="display:flex;align-items:center;gap:4px;">
-      <div class="user-pill me" onclick="setUser('me')" id="pill-me">
-        <div class="pill-avatar" id="pill-me-avatar">🌱</div>
-        <span class="pill-label" id="pill-me-name">Moi</span>
-      </div>
-      <div class="user-pill" onclick="togglePartnerPill(event)" id="pill-partner">
-        <div class="pill-avatar" id="pill-partner-avatar">🌱</div>
-        <span class="pill-label" id="pill-partner-name">Proche</span>
-      </div>
-      <button id="btn-motivate" onclick="openMotivate(event)" title="Envoyer un message">💌</button>
-      <div style="flex:1;"></div>
-    </div>
-    <!-- Row 2: week nav slim -->
-    <div style="display:flex;align-items:center;justify-content:center;">
-      <div class="week-nav-wrap" id="week-nav-wrap">
+    <!-- Row 1: week nav + motivate -->
+    <div style="display:flex;align-items:center;gap:6px;">
+      <div class="week-nav-wrap" id="week-nav-wrap" style="flex:1;">
         <button onclick="changeWeek(-1)" class="week-nav-btn" id="week-nav-prev">‹</button>
         <span id="week-lbl" style="font-size:14px;font-weight:700;color:var(--text-2);white-space:nowrap;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:200px;">Cette semaine</span>
         <button onclick="changeWeek(1)" class="week-nav-btn" id="week-nav-next">›</button>
       </div>
+      <button id="btn-motivate" onclick="openMotivate(event)" title="Envoyer un message">💌</button>
     </div>
+    <!-- Row 2: segmented switcher (hidden until partner exists) -->
+    <div id="user-switcher" style="display:none;flex-direction:row;">
+      <button class="seg-btn me active" id="pill-me" onclick="setUser('me')">
+        <span class="seg-avatar" id="pill-me-avatar">🌱</span>
+        <span class="seg-name" id="pill-me-name">Moi</span>
+      </button>
+      <button class="seg-btn partner" id="pill-partner" onclick="togglePartnerPill(event)">
+        <span class="seg-avatar" id="pill-partner-avatar">🌱</span>
+        <span class="seg-name" id="pill-partner-name">Proche</span>
+      </button>
+    </div>
+    <!-- Row 3: readonly banner -->
     <div id="readonly-banner" style="
       display:none; margin: 4px -12px -6px;
       background: var(--amber-light); color: var(--amber-dark);
@@ -1061,12 +1080,21 @@ function updatePartnerPill() {
     if (avatarEl) avatarEl.textContent = '🫂';
     if (nameEl) nameEl.textContent = `${partnerUids.length} proches`;
   }
+  const switcher = document.getElementById('user-switcher');
+  if (switcher) switcher.style.display = partnerUids.length > 0 ? 'flex' : 'none';
+  const btn = document.getElementById('btn-motivate');
+  if (btn) btn.style.display = partnerUids.length > 0 ? 'flex' : 'none';
 }
 
 function togglePartnerPill(e) {
   e.stopPropagation();
   if (partnerUids.length === 0) {
     setUser('partner', null);
+    return;
+  }
+  if (partnerUids.length === 1) {
+    if (viewingPartner && activePartnerUid === partnerUids[0]) setUser('me');
+    else setUser('partner', partnerUids[0]);
     return;
   }
   const sheet = document.getElementById('partner-sheet');
@@ -1280,15 +1308,15 @@ function setUser(who, uid) {
   if (who === 'me') {
     viewingPartner = false;
     activePartnerUid = null;
-    document.getElementById('pill-me').className = 'user-pill me';
-    document.getElementById('pill-partner').className = 'user-pill';
+    document.getElementById('pill-me').className = 'seg-btn me active';
+    document.getElementById('pill-partner').className = 'seg-btn partner';
     banner.style.display = 'none';
     setWeekNavColor('var(--teal)');
   } else {
     viewingPartner = true;
     activePartnerUid = uid || partnerUids[0] || null;
-    document.getElementById('pill-me').className = 'user-pill';
-    document.getElementById('pill-partner').className = 'user-pill partner';
+    document.getElementById('pill-me').className = 'seg-btn me';
+    document.getElementById('pill-partner').className = 'seg-btn partner active';
     setWeekNavColor('var(--coral)');
     updatePartnerPill();
     if (!activePartnerUid) {
