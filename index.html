@@ -137,46 +137,53 @@
   .header-title { font-size: 17px; font-weight: 700; }
   .user-pills { display: flex; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; width: 100%; }
   .user-pill {
-    padding: 7px 14px;
-    border-radius: 99px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    border: 1.5px solid transparent;
-    transition: all .15s;
-    background: var(--gray-light);
-    color: var(--text-2);
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    cursor: pointer; background: none; border: none; padding: 2px 4px;
+    -webkit-tap-highlight-color: transparent; font-family: 'Nunito', sans-serif;
   }
-  .user-pill.me { border-color: var(--teal); background: var(--teal-light); color: var(--teal-dark); }
-  .user-pill.partner { border-color: var(--coral); background: var(--coral-light); color: var(--red-dark); }
+  .pill-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; border: 2.5px solid var(--border);
+    background: var(--surface); transition: border-color .2s, background .2s;
+  }
+  .pill-label {
+    font-size: 10px; font-weight: 700; color: var(--text-3);
+    max-width: 56px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    text-align: center;
+  }
+  .user-pill.me .pill-avatar { border-color: var(--teal); background: var(--teal-light); }
+  .user-pill.me .pill-label { color: var(--teal-dark); }
+  .user-pill.partner .pill-avatar { border-color: var(--coral); background: var(--coral-light); }
+  .user-pill.partner .pill-label { color: var(--red-dark); }
   .logout-btn { font-size: 12px; color: var(--text-3); cursor: pointer; background: none; border: none; font-family: 'Nunito', sans-serif; }
 
-  /* --- TABS --- */
-  .tab-bar {
-    display: flex;
-    gap: 6px;
-    padding: 8px 16px;
-    overflow-x: auto;
-    scrollbar-width: none;
+  /* --- BOTTOM NAV --- */
+  .bottom-nav {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 300;
+    display: flex; background: var(--surface);
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -2px 12px rgba(0,0,0,.07);
+    padding-bottom: env(safe-area-inset-bottom);
   }
-  .tab-bar::-webkit-scrollbar { display: none; }
-  .tab {
-    padding: 7px 14px;
-    border-radius: 99px;
-    border: 1.5px solid transparent;
-    background: var(--gray-light);
-    cursor: pointer;
-    font-family: 'Nunito', sans-serif;
-    font-size: 14px;
-    font-weight: 600;
-    color: var(--text-2);
-    transition: all .15s;
-    white-space: nowrap;
+  .bottom-nav-item {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; padding: 8px 4px 10px;
+    cursor: pointer; border: none; background: none;
+    font-family: 'Nunito', sans-serif; color: var(--text-3);
+    -webkit-tap-highlight-color: transparent; gap: 3px;
+    transition: color .15s;
   }
-  .tab.active { border-color: var(--teal); background: var(--teal-light); color: var(--teal-dark); }
+  .bottom-nav-item .nav-icon { font-size: 22px; line-height: 1; }
+  .bottom-nav-item .nav-label { font-size: 10px; font-weight: 700; letter-spacing: .02em; }
+  .bottom-nav-item.active { color: var(--teal); }
+
+  /* Legacy .tab still used by showTab JS — keep minimal */
+  .tab { display: none; }
+  .tab.active { display: none; }
 
   /* --- MAIN --- */
-  .main { padding: 16px; max-width: 500px; margin: 0 auto; }
+  .main { padding: 16px; max-width: 500px; margin: 0 auto; padding-bottom: 80px; }
   .screen { display: none; }
   .screen.active { display: block; }
 
@@ -596,55 +603,19 @@
 	
   <div class="header">
     <!-- Row 1: pills + user menu -->
-    <div style="display:flex;align-items:center;gap:6px;min-width:0;">
-      <div class="user-pill me" onclick="setUser('me')" id="pill-me" style="min-width:0;overflow:hidden;">
-        <span id="pill-me-avatar">🌱</span> <span id="pill-me-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Moi</span>
+    <div style="display:flex;align-items:center;gap:4px;">
+      <div class="user-pill me" onclick="setUser('me')" id="pill-me">
+        <div class="pill-avatar" id="pill-me-avatar">🌱</div>
+        <span class="pill-label" id="pill-me-name">Moi</span>
       </div>
-      <img src="LOGO_habits.png" alt="" style="width:20px;height:auto;opacity:0.4;flex-shrink:0;">
-      <div style="position:relative;min-width:0;flex-shrink:1;">
-        <div class="user-pill" onclick="togglePartnerPill(event)" id="pill-partner" style="min-width:0;overflow:hidden;">
-          <span id="pill-partner-avatar">🌱</span> <span id="pill-partner-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Partenaires</span><span id="pill-partner-meta" style="font-size:11px;color:var(--text-3);margin-left:3px;flex-shrink:0;"></span>
-        </div>
-        <div id="partner-pill-dropdown" style="
-          display:none; position:absolute; left:0; top:36px;
-          background:var(--surface); border-radius:var(--radius);
-          box-shadow:0 4px 20px rgba(0,0,0,0.15);
-          border:1px solid var(--border);
-          min-width:180px; z-index:200; overflow:hidden;">
-        </div>
+      <div class="user-pill" onclick="togglePartnerPill(event)" id="pill-partner">
+        <div class="pill-avatar" id="pill-partner-avatar">🌱</div>
+        <span class="pill-label" id="pill-partner-name">Proche</span>
       </div>
-      <div style="flex:1;min-width:8px;"></div>
-      <div style="position:relative;flex-shrink:0;">
-        <button class="logout-btn" onclick="toggleProfilMenu(event); return false;" id="profil-menu-btn"
-          style="padding:6px 10px;border-radius:var(--radius-sm);border:1px solid var(--border);
-          background:var(--surface);cursor:pointer;font-family:'Nunito',sans-serif;
-          font-size:13px;color:var(--text);-webkit-tap-highlight-color:transparent;white-space:nowrap;">
-          <span style="display:flex;align-items:center;gap:2px;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="var(--teal)" style="display:block;">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
-            </svg>
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="var(--teal)" style="display:block;">
-              <path d="M7 10l5 5 5-5z"/>
-            </svg>
-          </span>
-        </button>
-        <div id="profil-dropdown" style="
-          display:none; position:absolute; right:0; top:36px;
-          background:var(--surface); border-radius:var(--radius);
-          box-shadow:0 4px 20px rgba(0,0,0,0.12);
-          border:1px solid var(--border);
-          min-width:260px; z-index:100; overflow:hidden;font-size:14px;">
-          <div id="profil-dropdown-content"></div>
-        </div>
-      </div>
+      <button id="btn-motivate" onclick="openMotivate(event)" title="Envoyer un message">💌</button>
+      <div style="flex:1;"></div>
     </div>
-    <!-- Row 2: tabs full width -->
-    <div class="tab-bar" style="padding:0;">
-      <button class="tab" onclick="showTab('objectifs',this)">📋 Récap</button>
-      <button class="tab active" onclick="showTab('repas',this)">🥗 Repas</button>
-      <button class="tab" onclick="showTab('sport',this)">🏃 Sport</button>
-    </div>
-    <!-- Row 3: week nav slim -->
+    <!-- Row 2: week nav slim -->
     <div style="display:flex;align-items:center;justify-content:center;">
       <div class="week-nav-wrap" id="week-nav-wrap">
         <button onclick="changeWeek(-1)" class="week-nav-btn" id="week-nav-prev">‹</button>
@@ -1014,6 +985,8 @@ async function loadUserProfile() {
   const d = doc.data();
   document.getElementById('pill-me-name').textContent = d.name || 'Moi';
   document.getElementById('pill-me-avatar').textContent = d.avatar || '🌱';
+  const navAv = document.getElementById('nav-profil-avatar');
+  if (navAv) navAv.textContent = d.avatar || '🌱';
   pairCode = d.pairCode;
   partnerUids = d.partnerIds || (d.partnerId ? [d.partnerId] : []);
   myData.activities = d.activities || [...DEFAULT_ACTS];
@@ -1082,20 +1055,15 @@ async function loadPartnerProfile(uid) {
 function updatePartnerPill() {
   const avatarEl = document.getElementById('pill-partner-avatar');
   const nameEl = document.getElementById('pill-partner-name');
-  const metaEl = document.getElementById('pill-partner-meta');
   if (partnerUids.length === 0) {
-    if (avatarEl) avatarEl.textContent = '🌱';
-    if (nameEl) nameEl.textContent = 'Partenaires';
-    if (metaEl) metaEl.textContent = '';
+    if (avatarEl) avatarEl.textContent = '🫂';
+    if (nameEl) nameEl.textContent = 'Proche';
   } else if (activePartnerUid && partnersData[activePartnerUid]) {
     if (avatarEl) avatarEl.textContent = partnersData[activePartnerUid].avatar || '🌱';
     if (nameEl) nameEl.textContent = partnersData[activePartnerUid].name || 'Partenaire';
-    const idx = partnerUids.indexOf(activePartnerUid) + 1;
-    if (metaEl) metaEl.textContent = partnerUids.length > 1 ? ` ${idx}/${partnerUids.length} ▾` : ' ▾';
   } else {
-    if (avatarEl) avatarEl.textContent = '🌱';
-    if (nameEl) nameEl.textContent = `${partnerUids.length} partenaire${partnerUids.length > 1 ? 's' : ''}`;
-    if (metaEl) metaEl.textContent = ' ▾';
+    if (avatarEl) avatarEl.textContent = '🫂';
+    if (nameEl) nameEl.textContent = `${partnerUids.length} proches`;
   }
 }
 
@@ -1105,25 +1073,28 @@ function togglePartnerPill(e) {
     setUser('partner', null);
     return;
   }
-  const dd = document.getElementById('partner-pill-dropdown');
-  if (dd.style.display === 'block') { dd.style.display = 'none'; return; }
+  const sheet = document.getElementById('partner-sheet');
+  if (sheet.style.display === 'flex') { sheet.style.display = 'none'; return; }
 
-  dd.innerHTML = partnerUids.map(uid => {
+  document.getElementById('partner-sheet-content').innerHTML = partnerUids.map(uid => {
     const p = partnersData[uid] || {};
     const isActive = activePartnerUid === uid && viewingPartner;
     return `<div onclick="selectPartner('${uid}')" style="
-      display:flex;align-items:center;gap:8px;
-      padding:10px 14px;cursor:pointer;font-size:13px;
-      background:${isActive ? 'var(--coral-light)' : 'none'};"
-      onmouseover="this.style.background='var(--gray-light)'"
-      onmouseout="this.style.background='${isActive ? 'var(--coral-light)' : 'none'}'">
-      <span style="font-size:18px;">${p.avatar || '🌱'}</span>
-      <span style="font-weight:600;flex:1;">${p.name || 'Partenaire'}</span>
-      ${isActive ? '<span style="font-size:10px;color:var(--coral);">●</span>' : ''}
+      display:flex;align-items:center;gap:14px;
+      padding:14px 16px;cursor:pointer;
+      background:${isActive ? 'var(--coral-light)' : 'none'};
+      -webkit-tap-highlight-color:transparent;">
+      <div style="width:44px;height:44px;border-radius:50%;background:var(--surface);
+        border:2px solid ${isActive ? 'var(--coral)' : 'var(--border)'};
+        display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">
+        ${p.avatar || '🌱'}
+      </div>
+      <span style="font-weight:700;font-size:16px;flex:1;color:var(--text);">${p.name || 'Partenaire'}</span>
+      ${isActive ? '<span style="font-size:18px;">✓</span>' : '<span style="font-size:18px;color:var(--text-3);">›</span>'}
     </div>`;
   }).join('');
 
-  dd.style.display = 'block';
+  sheet.style.display = 'flex';
   setTimeout(() => {
     document.addEventListener('click', closePartnerPillDropdown, { once: true });
   }, 100);
@@ -1134,9 +1105,11 @@ function selectPartner(uid) {
   setUser('partner', uid);
 }
 
-function closePartnerPillDropdown() {
-  const dd = document.getElementById('partner-pill-dropdown');
-  if (dd) dd.style.display = 'none';
+function closePartnerPillDropdown(e) {
+  const card = document.getElementById('partner-sheet-card');
+  if (e && card && card.contains(e.target)) return;
+  const sheet = document.getElementById('partner-sheet');
+  if (sheet) sheet.style.display = 'none';
 }
 
 
@@ -1349,11 +1322,12 @@ async function resendVerification() {
   }
 }
 /////////////////////////////////////////////////////	
-function showTab(name, btn) {
+function showTab(name) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.bottom-nav-item').forEach(b => b.classList.remove('active'));
   document.getElementById('tab-' + name).classList.add('active');
-  btn.classList.add('active');
+  const navBtn = document.getElementById('nav-' + name);
+  if (navBtn) navBtn.classList.add('active');
   if (name === 'objectifs') { renderObjectifs(); renderStats(); }
 }
 
@@ -1366,47 +1340,56 @@ function _ddMenuItem(label, fn) {
 
 function toggleProfilMenu(e) {
   if (e) { e.stopPropagation(); e.preventDefault(); }
-  const dd = document.getElementById('profil-dropdown');
-  if (!dd) return;
-  if (dd.style.display === 'block') { dd.style.display = 'none'; return; }
+  const sheet = document.getElementById('profil-sheet');
+  if (!sheet) return;
+  if (sheet.style.display === 'flex') { sheet.style.display = 'none'; return; }
 
   const myName = document.getElementById('pill-me-name').textContent || 'Moi';
   const myAvatar = myData.avatar || '🌱';
 
-  document.getElementById('profil-dropdown-content').innerHTML = `
-    <div style="padding:14px 16px; border-bottom:1px solid var(--border);">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <div style="width:36px;height:36px;border-radius:50%;background:var(--teal-light);
-          display:flex;align-items:center;justify-content:center;font-size:20px;">${myAvatar}</div>
-        <div>
-          <div style="font-weight:700;font-size:14px;">${myName}</div>
-          <div style="font-size:11px;color:var(--text-3);">${auth.currentUser?.email || ''}</div>
-        </div>
-      </div>
+  document.getElementById('profil-sheet-content').innerHTML = `
+    <div style="padding:16px 16px 20px;text-align:center;border-bottom:1px solid var(--border);">
+      <div style="width:64px;height:64px;border-radius:50%;background:var(--teal-light);
+        display:flex;align-items:center;justify-content:center;font-size:36px;
+        margin:0 auto 10px;">${myAvatar}</div>
+      <div style="font-weight:700;font-size:17px;">${myName}</div>
+      <div style="font-size:12px;color:var(--text-3);margin-top:2px;">${auth.currentUser?.email || ''}</div>
     </div>
-    <div style="padding:6px 8px;">
-      ${_ddMenuItem('<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" style="display:inline-block;vertical-align:middle;margin-right:6px;"><path fill="var(--teal)" d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1a7.37 7.37 0 0 0-1.69-.98l-.38-2.65A.49.49 0 0 0 14 2h-4a.49.49 0 0 0-.49.42l-.38 2.65a7.37 7.37 0 0 0-1.69.98l-2.49-1a.5.5 0 0 0-.61.22l-2 3.46a.49.49 0 0 0 .12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98L2.46 14.63a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .61.22l2.49-1c.52.38 1.08.7 1.69.98l.38 2.65c.07.24.28.42.49.42h4c.24 0 .44-.18.49-.42l.38-2.65a7.37 7.37 0 0 0 1.69-.98l2.49 1a.5.5 0 0 0 .61-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.65zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>Paramètres', 'openParametresPanel()')}
-      ${_ddMenuItem('<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" style="display:inline-block;vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10" fill="none" stroke="var(--teal)" stroke-width="1.8"/><circle cx="12" cy="9.5" r="3.5" fill="var(--teal)"/><path d="M5.5 19.5c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6" fill="var(--teal)"/></svg>Profil', 'openProfilPanel()')}
-      ${_ddMenuItem(`<svg xmlns="http://www.w3.org/2000/svg" width="22" height="16" viewBox="0 0 22 16" style="display:inline-block;vertical-align:middle;margin-right:4px;"><g transform="scale(0.667)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" fill="var(--teal)"/></g><g transform="translate(6,0) scale(0.667)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" fill="var(--coral)"/></g></svg>Partenaires (${partnerUids.length}/5)`, 'openPartenairesPanel()')}
-      <div onclick="doLogout()" style="padding:9px 12px;cursor:pointer;font-size:14px;
-        border-radius:var(--radius-sm);color:var(--red);"
-        onmouseover="this.style.background='var(--red-light)'"
-        onmouseout="this.style.background='none'">
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" style="display:inline-block;vertical-align:middle;margin-right:6px;"><rect x="2" y="2" width="20" height="20" rx="4" fill="none" stroke="var(--coral)" stroke-width="1.8"/><path fill="var(--coral)" d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59z"/><path fill="var(--coral)" d="M19 3H5a2 2 0 0 0-2 2v4h2V5h14v14H5v-4H3v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg>Se déconnecter
-      </div>
+    <div style="padding:0 12px 8px;">
+      ${_sheetMenuItem('👤', 'Profil', 'openProfilPanel()')}
+      ${_sheetMenuItem('🔗', `Partenaires (${partnerUids.length}/5)`, 'openPartenairesPanel()')}
+      ${_sheetMenuItem('⚙️', 'Paramètres', 'openParametresPanel()')}
+    </div>
+    <div style="margin:0 12px;border-top:1px solid var(--border);padding-top:8px;">
+      ${_sheetMenuItem('💬', 'Contacter le support', "window.open('https://docs.google.com/forms/d/e/1FAIpQLSfH8v_aA-CHdZXKYIVWSl1phJCxirpgj-vifxHgoarmwqbN1Q/viewform','_blank')")}
+      ${_sheetMenuItem('🚪', 'Se déconnecter', 'doLogout()', 'var(--red)')}
     </div>`;
 
-  dd.style.display = 'block';
-  setTimeout(() => { document.addEventListener('click', closeDropdown, { once: true }); }, 100);
+  sheet.style.display = 'flex';
+  setTimeout(() => { document.addEventListener('click', closeProfilSheet, { once: true }); }, 100);
 }
 
-function closeDropdown() {
-  document.getElementById('profil-dropdown').style.display = 'none';
+function _sheetMenuItem(icon, label, action, color) {
+  return `<div onclick="${action}" style="display:flex;align-items:center;gap:14px;
+    padding:14px 12px;cursor:pointer;border-radius:var(--radius-sm);
+    color:${color || 'var(--text)'};-webkit-tap-highlight-color:transparent;">
+    <span style="font-size:20px;width:28px;text-align:center;">${icon}</span>
+    <span style="font-size:15px;font-weight:600;flex:1;">${label}</span>
+    <span style="color:var(--text-3);font-size:16px;">›</span>
+  </div>`;
 }
+
+function closeProfilSheet(e) {
+  const card = document.getElementById('profil-sheet-card');
+  if (e && card && card.contains(e.target)) return;
+  document.getElementById('profil-sheet').style.display = 'none';
+}
+
+function closeDropdown() { closeProfilSheet(); }
 
 // ---- PROFIL PANEL ----
 function openProfilPanel() {
-  document.getElementById('profil-dropdown').style.display = 'none';
+  closeProfilSheet();
   document.getElementById('profil-panel').style.display = 'block';
   renderProfil();
 }
@@ -1417,7 +1400,7 @@ function closeProfilPanel() {
 
 // ---- PARTENAIRES PANEL ----
 function openPartenairesPanel() {
-  document.getElementById('profil-dropdown').style.display = 'none';
+  closeProfilSheet();
   document.getElementById('partenaires-panel').style.display = 'block';
   renderPartenaires();
 }
@@ -1428,7 +1411,7 @@ function closePartenairesPanel() {
 
 // ---- PARAMETRES PANEL ----
 function openParametresPanel() {
-  document.getElementById('profil-dropdown').style.display = 'none';
+  closeProfilSheet();
   document.getElementById('parametres-panel').style.display = 'block';
   renderParametres();
 }
@@ -2357,8 +2340,10 @@ async function saveEditProfil() {
       avatar: selectedAvatar
     });
     myData.avatar = selectedAvatar;
-        document.getElementById('pill-me-name').textContent = name;
+    document.getElementById('pill-me-name').textContent = name;
     document.getElementById('pill-me-avatar').textContent = selectedAvatar;
+    const navAv = document.getElementById('nav-profil-avatar');
+    if (navAv) navAv.textContent = selectedAvatar;
     closeEditProfil();
     renderProfil();
   } catch(e) {
@@ -2708,37 +2693,6 @@ function renderAll() {
 }
 </script>
 
-<!-- màj 28/03 : lien pour contacter le support -->
-<a href="https://docs.google.com/forms/d/e/1FAIpQLSfH8v_aA-CHdZXKYIVWSl1phJCxirpgj-vifxHgoarmwqbN1Q/viewform" 
-   target="_blank" 
-   id="support-link">
-  💬 Contacter le support
-</a>
-
-<style>
-  #support-link {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 99px;
-    padding: 10px 16px;
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text-2);
-    text-decoration: none;
-    box-shadow: var(--shadow);
-    z-index: 40;
-  }
-
-  @media (max-width: 500px) {
-    #support-link {
-      right: 50%;
-      transform: translateX(50%);
-    }
-  }
-</style>	
 
 <div id="edit-profil-overlay" onclick="closeEditProfil(event)" style="
   display:none; position:fixed; inset:0; z-index:300;
@@ -2769,6 +2723,47 @@ function renderAll() {
 </div>
 
 <div id="sync-toast"></div>
+
+<!-- PARTNER SHEET -->
+<div id="partner-sheet" onclick="closePartnerPillDropdown(event)" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.4);align-items:flex-end;">
+  <div id="partner-sheet-card" style="background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:480px;margin:0 auto;padding-bottom:32px;box-shadow:0 -4px 24px rgba(0,0,0,.12);">
+    <div style="display:flex;justify-content:center;padding:10px 0 4px;">
+      <div style="width:36px;height:4px;border-radius:99px;background:var(--border);"></div>
+    </div>
+    <div style="padding:4px 12px 8px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);">Voir les données de…</div>
+    <div id="partner-sheet-content"></div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="bottom-nav-item" id="nav-objectifs" onclick="showTab('objectifs')">
+    <span class="nav-icon">📋</span>
+    <span class="nav-label">Récap</span>
+  </button>
+  <button class="bottom-nav-item active" id="nav-repas" onclick="showTab('repas')">
+    <span class="nav-icon">🥗</span>
+    <span class="nav-label">Repas</span>
+  </button>
+  <button class="bottom-nav-item" id="nav-sport" onclick="showTab('sport')">
+    <span class="nav-icon">🏃</span>
+    <span class="nav-label">Sport</span>
+  </button>
+  <button class="bottom-nav-item" id="nav-profil" onclick="toggleProfilMenu(event)">
+    <span class="nav-icon" id="nav-profil-avatar">🌱</span>
+    <span class="nav-label">Profil</span>
+  </button>
+</nav>
+
+<!-- PROFIL SHEET -->
+<div id="profil-sheet" onclick="closeProfilSheet(event)" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.4);align-items:flex-end;">
+  <div id="profil-sheet-card" style="background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-width:480px;margin:0 auto;padding-bottom:32px;box-shadow:0 -4px 24px rgba(0,0,0,.12);">
+    <div style="display:flex;justify-content:center;padding:10px 0 4px;">
+      <div style="width:36px;height:4px;border-radius:99px;background:var(--border);"></div>
+    </div>
+    <div id="profil-sheet-content"></div>
+  </div>
+</div>
 
 </body>
 </html>
