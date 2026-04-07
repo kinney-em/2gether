@@ -220,10 +220,10 @@
     flex-shrink: 0;
   }
   .week-nav-wrap {
-    display: flex; align-items: center; justify-content: center; gap: 4px;
+    display: flex; align-items: center; justify-content: space-between;
     background: var(--surface); border-radius: 99px;
     padding: 0 4px; box-shadow: var(--shadow);
-    min-height: 44px;
+    min-height: 44px; width: 100%;
   }
   @keyframes week-flash {
     0%   { background: var(--teal-light); }
@@ -625,7 +625,7 @@
     <div style="display:flex;align-items:center;gap:6px;">
       <div class="week-nav-wrap" id="week-nav-wrap" style="flex:1;">
         <button onclick="changeWeek(-1)" class="week-nav-btn" id="week-nav-prev">‹</button>
-        <span id="week-lbl" style="font-size:14px;font-weight:700;color:var(--text-2);white-space:nowrap;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:200px;">Cette semaine</span>
+        <span id="week-lbl" style="font-size:14px;font-weight:700;color:var(--text-2);white-space:nowrap;text-align:center;flex:1;overflow:hidden;text-overflow:ellipsis;">Cette semaine</span>
         <button onclick="changeWeek(1)" class="week-nav-btn" id="week-nav-next">›</button>
       </div>
       <button id="btn-motivate" onclick="openMotivate(event)" title="Envoyer un message">💌</button>
@@ -1463,13 +1463,18 @@ function changeWeek(d) {
   const getMain = () => document.querySelector('.main');
 
   document.addEventListener('touchstart', e => {
-    // Always reset state on new touch
     locked = false;
     swiping = false;
     if (animating) { locked = true; return; }
     const m = getMain();
-    // Lock immediately if touch starts outside .main (header, pills, modals)
-    if (!m || !m.contains(e.target)) { locked = true; return; }
+    if (!m) { locked = true; return; }
+    // Lock on interactive controls : modals/panels, header buttons, inputs
+    const blocked = e.target.closest(
+      'button, input, select, textarea, .week-nav-btn, .seg-btn, ' +
+      '[id$="-sheet"], [id$="-panel"], #profil-sheet, #partner-sheet, ' +
+      '#motivate-sheet, #edit-profil-overlay'
+    );
+    if (blocked) { locked = true; return; }
     tx = e.touches[0].clientX;
     ty = e.touches[0].clientY;
   }, { passive: true });
@@ -1477,7 +1482,7 @@ function changeWeek(d) {
   document.addEventListener('touchmove', e => {
     if (animating || locked) return;
     const m = getMain();
-    if (!m || !m.contains(e.target)) return;
+    if (!m) return;
     const dx = e.touches[0].clientX - tx;
     const adx = Math.abs(dx);
     const ady = Math.abs(e.touches[0].clientY - ty);
