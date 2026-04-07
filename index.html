@@ -131,9 +131,9 @@
   .header-title { font-size: 17px; font-weight: 700; }
   .user-pills { display: flex; gap: 6px; margin-bottom: 4px; flex-wrap: wrap; width: 100%; }
   .user-pill {
-    padding: 5px 12px;
+    padding: 7px 14px;
     border-radius: 99px;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
     cursor: pointer;
     border: 1.5px solid transparent;
@@ -155,13 +155,13 @@
   }
   .tab-bar::-webkit-scrollbar { display: none; }
   .tab {
-    padding: 5px 12px;
+    padding: 7px 14px;
     border-radius: 99px;
     border: 1.5px solid transparent;
     background: var(--gray-light);
     cursor: pointer;
     font-family: 'Nunito', sans-serif;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
     color: var(--text-2);
     transition: all .15s;
@@ -230,6 +230,10 @@
   .day-col { display: flex; flex-direction: column; align-items: center; gap: 3px; }
   .day-lbl { font-size: 10px; font-weight: 700; color: var(--text-3); text-transform: uppercase; }
   .day-lbl.today { color: var(--green); background: var(--green-light); border-radius: 99px; padding: 1px 5px; }
+  .meal-table-grid { display: grid; grid-template-columns: 34px repeat(7, 1fr); gap: 3px; align-items: center; }
+  .meal-table-grid .meal-btn { min-width: 0; min-height: 0; }
+  .meal-row-lbl { font-size: 9px; font-weight: 700; color: var(--text-3); text-transform: uppercase; text-align: center; line-height: 1.2; }
+  .meal-separator { grid-column: 1 / -1; border-top: 1.5px solid var(--border); margin: 3px 0; }
   .meal-btn, .sport-btn {
     width: 100%; aspect-ratio: 1;
     min-width: 44px; min-height: 44px;
@@ -638,7 +642,7 @@
     <div style="display:flex;align-items:center;justify-content:center;">
       <div class="week-nav-wrap" id="week-nav-wrap">
         <button onclick="changeWeek(-1)" class="week-nav-btn" id="week-nav-prev">‹</button>
-        <span id="week-lbl" style="font-size:11px;font-weight:700;color:var(--text-2);white-space:nowrap;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:200px;">Cette semaine</span>
+        <span id="week-lbl" style="font-size:14px;font-weight:700;color:var(--text-2);white-space:nowrap;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:200px;">Cette semaine</span>
         <button onclick="changeWeek(1)" class="week-nav-btn" id="week-nav-next">›</button>
       </div>
     </div>
@@ -658,16 +662,9 @@
     <!-- REPAS -->
     <div id="tab-repas" class="screen active">
       <div class="score-strip" id="food-scores"></div>
-      <div class="sec-label">Petit-déjeuner</div>
-      <div class="week-grid" id="grid-pdj"></div>
-      <div class="sec-label">Déjeuner</div>
-      <div class="week-grid" id="grid-dej"></div>
-      <div class="sec-label">Dîner</div>
-      <div class="week-grid" id="grid-din"></div>
-      <div class="sec-label">Snacks</div>
-      <div class="week-grid" id="grid-snack"></div>
-      <p style="font-size:11px;color:var(--text-3);margin-top:8px;">Tapez pour cycler : vide → <b>✔</b> sain → <b>≈</b> correct → <b>✖</b> malbouffe · Appui long pour remettre à zéro</p>
-      <div id="meal-ratio-bar" style="display:none;height:20px;border-radius:99px;overflow:hidden;margin-top:10px;border:1px solid var(--border);"></div>
+      <div id="meal-ratio-bar" style="display:none;height:20px;border-radius:99px;overflow:hidden;margin-bottom:6px;border:1px solid var(--border);"></div>
+      <p style="font-size:11px;color:var(--text-3);margin-bottom:6px;">Tapez pour cycler : vide → <b>✔</b> sain → <b>≈</b> correct → <b>✖</b> malbouffe · Appui long pour remettre à zéro</p>
+      <div id="meal-table"></div>
       <div id="meal-empty-state" style="display:none;text-align:center;padding:20px 16px 8px;">
         <div style="display:flex;align-items:flex-end;justify-content:center;gap:6px;margin-bottom:10px;">
           <span style="font-size:24px;opacity:0.6;">🍏</span>
@@ -1493,30 +1490,43 @@ myData.meals[wk][day][type] = cur === 'none' ? 'sain' : cur === 'sain' ? 'correc
 }
 
 function renderMeals() {
+  const t = document.getElementById('meal-table');
+  if (!t) return;
   const icons = { none:'·', sain:'✔', correct:'≈', malbouffe:'✖', skip:'—' };
   const stateOrder = ['none','sain','correct','malbouffe'];
   const todayIdx = weekOffset === 0 ? (new Date().getDay() + 6) % 7 : -1;
-  MEALS.forEach(type => {
-    const g = document.getElementById('grid-' + type);
-    if (!g) return;
-    g.innerHTML = DAYS.map((d,i) => {
-      const state = getMeal(type,i);
-      const si = stateOrder.indexOf(state);
-      const dots = [1,2,3].map(n => `<span${si >= n ? ' class="on"' : ''}></span>`).join('');
-      return `
-      <div class="day-col">
-        <div class="day-lbl${i === todayIdx ? ' today' : ''}">${d}</div>
-        <div class="meal-btn ${state}"
-          onclick="cycleMeal('${type}',${i})"
-          onmousedown="startMealLongPress('${type}',${i},this)"
-          onmouseup="cancelMealLongPress()"
-          onmouseleave="cancelMealLongPress()"
-          ontouchstart="startMealLongPress('${type}',${i},this)"
-          ontouchend="cancelMealLongPress()"
-          ontouchmove="cancelMealLongPress()">${icons[state]}<div class="meal-cycle-dots">${dots}</div></div>
-      </div>`;
-    }).join('');
-  });
+  const labels = { pdj:'Matin', dej:'Midi', din:'Soir', snack:'Snack' };
+
+  const cellHtml = (type, i) => {
+    const state = getMeal(type, i);
+    const si = stateOrder.indexOf(state);
+    const dots = [1,2,3].map(n => `<span${si >= n ? ' class="on"' : ''}></span>`).join('');
+    return `<div class="meal-btn ${state}"
+      onclick="cycleMeal('${type}',${i})"
+      onmousedown="startMealLongPress('${type}',${i},this)"
+      onmouseup="cancelMealLongPress()"
+      onmouseleave="cancelMealLongPress()"
+      ontouchstart="startMealLongPress('${type}',${i},this)"
+      ontouchend="cancelMealLongPress()"
+      ontouchmove="cancelMealLongPress()">${icons[state]}<div class="meal-cycle-dots">${dots}</div></div>`;
+  };
+
+  const headerRow = `<div></div>` + DAYS.map((d,i) =>
+    `<div class="day-lbl${i === todayIdx ? ' today' : ''}" style="text-align:center;">${d}</div>`
+  ).join('');
+
+  const mealRow = (type) =>
+    `<div class="meal-row-lbl">${labels[type]}</div>` +
+    DAYS.map((_,i) => cellHtml(type, i)).join('');
+
+  t.innerHTML = `<div class="meal-table-grid">
+    ${headerRow}
+    ${mealRow('pdj')}
+    ${mealRow('dej')}
+    ${mealRow('din')}
+    <div class="meal-separator"></div>
+    ${mealRow('snack')}
+  </div>`;
 }
 
 function countMeals(data, wk) {
