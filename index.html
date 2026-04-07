@@ -597,7 +597,7 @@
       <img src="LOGO_habits.png" alt="" style="width:20px;height:auto;opacity:0.4;flex-shrink:0;">
       <div style="position:relative;min-width:0;flex-shrink:1;">
         <div class="user-pill" onclick="togglePartnerPill(event)" id="pill-partner" style="min-width:0;overflow:hidden;">
-          <span id="pill-partner-avatar">🌱</span> <span id="pill-partner-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Partenaires</span>
+          <span id="pill-partner-avatar">🌱</span> <span id="pill-partner-name" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">Partenaires</span><span id="pill-partner-meta" style="font-size:11px;color:var(--text-3);margin-left:3px;flex-shrink:0;"></span>
         </div>
         <div id="partner-pill-dropdown" style="
           display:none; position:absolute; left:0; top:36px;
@@ -1059,15 +1059,20 @@ async function loadPartnerProfile(uid) {
 function updatePartnerPill() {
   const avatarEl = document.getElementById('pill-partner-avatar');
   const nameEl = document.getElementById('pill-partner-name');
+  const metaEl = document.getElementById('pill-partner-meta');
   if (partnerUids.length === 0) {
     if (avatarEl) avatarEl.textContent = '🌱';
     if (nameEl) nameEl.textContent = 'Partenaires';
+    if (metaEl) metaEl.textContent = '';
   } else if (activePartnerUid && partnersData[activePartnerUid]) {
     if (avatarEl) avatarEl.textContent = partnersData[activePartnerUid].avatar || '🌱';
     if (nameEl) nameEl.textContent = partnersData[activePartnerUid].name || 'Partenaire';
+    const idx = partnerUids.indexOf(activePartnerUid) + 1;
+    if (metaEl) metaEl.textContent = partnerUids.length > 1 ? ` ${idx}/${partnerUids.length} ▾` : ' ▾';
   } else {
     if (avatarEl) avatarEl.textContent = '🌱';
     if (nameEl) nameEl.textContent = `${partnerUids.length} partenaire${partnerUids.length > 1 ? 's' : ''}`;
+    if (metaEl) metaEl.textContent = ' ▾';
   }
 }
 
