@@ -662,7 +662,7 @@
     <!-- REPAS -->
     <div id="tab-repas" class="screen active">
       <div class="score-strip" id="food-scores"></div>
-      <div id="meal-ratio-bar" style="display:none;height:20px;border-radius:99px;overflow:hidden;margin-bottom:6px;border:1px solid var(--border);"></div>
+      <div id="meal-ratio-bar" style="display:flex;visibility:hidden;height:20px;border-radius:99px;overflow:hidden;margin-bottom:6px;border:1px solid var(--border);"></div>
       <p style="font-size:11px;color:var(--text-3);margin-bottom:6px;">Tapez pour cycler : vide → <b>✔</b> sain → <b>≈</b> correct → <b>✖</b> malbouffe · Appui long pour remettre à zéro</p>
       <div id="meal-table"></div>
       <div id="meal-empty-state" style="display:none;text-align:center;padding:20px 16px 8px;">
@@ -1661,12 +1661,12 @@ const { sain, mal, correct } = countMeals(getData(), wk);
   const ratioBar = document.getElementById('meal-ratio-bar');
   if (ratioBar) {
     if (total === 0) {
-      ratioBar.style.display = 'none';
+      ratioBar.style.visibility = 'hidden';
     } else {
       const pSain = Math.round(sain / total * 100);
       const pCorrect = Math.round(correct / total * 100);
       const pMal = 100 - pSain - pCorrect;
-      ratioBar.style.display = 'flex';
+      ratioBar.style.visibility = 'visible';
       const segs = [];
       if (pSain    > 0) segs.push({ pct: pSain,    bg: 'var(--green)', label: `✔ Sain ${pSain}%` });
       if (pCorrect > 0) segs.push({ pct: pCorrect, bg: 'var(--amber)', label: `≈ Correct ${pCorrect}%` });
