@@ -706,40 +706,6 @@
     </div>
 
 
-<!-- GOALS MODAL -->
-<div id="goals-modal" style="
-  display:none; position:fixed; inset:0; z-index:90;
-  background:rgba(0,0,0,0.35);" onclick="closeGoalsModal(event)">
-  <div style="
-    position:absolute; right:0; top:0; bottom:0; width:min(320px, 100vw);
-    background:var(--bg); overflow-y:auto; padding:20px 16px 40px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-      <span style="font-size:16px; font-weight:700;">Mes objectifs</span>
-      <button onclick="closeGoalsModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-2);">✕</button>
-    </div>
-    <div class="sec-label">Objectifs hebdomadaires</div>
-    <div id="goals-modal-list"></div>
-  </div>
-</div>
-
-<!-- PROFIL PANEL -->
-<div id="profil-panel" style="
-  display:none; position:fixed; inset:0; z-index:90;
-  background:rgba(0,0,0,0.35);" onclick="closeProfilPanel(event)">
-  <div style="
-    position:absolute; right:0; top:0; bottom:0; width:min(320px, 100vw);
-    background:var(--bg); overflow-y:auto; padding:20px 16px 40px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-      <span style="font-size:16px; font-weight:700;">Mon profil</span>
-      <button onclick="closeProfilPanel()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-2);">✕</button>
-    </div>
-    <div class="sec-label">Mon compte</div>
-    <div class="profil-card" id="profil-info"></div>
-    <div class="sec-label" style="margin-top:16px;">Mon partenaire</div>
-    <div class="profil-card" id="profil-partner"></div>
-  </div>
-</div>
-	  
     <!-- RECAP SEMAINE -->
     <div id="tab-objectifs" class="screen">
       <div class="sec-label" id="goals-label">Récap de la semaine</div>
@@ -778,6 +744,40 @@
         <div class="badge-grid" id="badge-grid" style="margin-top:10px;"></div>
       </div>
     </div>
+  </div>
+</div>
+
+<!-- GOALS MODAL -->
+<div id="goals-modal" onclick="closeGoalsModal()" style="
+  display:none; position:fixed; inset:0; z-index:90;
+  background:rgba(0,0,0,0.35);">
+  <div onclick="event.stopPropagation()" style="
+    position:absolute; right:0; top:0; bottom:0; width:min(320px, 100vw);
+    background:var(--bg); overflow-y:auto; padding:20px 16px 40px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <span style="font-size:16px; font-weight:700;">Mes objectifs</span>
+      <button onclick="closeGoalsModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-2);">✕</button>
+    </div>
+    <div class="sec-label">Objectifs hebdomadaires</div>
+    <div id="goals-modal-list"></div>
+  </div>
+</div>
+
+<!-- PROFIL PANEL -->
+<div id="profil-panel" onclick="closeProfilPanel()" style="
+  display:none; position:fixed; inset:0; z-index:90;
+  background:rgba(0,0,0,0.35);">
+  <div onclick="event.stopPropagation()" style="
+    position:absolute; right:0; top:0; bottom:0; width:min(320px, 100vw);
+    background:var(--bg); overflow-y:auto; padding:20px 16px 40px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <span style="font-size:16px; font-weight:700;">Mon profil</span>
+      <button onclick="closeProfilPanel()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-2);">✕</button>
+    </div>
+    <div class="sec-label">Mon compte</div>
+    <div class="profil-card" id="profil-info"></div>
+    <div class="sec-label" style="margin-top:16px;">Mon partenaire</div>
+    <div class="profil-card" id="profil-partner"></div>
   </div>
 </div>
 
@@ -1425,23 +1425,114 @@ function changeWeek(d) {
 
 // ---- SWIPE TO CHANGE WEEK ----
 (function() {
-  let tx = 0, ty = 0, locked = false;
+  let tx = 0, ty = 0, locked = false, swiping = false, animating = false;
+  const DUR = 260;
+  const getMain = () => document.querySelector('.main');
+
   document.addEventListener('touchstart', e => {
+    // Always reset state on new touch
+    locked = false;
+    swiping = false;
+    if (animating) { locked = true; return; }
+    const m = getMain();
+    // Lock immediately if touch starts outside .main (header, pills, modals)
+    if (!m || !m.contains(e.target)) { locked = true; return; }
     tx = e.touches[0].clientX;
     ty = e.touches[0].clientY;
-    locked = false;
   }, { passive: true });
-  document.addEventListener('touchend', e => {
-    if (locked) return;
-    const dx = e.changedTouches[0].clientX - tx;
-    const dy = e.changedTouches[0].clientY - ty;
-    if (Math.abs(dx) < 40 || Math.abs(dy) > Math.abs(dx)) return;
-    changeWeek(dx < 0 ? 1 : -1);
-  }, { passive: true });
+
   document.addEventListener('touchmove', e => {
-    const dx = Math.abs(e.touches[0].clientX - tx);
-    const dy = Math.abs(e.touches[0].clientY - ty);
-    if (dy > dx) locked = true;
+    if (animating || locked) return;
+    const m = getMain();
+    if (!m || !m.contains(e.target)) return;
+    const dx = e.touches[0].clientX - tx;
+    const adx = Math.abs(dx);
+    const ady = Math.abs(e.touches[0].clientY - ty);
+    if (!swiping) {
+      if (ady > adx) { locked = true; return; }
+      if (adx > 8) swiping = true;
+    }
+    if (!swiping) return;
+    m.style.transition = 'none';
+    m.style.transform = `translateX(${dx}px)`;
+  }, { passive: true });
+
+  document.addEventListener('touchend', e => {
+    if (animating) return;
+    const m = getMain();
+    if (!m) return;
+
+    // Snap back if no swipe was in progress
+    if (!swiping) {
+      if (m.style.transform) {
+        m.style.transition = `transform 0.2s ease`;
+        m.style.transform = 'translateX(0)';
+        setTimeout(() => { m.style.transition = ''; m.style.transform = ''; }, 200);
+      }
+      return;
+    }
+
+    const dx = e.changedTouches[0].clientX - tx;
+    const goNext = dx < 0;
+
+    // Snap back if swipe too short or at limit
+    if (Math.abs(dx) < 40 || (goNext && weekOffset >= 1)) {
+      m.style.transition = `transform 0.2s ease`;
+      m.style.transform = 'translateX(0)';
+      setTimeout(() => { m.style.transition = ''; m.style.transform = ''; }, 200);
+      return;
+    }
+
+    animating = true;
+    const vw = window.innerWidth;
+    const rect = m.getBoundingClientRect();
+
+    // Reset drag transform before snapshotting
+    m.style.transition = 'none';
+    m.style.transform = '';
+
+    // Snapshot old week content
+    const makePanel = (translateX) => {
+      const clone = m.cloneNode(true);
+      clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+      clone.style.cssText += ';pointer-events:none;margin:0;';
+      const p = document.createElement('div');
+      p.style.cssText = `position:fixed;top:${Math.round(rect.top)}px;left:0;`
+        + `width:${vw}px;height:${window.innerHeight - Math.round(rect.top)}px;`
+        + `overflow:hidden;z-index:50;background:var(--bg,#fff);pointer-events:none;`
+        + `transform:translateX(${translateX}px);`;
+      p.appendChild(clone);
+      document.body.appendChild(p);
+      return p;
+    };
+
+    const pOld = makePanel(0); // old week at rest position
+
+    // Update .main to new week
+    changeWeek(goNext ? 1 : -1);
+
+    const pNew = makePanel(goNext ? vw : -vw); // new week starts off-screen
+
+    // Hide .main during animation (panels handle visuals)
+    m.style.visibility = 'hidden';
+
+    // Force reflow so transitions fire
+    void pOld.offsetWidth;
+
+    // Slide both simultaneously
+    const shift = `${goNext ? -vw : vw}px`;
+    [pOld, pNew].forEach(p => {
+      p.style.transition = `transform ${DUR}ms ease-out`;
+    });
+    pOld.style.transform = `translateX(${shift})`;
+    pNew.style.transform = 'translateX(0)';
+
+    setTimeout(() => {
+      pOld.remove();
+      pNew.remove();
+      m.style.visibility = '';
+      animating = false;
+    }, DUR + 30);
   }, { passive: true });
 })();
 
