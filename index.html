@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-<title>Habitudes ensemble</title>
+<title>DuoMotiv</title>
 <link rel="icon" type="image/png" href="LOGO_habits.png">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
@@ -176,17 +176,28 @@
 
   /* --- WEEK NAV (compact, in header) --- */
   .week-nav-btn {
-    width: 28px; height: 28px;
+    width: 44px; height: 44px;
     border-radius: var(--radius-sm);
     border: 1px solid var(--border);
     background: var(--surface);
     cursor: pointer;
-    font-size: 16px; font-weight: 700;
+    font-size: 18px; font-weight: 700;
     color: var(--text-2);
     display: flex; align-items: center; justify-content: center;
     font-family: 'Nunito', sans-serif;
     flex-shrink: 0;
   }
+  .week-nav-wrap {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    background: var(--surface); border-radius: 99px;
+    padding: 0 4px; box-shadow: var(--shadow);
+    min-height: 44px;
+  }
+  @keyframes week-flash {
+    0%   { background: var(--teal-light); }
+    100% { background: var(--surface); }
+  }
+  .week-nav-wrap.flash { animation: week-flash .4s ease; }
 
   /* --- SCORE STRIP --- */
   .score-strip { display: flex; gap: 8px; margin-bottom: 14px; }
@@ -206,7 +217,7 @@
   .score-chip.bad .score-chip-val { color: var(--red-dark); }
   .score-chip.sport .score-chip-val { color: var(--teal-dark); }
   .pbar { height: 4px; background: rgba(0,0,0,0.08); border-radius: 99px; overflow: hidden; margin-top: 2px; }
-  .pbar-fill { height: 100%; border-radius: 99px; transition: width .5s cubic-bezier(.4,0,.2,1); }
+  .pbar-fill { height: 100%; border-radius: 99px; transition: width .6s cubic-bezier(.4,0,.2,1); }
 
   /* --- SECTION LABEL --- */
   .sec-label {
@@ -329,7 +340,16 @@
     font-size: 11px; font-weight: 700; text-transform: uppercase;
     letter-spacing: .06em; color: var(--text-2);
   }
-  .collapse-chevron { font-size: 13px; color: var(--text-3); transition: transform .25s; }
+  .collapse-chevron {
+    width: 24px; height: 24px; border-radius: 6px;
+    background: var(--teal-light); display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: transform .25s, background .2s;
+  }
+  .collapse-chevron::after {
+    content: ''; display: block;
+    border-left: 5px solid transparent; border-right: 5px solid transparent;
+    border-top: 6px solid var(--teal); transition: border-top-color .2s;
+  }
   .collapse-chevron.open { transform: rotate(180deg); }
   .collapse-body { overflow: hidden; max-height: 0; transition: max-height .35s ease; }
   .collapse-body.open { max-height: 2000px; }
@@ -478,21 +498,17 @@
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="login-logo"><img src="LOGO_habits.png" alt="2gether" style="width:90px;height:auto;"></div>
-  <div class="login-title">Habitudes ensemble</div>
+  <div class="login-title">DuoMotiv</div>
   <div class="login-sub">Suivez vos objectifs à deux</div>
 
   <div id="login-pitch" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:340px;margin-bottom:4px;">
-    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);">
-      <span style="font-size:22px;">🥗</span>
-      <span style="font-size:13px;color:var(--text-2);">Notez vos repas et votre sport chaque jour</span>
+    <div style="display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);">
+      <span style="font-size:20px;">🥗</span><span style="font-size:20px;">📊</span>
+      <span style="font-size:13px;color:var(--text-2);">Notez repas &amp; sport, visualisez vos tendances</span>
     </div>
-    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);">
-      <span style="font-size:22px;">📊</span>
-      <span style="font-size:13px;color:var(--text-2);">Visualisez vos tendances sur la semaine, le mois…</span>
-    </div>
-    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);">
+    <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);border-left:3px solid var(--teal);">
       <span style="font-size:22px;">🔗</span>
-      <span style="font-size:13px;color:var(--text-2);">Jumelez-vous avec un proche pour vous motiver ensemble</span>
+      <span style="font-size:13px;color:var(--text-2);">Jumelez-vous avec un.e proche pour vous motiver ensemble</span>
     </div>
   </div>
 
@@ -500,14 +516,12 @@
     <h2>Se connecter</h2>
     <div class="field"><label>Email</label><input type="email" id="login-email" placeholder="votre@email.com"/></div>
     <div class="field"><label>Mot de passe</label><input type="password" id="login-pwd" placeholder="••••••••"/></div>
+    <div id="login-error"></div>
     <button class="btn btn-primary" onclick="doLogin()">Connexion</button>
     <div class="login-sep">— ou —</div>
-	 
-	  <button class="btn btn-secondary" onclick="resendVerification()">Renvoyer l'email de confirmation</button>
-
+    <button class="btn btn-secondary" onclick="resendVerification()">Renvoyer l'email de confirmation</button>
     <button class="btn btn-secondary" onclick="showCard('register')">Créer un compte</button>
     <button class="btn btn-secondary" onclick="showCard('reset')">Mot de passe oublié ?</button>
-	  <div id="login-error"></div>
   </div>
 
 	<div class="login-card" id="card-reset" style="display:none;">
@@ -611,10 +625,12 @@
       <button class="tab" onclick="showTab('sport',this)">🏃 Sport</button>
     </div>
     <!-- Row 3: week nav slim -->
-    <div style="display:flex;align-items:center;justify-content:center;gap:4px;">
-      <button onclick="changeWeek(-1)" class="week-nav-btn" id="week-nav-prev">‹</button>
-      <span id="week-lbl" style="font-size:11px;font-weight:700;color:var(--text-2);white-space:nowrap;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:200px;">Cette semaine</span>
-      <button onclick="changeWeek(1)" class="week-nav-btn" id="week-nav-next">›</button>
+    <div style="display:flex;align-items:center;justify-content:center;">
+      <div class="week-nav-wrap" id="week-nav-wrap">
+        <button onclick="changeWeek(-1)" class="week-nav-btn" id="week-nav-prev">‹</button>
+        <span id="week-lbl" style="font-size:11px;font-weight:700;color:var(--text-2);white-space:nowrap;text-align:center;min-width:0;overflow:hidden;text-overflow:ellipsis;max-width:200px;">Cette semaine</span>
+        <button onclick="changeWeek(1)" class="week-nav-btn" id="week-nav-next">›</button>
+      </div>
     </div>
   </div>
 
@@ -643,7 +659,13 @@
       <p style="font-size:11px;color:var(--text-3);margin-top:8px;">Tapez pour cycler : vide → <b>✔</b> sain → <b>≈</b> correct → <b>✖</b> malbouffe · Appui long pour remettre à zéro</p>
       <div id="meal-ratio-bar" style="display:none;height:20px;border-radius:99px;overflow:hidden;margin-top:10px;border:1px solid var(--border);"></div>
       <div id="meal-empty-state" style="display:none;text-align:center;padding:20px 16px 8px;">
-        <div style="font-size:32px;margin-bottom:8px;">🥗</div>
+        <div style="display:flex;align-items:flex-end;justify-content:center;gap:6px;margin-bottom:10px;">
+          <span style="font-size:24px;opacity:0.6;">🍏</span>
+          <span style="font-size:28px;opacity:0.75;">🍲</span>
+          <span style="font-size:34px;">🍽️</span>
+          <span style="font-size:28px;opacity:0.75;">🥖</span>
+          <span style="font-size:24px;opacity:0.6;">🧋</span>
+        </div>
         <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">C'est parti pour cette semaine !</div>
         <div style="font-size:12px;color:var(--text-2);line-height:1.5;">Appuyez sur une case pour enregistrer votre premier repas.</div>
       </div>
@@ -654,6 +676,17 @@
       <div class="score-strip" id="sport-scores"></div>
       <div class="sec-label">Activités par jour — tapez pour sélectionner</div>
       <div class="week-grid" id="grid-sport"></div>
+      <div id="sport-empty-state" style="display:none;text-align:center;padding:20px 16px 8px;">
+        <div style="display:flex;align-items:flex-end;justify-content:center;gap:6px;margin-bottom:10px;">
+          <span style="font-size:24px;opacity:0.6;">🚲</span>
+          <span style="font-size:28px;opacity:0.75;">🚶🏾‍♀️</span>
+          <span style="font-size:34px;">🧘🏻</span>
+          <span style="font-size:28px;opacity:0.75;">🚶🏼‍➡️</span>
+          <span style="font-size:24px;opacity:0.6;">🛼</span>
+        </div>
+        <div class="sport-empty-title" style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;">Cette semaine commence maintenant !</div>
+        <div style="font-size:12px;color:var(--text-2);line-height:1.5;">Même une petite activité compte. Tapez un jour pour démarrer.</div>
+      </div>
     </div>
 
     <!-- PLEINE CONSCIENCE (coming soon) -->
@@ -707,7 +740,7 @@
 
       <div class="collapse-header" onclick="toggleCollapse('stats-body','stats-chev')">
         <span class="collapse-title">Récap Global</span>
-        <span class="collapse-chevron open" id="stats-chev">▾</span>
+        <span class="collapse-chevron open" id="stats-chev"></span>
       </div>
       <div class="collapse-body open" id="stats-body">
         <div id="ratio-gauge" style="margin-top:10px;"></div>
@@ -724,7 +757,7 @@
 
       <div class="collapse-header" onclick="toggleCollapse('compare-body','compare-chev')">
         <span class="collapse-title" id="compare-label">Comparaison avec vos proches</span>
-        <span class="collapse-chevron open" id="compare-chev">▾</span>
+        <span class="collapse-chevron open" id="compare-chev"></span>
       </div>
       <div class="collapse-body open" id="compare-body">
         <div id="compare-section" style="margin-top:6px;"></div>
@@ -732,7 +765,7 @@
 
       <div class="collapse-header" onclick="toggleCollapse('badges-body','badges-chev')">
         <span class="collapse-title">Badges</span>
-        <span class="collapse-chevron" id="badges-chev">▾</span>
+        <span class="collapse-chevron" id="badges-chev"></span>
       </div>
       <div class="collapse-body" id="badges-body">
         <div class="badge-grid" id="badge-grid" style="margin-top:10px;"></div>
@@ -922,7 +955,7 @@ function skipPair() {
   try {
     await auth.sendPasswordResetEmail(email);
     msgEl.style.color = 'var(--green)';
-    msgEl.textContent = '✅ Email envoyé ! Vérifiez votre boîte mail.';
+    msgEl.textContent = '✅ Si cet email est dans notre base, vous recevrez un lien de réinitialisation. Vérifiez aussi vos spams.';
   } catch(e) {
     msgEl.style.color = 'var(--red)';
     msgEl.textContent = e.code === 'auth/user-not-found' ? 'Aucun compte avec cet email' : e.message;
@@ -1227,6 +1260,7 @@ function getData() {
 }
 
 
+
 function setWeekNavColor(color) {
   const lbl = document.getElementById('week-lbl');
   const prev = document.getElementById('week-nav-prev');
@@ -1293,7 +1327,7 @@ function toggleProfilMenu(e) {
   if (!dd) return;
   if (dd.style.display === 'block') { dd.style.display = 'none'; return; }
 
-  const myName = document.getElementById('pill-me').textContent || 'Moi';
+  const myName = document.getElementById('pill-me-name').textContent || 'Moi';
   const partName = document.getElementById('pill-partner').textContent || 'Mon proche';
   const initials = myName.charAt(0).toUpperCase();
     const myAvatar = myData.avatar || '🌱';
@@ -1378,6 +1412,8 @@ function toggleCollapse(bodyId, chevId) {
 function changeWeek(d) {
   weekOffset = Math.min(1, weekOffset + d);
   renderAll();
+  const wrap = document.getElementById('week-nav-wrap');
+  if (wrap) { wrap.classList.remove('flash'); void wrap.offsetWidth; wrap.classList.add('flash'); }
 }
 
 // ---- SWIPE TO CHANGE WEEK ----
@@ -1489,17 +1525,19 @@ const { sain, mal, correct } = countMeals(getData(), wk);
     <div class="score-chip food">
       <div class="score-chip-label">Repas sains</div>
       <div class="score-chip-val">${sain}</div>
-      <div class="pbar"><div class="pbar-fill" style="width:${pct}%;background:var(--green);"></div></div>
+      <div class="pbar"><div class="pbar-fill" style="width:0%;background:var(--green);"></div></div>
     </div>
 	<div class="score-chip" style="background:var(--amber-light);">
       <div class="score-chip-label" style="color:var(--amber);">Corrects</div>
       <div class="score-chip-val" style="color:var(--amber-dark);">${correct}</div>
     </div>
-	
+
     <div class="score-chip bad">
       <div class="score-chip-label">Malbouffe</div>
       <div class="score-chip-val">${mal}</div>
     </div>`;
+  const fp = document.querySelector('#food-scores .pbar-fill');
+  if (fp) requestAnimationFrame(() => requestAnimationFrame(() => { fp.style.width = pct + '%'; }));
 
   // Empty state
   const total = sain + correct + mal;
@@ -1517,11 +1555,18 @@ const { sain, mal, correct } = countMeals(getData(), wk);
       const pCorrect = Math.round(correct / total * 100);
       const pMal = 100 - pSain - pCorrect;
       ratioBar.style.display = 'flex';
-      ratioBar.innerHTML = `
-        ${pSain > 0 ? `<div title="✔ Sain ${pSain}%" style="flex:${pSain};background:var(--green);height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--green-dark);min-width:${pSain > 15 ? 'auto' : '0'};overflow:hidden;">${pSain > 15 ? pSain+'%' : ''}</div>` : ''}
-        ${pCorrect > 0 ? `<div title="≈ Correct ${pCorrect}%" style="flex:${pCorrect};background:var(--amber);height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--amber-dark);overflow:hidden;">${pCorrect > 15 ? pCorrect+'%' : ''}</div>` : ''}
-        ${pMal > 0 ? `<div title="✖ Malbouffe ${pMal}%" style="flex:${pMal};background:var(--red);height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:var(--red-dark);overflow:hidden;">${pMal > 15 ? pMal+'%' : ''}</div>` : ''}
-      `;
+      const segs = [];
+      if (pSain    > 0) segs.push({ pct: pSain,    bg: 'var(--green)', label: `✔ Sain ${pSain}%` });
+      if (pCorrect > 0) segs.push({ pct: pCorrect, bg: 'var(--amber)', label: `≈ Correct ${pCorrect}%` });
+      if (pMal     > 0) segs.push({ pct: pMal,     bg: 'var(--red)',   label: `✖ Malbouffe ${pMal}%` });
+      ratioBar.innerHTML = segs.map(s =>
+        `<div title="${s.label}" style="flex:0;transition:flex .6s cubic-bezier(.4,0,.2,1);background:${s.bg};height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:rgba(255,255,255,0.92);overflow:hidden;"></div>`
+      ).join('');
+      const segEls = ratioBar.querySelectorAll('div');
+      segs.forEach((s, i) => requestAnimationFrame(() => requestAnimationFrame(() => {
+        segEls[i].style.flex = s.pct;
+        if (s.pct > 15) segEls[i].textContent = s.pct + '%';
+      })));
     }
   }
 }
@@ -1557,12 +1602,20 @@ function renderSportScores() {
     <div class="score-chip sport">
       <div class="score-chip-label">Jours actifs</div>
       <div class="score-chip-val">${days} / ${goal}</div>
-      <div class="pbar"><div class="pbar-fill" style="width:${pct}%;background:var(--teal);"></div></div>
+      <div class="pbar"><div class="pbar-fill" style="width:0%;background:var(--teal);"></div></div>
     </div>
     <div class="score-chip food">
       <div class="score-chip-label">Objectif atteint</div>
       <div class="score-chip-val">${pct}%</div>
     </div>`;
+  const sp = document.querySelector('#sport-scores .pbar-fill');
+  if (sp) requestAnimationFrame(() => requestAnimationFrame(() => { sp.style.width = pct + '%'; }));
+  const emptyState = document.getElementById('sport-empty-state');
+  if (emptyState) {
+    emptyState.style.display = (!viewingPartner && days === 0) ? 'block' : 'none';
+    const title = emptyState.querySelector('.sport-empty-title');
+    if (title) title.textContent = weekOffset < 0 ? 'Aucune activité cette semaine-là.' : 'Cette semaine commence maintenant !';
+  }
 }
 
 function openSportModal(dayIdx) {
@@ -1614,14 +1667,22 @@ function addActivity() {
 
 // ---- STATS ----
 const BADGES = [
-  { id:'first_sain', icon:'🥗', name:'Premier repas sain', cond: d => countTotalSain(d) >= 1 },
-  { id:'sport3', icon:'🏃', name:'3 sports en 1 sem.', cond: d => countSportDays(d, getWeekKey()) >= 3 },
-  { id:'streak3', icon:'🔥', name:'3 jours actifs de suite', cond: d => hasStreak(d, 3) },
-  { id:'sain10', icon:'🥦', name:'10 repas sains', cond: d => countTotalSain(d) >= 10 },
-  { id:'sport5', icon:'💪', name:'5 sports en 1 sem.', cond: d => countSportDays(d, getWeekKey()) >= 5 },
-  { id:'ratio80', icon:'⚖️', name:'Ratio sain > 80%', cond: d => getRatio(d) >= 0.8 },
-  { id:'sport7', icon:'🌟', name:'Sport tous les jours', cond: d => countSportDays(d, getWeekKey()) >= 7 },
-  { id:'sain30', icon:'🏆', name:'30 repas sains', cond: d => countTotalSain(d) >= 30 },
+  { id:'first_sain',    icon:'🥗',  name:'Premier repas sain',               cond: d => countTotalSain(d) >= 1 },
+  { id:'first_sport',   icon:'👟',  name:'1ère activité sportive',            cond: d => countTotalSportDays(d) >= 1 },
+  { id:'sport3',        icon:'🏃',  name:'3 sports en 1 sem.',                cond: d => countSportDays(d, getWeekKey()) >= 3 },
+  { id:'streak3',       icon:'🔥',  name:'3 jours actifs de suite',           cond: d => hasStreak(d, 3) },
+  { id:'sain10',        icon:'🥦',  name:'10 repas sains',                    cond: d => countTotalSain(d) >= 10 },
+  { id:'meals20',       icon:'🍽️', name:'20 repas saisis',                   cond: d => countTotalMeals(d) >= 20 },
+  { id:'sport5',        icon:'💪',  name:'5 sports en 1 sem.',                cond: d => countSportDays(d, getWeekKey()) >= 5 },
+  { id:'ratio80',       icon:'⚖️', name:'Ratio sain > 80%',                  cond: d => getRatio(d) >= 0.8 },
+  { id:'sport7',        icon:'🌟',  name:'Sport tous les jours',              cond: d => countSportDays(d, getWeekKey()) >= 7 },
+  { id:'sain30',        icon:'🏆',  name:'30 repas sains',                    cond: d => countTotalSain(d) >= 30 },
+  { id:'meals50',       icon:'🥘',  name:'50 repas saisis',                   cond: d => countTotalMeals(d) >= 50 },
+  { id:'semaine_full',  icon:'🗓️', name:'Semaine complète (2 sains/jour)',    cond: d => hasFullSainWeek(d) },
+  { id:'new_activity',  icon:'🎯',  name:'Nouvelle activité créée',           cond: d => (d.activities || []).length > DEFAULT_ACTS.length },
+  { id:'meals100',      icon:'🍱',  name:'100 repas saisis',                  cond: d => countTotalMeals(d) >= 100 },
+  { id:'meals150',      icon:'🥙',  name:'150 repas saisis',                  cond: d => countTotalMeals(d) >= 150 },
+  { id:'meals360',      icon:'📅',  name:'360 repas saisis',                  cond: d => countTotalMeals(d) >= 360 },
 ];
 
 function countTotalSain(data) {
@@ -1630,6 +1691,29 @@ function countTotalSain(data) {
     Object.values(wk).forEach(day => Object.values(day).forEach(s => { if(s==='sain') n++; }))
   );
   return n;
+}
+
+function countTotalMeals(data) {
+  let n=0;
+  Object.values(data.meals).forEach(wk =>
+    Object.values(wk).forEach(day => Object.values(day).forEach(s => { if(s && s!=='none') n++; }))
+  );
+  return n;
+}
+
+function countTotalSportDays(data) {
+  let n=0;
+  Object.values(data.sports).forEach(wk => { n += Object.values(wk).filter(a => a.length > 0).length; });
+  return n;
+}
+
+function hasFullSainWeek(data) {
+  const wk = getWeekKey();
+  const days = data.meals[wk] || {};
+  return DAYS.every(day => {
+    const d = days[day] || {};
+    return Object.values(d).filter(v => v === 'sain').length >= 2;
+  });
 }
 
 function getRatio(data) {
@@ -2291,14 +2375,17 @@ function renderObjectifs() {
   document.getElementById('goal-progress').innerHTML = `
     <div class="goal-progress">
       <div class="gp-row"><span>Repas sains (sem.)</span><span style="font-weight:700;color:var(--green);">${sainWk} / ${data.goals.repas}</span></div>
-      <div class="pbar" style="height:10px;"><div class="pbar-fill" style="width:${fPct}%;background:var(--green);"></div></div>
+      <div class="pbar" style="height:10px;"><div class="pbar-fill" style="width:0%;background:var(--green);"></div></div>
       <div class="gp-pct">${fPct}% de l'objectif</div>
     </div>
     <div class="goal-progress">
       <div class="gp-row"><span>Jours sport (sem.)</span><span style="font-weight:700;color:var(--teal);">${sportWk} / ${data.goals.sport}</span></div>
-      <div class="pbar" style="height:10px;"><div class="pbar-fill" style="width:${sPct}%;background:var(--teal);"></div></div>
+      <div class="pbar" style="height:10px;"><div class="pbar-fill" style="width:0%;background:var(--teal);"></div></div>
       <div class="gp-pct">${sPct}% de l'objectif</div>
     </div>`;
+  const fills = document.querySelectorAll('#goal-progress .pbar-fill');
+  const targets = [fPct, sPct];
+  fills.forEach((el, i) => requestAnimationFrame(() => requestAnimationFrame(() => { el.style.width = targets[i] + '%'; })));
 }
 
 function renderGoalsModal() {
@@ -2358,6 +2445,8 @@ function renderAll() {
   const lbl = getWeekLabel();
   const el = document.getElementById('week-lbl');
   if (el) el.textContent = lbl;
+  const next = document.getElementById('week-nav-next');
+  if (next) { next.style.opacity = weekOffset >= 1 ? '0.25' : '1'; next.style.pointerEvents = weekOffset >= 1 ? 'none' : ''; }
   renderMeals(); renderFoodScores();
   renderSportGrid(); renderSportScores();
   renderObjectifs(); renderStats();
