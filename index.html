@@ -627,7 +627,7 @@
           background:var(--surface); border-radius:var(--radius);
           box-shadow:0 4px 20px rgba(0,0,0,0.12);
           border:1px solid var(--border);
-          min-width:220px; z-index:100; overflow:hidden;">
+          min-width:260px; z-index:100; overflow:hidden;font-size:14px;">
           <div id="profil-dropdown-content"></div>
         </div>
       </div>
@@ -747,21 +747,6 @@
   </div>
 </div>
 
-<!-- GOALS MODAL -->
-<div id="goals-modal" onclick="closeGoalsModal()" style="
-  display:none; position:fixed; inset:0; z-index:90;
-  background:rgba(0,0,0,0.35);">
-  <div onclick="event.stopPropagation()" style="
-    position:absolute; right:0; top:0; bottom:0; width:min(320px, 100vw);
-    background:var(--bg); overflow-y:auto; padding:20px 16px 40px;">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-      <span style="font-size:16px; font-weight:700;">Mes objectifs</span>
-      <button onclick="closeGoalsModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-2);">✕</button>
-    </div>
-    <div class="sec-label">Objectifs hebdomadaires</div>
-    <div id="goals-modal-list"></div>
-  </div>
-</div>
 
 <!-- PROFIL PANEL -->
 <div id="profil-panel" onclick="closeProfilPanel()" style="
@@ -774,10 +759,40 @@
       <span style="font-size:16px; font-weight:700;">Mon profil</span>
       <button onclick="closeProfilPanel()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-2);">✕</button>
     </div>
-    <div class="sec-label">Mon compte</div>
     <div class="profil-card" id="profil-info"></div>
-    <div class="sec-label" style="margin-top:16px;">Mes partenaires</div>
-    <div class="profil-card" id="profil-partner"></div>
+  </div>
+</div>
+
+<!-- PARTENAIRES PANEL -->
+<div id="partenaires-panel" onclick="closePartenairesPanel()" style="
+  display:none; position:fixed; inset:0; z-index:90;
+  background:rgba(0,0,0,0.35);">
+  <div onclick="event.stopPropagation()" style="
+    position:absolute; right:0; top:0; bottom:0; width:min(320px, 100vw);
+    background:var(--bg); overflow-y:auto; padding:20px 16px 40px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <span style="font-size:16px; font-weight:700;">Partenaires</span>
+      <button onclick="closePartenairesPanel()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-2);">✕</button>
+    </div>
+    <div class="profil-card" id="partenaires-content"></div>
+  </div>
+</div>
+
+<!-- PARAMETRES PANEL -->
+<div id="parametres-panel" onclick="closeParametresPanel()" style="
+  display:none; position:fixed; inset:0; z-index:90;
+  background:rgba(0,0,0,0.35);">
+  <div onclick="event.stopPropagation()" style="
+    position:absolute; right:0; top:0; bottom:0; width:min(320px, 100vw);
+    background:var(--bg); overflow-y:auto; padding:20px 16px 40px;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+      <span style="font-size:16px; font-weight:700;">Paramètres</span>
+      <button onclick="closeParametresPanel()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-2);">✕</button>
+    </div>
+    <div class="sec-label">Objectifs hebdomadaires</div>
+    <div id="parametres-goals"></div>
+    <div class="sec-label" style="margin-top:16px;">Activités sportives</div>
+    <div id="parametres-acts"></div>
   </div>
 </div>
 
@@ -787,10 +802,6 @@
     <div class="modal-handle"></div>
     <div class="modal-title" id="sport-modal-title">Activités</div>
     <div id="sport-act-list"></div>
-    <div class="add-row">
-      <input id="new-act-input" placeholder="Ajouter une activité..." onkeydown="if(event.key==='Enter')addActivity()"/>
-      <button class="btn btn-primary" style="padding:9px 14px;" onclick="addActivity()">+</button>
-    </div>
   </div>
 </div>
 
@@ -835,7 +846,7 @@ let weekOffset = 0;
 let activeDayIdx = null;
 let currentPeriod = '7j';
 let statsChart = null;
-let myData = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
+let myData = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 }, disabledActs: [] };
 let unsubscribeMe = null;
 let partnerUids = [];
 let partnersData = {};
@@ -996,6 +1007,7 @@ async function loadUserProfile() {
   partnerUids = d.partnerIds || (d.partnerId ? [d.partnerId] : []);
   myData.activities = d.activities || [...DEFAULT_ACTS];
   myData.goals = d.goals || { repas: 14, sport: 3 };
+  myData.disabledActs = d.disabledActs || [];
   myData.avatar = d.avatar || '🌱';
   const earned = d.badges || [];
   BADGES.forEach(b => { if (earned.includes(b.id)) b.earnedMe = true; });
@@ -1232,7 +1244,8 @@ async function saveProfile() {
   if (!currentUid) return;
   await db.collection('users').doc(currentUid).update({
     activities: myData.activities,
-    goals: myData.goals
+    goals: myData.goals,
+    disabledActs: myData.disabledActs
   });
 }
 
@@ -1333,6 +1346,13 @@ function showTab(name, btn) {
   if (name === 'objectifs') { renderObjectifs(); renderStats(); }
 }
 
+function _ddMenuItem(label, fn) {
+  return `<div onclick="${fn}" style="padding:9px 12px;cursor:pointer;font-size:14px;
+    border-radius:var(--radius-sm);color:var(--text);"
+    onmouseover="this.style.background='var(--gray-light)'"
+    onmouseout="this.style.background='none'">${label}</div>`;
+}
+
 function toggleProfilMenu(e) {
   if (e) { e.stopPropagation(); e.preventDefault(); }
   const dd = document.getElementById('profil-dropdown');
@@ -1340,54 +1360,24 @@ function toggleProfilMenu(e) {
   if (dd.style.display === 'block') { dd.style.display = 'none'; return; }
 
   const myName = document.getElementById('pill-me-name').textContent || 'Moi';
-  const partName = document.getElementById('pill-partner').textContent || 'Mon proche';
-  const initials = myName.charAt(0).toUpperCase();
-    const myAvatar = myData.avatar || '🌱';
+  const myAvatar = myData.avatar || '🌱';
 
   document.getElementById('profil-dropdown-content').innerHTML = `
     <div style="padding:14px 16px; border-bottom:1px solid var(--border);">
       <div style="display:flex;align-items:center;gap:10px;">
-<div style="width:36px;height:36px;border-radius:50%;background:var(--teal-light);
-          display:flex;align-items:center;justify-content:center;
-          font-size:20px;">${myAvatar}</div>
+        <div style="width:36px;height:36px;border-radius:50%;background:var(--teal-light);
+          display:flex;align-items:center;justify-content:center;font-size:20px;">${myAvatar}</div>
         <div>
           <div style="font-weight:700;font-size:14px;">${myName}</div>
-          <div style="font-size:11px;color:var(--text-3);">Mon compte</div>
+          <div style="font-size:11px;color:var(--text-3);">${auth.currentUser?.email || ''}</div>
         </div>
       </div>
     </div>
-
-     <div style="padding:10px 16px; border-bottom:1px solid var(--border);">
-      <div style="font-size:11px;color:var(--text-3);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.04em;">Partenaires (${partnerUids.length}/5)</div>
-      ${partnerUids.length === 0
-        ? `<div style="font-size:12px;color:var(--text-3);">Aucun partenaire lié</div>`
-        : partnerUids.map(uid => {
-            const p = partnersData[uid] || {};
-            return `<div style="display:flex;align-items:center;gap:8px;padding:4px 0;">
-              <span style="font-size:16px;">${p.avatar || '🌱'}</span>
-              <span style="font-size:13px;font-weight:600;">${p.name || 'Partenaire'}</span>
-            </div>`;
-          }).join('')
-      }
-    </div>  
     <div style="padding:6px 8px;">
-      <div onclick="openProfilPanel()" style="padding:9px 12px;cursor:pointer;font-size:13px;
-        border-radius:var(--radius-sm);color:var(--text);"
-        onmouseover="this.style.background='var(--gray-light)'"
-        onmouseout="this.style.background='none'">
-        ⚙️ Mon profil complet
-      </div>
-      <div onclick="openGoalsModal()" style="padding:9px 12px;cursor:pointer;font-size:13px;
-        border-radius:var(--radius-sm);color:var(--text);"
-        onmouseover="this.style.background='var(--gray-light)'"
-        onmouseout="this.style.background='none'">
-        🎯 Mes objectifs
-      </div>
-      <div style="padding:9px 12px;font-size:13px;border-radius:var(--radius-sm);
-        color:var(--text-3);cursor:default;">
-        🏅 Ma liste d'activités <span style="font-size:11px;">(coming soon)</span>
-      </div>
-      <div onclick="doLogout()" style="padding:9px 12px;cursor:pointer;font-size:13px;
+      ${_ddMenuItem('⚙️ Paramètres', 'openParametresPanel()')}
+      ${_ddMenuItem('<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" style="display:inline-block;vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10" fill="none" stroke="var(--teal)" stroke-width="1.8"/><circle cx="12" cy="9.5" r="3.5" fill="var(--teal)"/><path d="M5.5 19.5c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6" fill="var(--teal)"/></svg>Profil', 'openProfilPanel()')}
+      ${_ddMenuItem(`<svg xmlns="http://www.w3.org/2000/svg" width="22" height="16" viewBox="0 0 22 16" style="display:inline-block;vertical-align:middle;margin-right:4px;"><g transform="scale(0.667)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" fill="var(--teal)"/></g><g transform="translate(6,0) scale(0.667)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" fill="var(--coral)"/></g></svg>Partenaires (${partnerUids.length}/5)`, 'openPartenairesPanel()')}
+      <div onclick="doLogout()" style="padding:9px 12px;cursor:pointer;font-size:14px;
         border-radius:var(--radius-sm);color:var(--red);"
         onmouseover="this.style.background='var(--red-light)'"
         onmouseout="this.style.background='none'">
@@ -1396,24 +1386,44 @@ function toggleProfilMenu(e) {
     </div>`;
 
   dd.style.display = 'block';
-  setTimeout(() => {
-    document.addEventListener('click', closeDropdown, { once: true });
-  }, 100);
+  setTimeout(() => { document.addEventListener('click', closeDropdown, { once: true }); }, 100);
 }
 
 function closeDropdown() {
   document.getElementById('profil-dropdown').style.display = 'none';
 }
 
+// ---- PROFIL PANEL ----
 function openProfilPanel() {
   document.getElementById('profil-dropdown').style.display = 'none';
   document.getElementById('profil-panel').style.display = 'block';
   renderProfil();
 }
 
-function closeProfilPanel(e) {
-  if (!e || e.target === document.getElementById('profil-panel'))
-    document.getElementById('profil-panel').style.display = 'none';
+function closeProfilPanel() {
+  document.getElementById('profil-panel').style.display = 'none';
+}
+
+// ---- PARTENAIRES PANEL ----
+function openPartenairesPanel() {
+  document.getElementById('profil-dropdown').style.display = 'none';
+  document.getElementById('partenaires-panel').style.display = 'block';
+  renderPartenaires();
+}
+
+function closePartenairesPanel() {
+  document.getElementById('partenaires-panel').style.display = 'none';
+}
+
+// ---- PARAMETRES PANEL ----
+function openParametresPanel() {
+  document.getElementById('profil-dropdown').style.display = 'none';
+  document.getElementById('parametres-panel').style.display = 'block';
+  renderParametres();
+}
+
+function closeParametresPanel() {
+  document.getElementById('parametres-panel').style.display = 'none';
 }
 
 function toggleCollapse(bodyId, chevId) {
@@ -1748,16 +1758,21 @@ function closeSportModal(e) {
     document.getElementById('sport-modal-overlay').classList.remove('show');
 }
 
+function getActiveActs() {
+  // Default acts minus disabled + custom acts (not in DEFAULT_ACTS)
+  const disabled = myData.disabledActs || [];
+  const custom = myData.activities.filter(a => !DEFAULT_ACTS.includes(a));
+  return [...DEFAULT_ACTS.filter(a => !disabled.includes(a)), ...custom];
+}
+
 function renderActList() {
-  const acts = getData().activities;
   const sel = getSport(activeDayIdx);
-  const list = viewingPartner ? sel : acts;
+  const list = viewingPartner ? sel : getActiveActs();
   document.getElementById('sport-act-list').innerHTML = list.map(a => `
     <div class="act-item" onclick="${viewingPartner ? '' : `toggleAct('${a}')`}">
       <div class="act-check ${sel.includes(a)?'on':''}">${sel.includes(a)?'✓':''}</div>
       <span>${a}</span>
     </div>`).join('');
-  document.querySelector('.add-row').style.display = viewingPartner ? 'none' : 'flex';
 }
 
 function toggleAct(act) {
@@ -2315,30 +2330,22 @@ async function renderProfil() {
   const doc = await db.collection('users').doc(currentUid).get();
   if (!doc.exists) return;
   const d = doc.data();
-
   const authUser = auth.currentUser;
   const createdAt = authUser?.metadata?.creationTime
     ? new Date(authUser.metadata.creationTime).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})
     : 'Non disponible';
-
   const avatar = d.avatar || '🌱';
 
   document.getElementById('profil-info').innerHTML = `
-<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;width:100%;overflow:hidden;">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;width:100%;overflow:hidden;">
       <div style="font-size:32px;flex-shrink:0;">${avatar}</div>
       <div style="flex:1;min-width:0;overflow:hidden;">
         <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.name || '—'}</div>
         <div style="font-size:11px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.email || '—'}</div>
       </div>
-      <!-- bouton modifier le profil -->
-	  <button onclick="openEditProfil()" style="
-        flex-shrink:0;
-        padding:5px 10px;border-radius:var(--radius-sm);
-        border:1px solid var(--border);background:var(--bg);
-        cursor:pointer;font-size:11px;font-weight:600;
-        color:var(--text-2);font-family:'Nunito',sans-serif;">
-        ✏️
-      </button>
+      <button onclick="openEditProfil()" style="flex-shrink:0;padding:5px 10px;border-radius:var(--radius-sm);
+        border:1px solid var(--border);background:var(--bg);cursor:pointer;font-size:11px;font-weight:600;
+        color:var(--text-2);font-family:'Nunito',sans-serif;">✏️</button>
     </div>
     <div class="profil-row">
       <span class="profil-row-label">Membre depuis</span>
@@ -2352,64 +2359,187 @@ async function renderProfil() {
       <span class="profil-row-label">Synchronisation</span>
       <span id="sync-label" style="font-size:12px;font-weight:600;">
         <span id="sync-dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;
-          background:var(--green);margin-right:4px;vertical-align:middle;"></span>
-        Synchro ✓
+          background:var(--green);margin-right:4px;vertical-align:middle;"></span>Synchro ✓
       </span>
-    </div>`;
-
- const partnerBox = document.getElementById('profil-partner');
-
-  if (partnerUids.length === 0) {
-    partnerBox.innerHTML = `
-      <p style="font-size:13px;color:var(--text-2);margin-bottom:4px;">Aucun partenaire lié pour le moment.</p>
-      <p style="font-size:12px;color:var(--text-3);margin-bottom:0;">Entrez le code de jumelage de votre proche :</p>
-      <div class="pair-input-row">
-        <input id="pair-code-profil" type="text" placeholder="ex: 4729" maxlength="6"/>
-        <button class="btn btn-primary" onclick="doPairFromProfil()">Lier</button>
+    </div>
+    <div style="margin-top:16px;">
+      <div class="sec-label">Mot de passe</div>
+      <div id="change-pwd-form">
+        <input id="pwd-current" type="password" placeholder="Mot de passe actuel"
+          style="width:100%;box-sizing:border-box;padding:8px 10px;border-radius:var(--radius-sm);
+          border:1px solid var(--border);font-family:'Nunito',sans-serif;font-size:13px;margin-bottom:6px;"/>
+        <input id="pwd-new" type="password" placeholder="Nouveau mot de passe (8 car. min.)"
+          style="width:100%;box-sizing:border-box;padding:8px 10px;border-radius:var(--radius-sm);
+          border:1px solid var(--border);font-family:'Nunito',sans-serif;font-size:13px;margin-bottom:6px;"/>
+        <input id="pwd-confirm" type="password" placeholder="Confirmer le nouveau mot de passe"
+          style="width:100%;box-sizing:border-box;padding:8px 10px;border-radius:var(--radius-sm);
+          border:1px solid var(--border);font-family:'Nunito',sans-serif;font-size:13px;margin-bottom:8px;"/>
+        <button class="btn btn-primary" style="width:100%;" onclick="changePassword()">Modifier le mot de passe</button>
+        <div id="pwd-error" style="font-size:12px;color:var(--red);text-align:center;margin-top:6px;"></div>
+        <div id="pwd-ok" style="font-size:12px;color:var(--green);text-align:center;margin-top:6px;"></div>
       </div>
-      <div id="pair-profil-error" style="font-size:12px;color:var(--red);margin-top:6px;"></div>`;
+    </div>`;
+}
+
+async function changePassword() {
+  const current = document.getElementById('pwd-current').value;
+  const newPwd = document.getElementById('pwd-new').value;
+  const confirm = document.getElementById('pwd-confirm').value;
+  const errEl = document.getElementById('pwd-error');
+  const okEl = document.getElementById('pwd-ok');
+  errEl.textContent = ''; okEl.textContent = '';
+  if (!current || !newPwd || !confirm) { errEl.textContent = 'Remplissez tous les champs.'; return; }
+  if (newPwd.length < 8) { errEl.textContent = 'Le mot de passe doit faire au moins 8 caractères.'; return; }
+  if (newPwd !== confirm) { errEl.textContent = 'Les mots de passe ne correspondent pas.'; return; }
+  try {
+    const user = auth.currentUser;
+    const cred = firebase.auth.EmailAuthProvider.credential(user.email, current);
+    await user.reauthenticateWithCredential(cred);
+    await user.updatePassword(newPwd);
+    document.getElementById('pwd-current').value = '';
+    document.getElementById('pwd-new').value = '';
+    document.getElementById('pwd-confirm').value = '';
+    okEl.textContent = '✓ Mot de passe modifié avec succès.';
+  } catch(e) {
+    if (e.code === 'auth/wrong-password' || e.code === 'auth/invalid-credential')
+      errEl.textContent = 'Mot de passe actuel incorrect.';
+    else
+      errEl.textContent = 'Erreur : ' + e.message;
+  }
+}
+
+async function renderPartenaires() {
+  const doc = await db.collection('users').doc(currentUid).get();
+  const d = doc.exists ? doc.data() : {};
+  const box = document.getElementById('partenaires-content');
+
+  let html = '';
+  if (partnerUids.length === 0) {
+    html = `<p style="font-size:13px;color:var(--text-2);margin-bottom:4px;">Aucun partenaire lié pour le moment.</p>`;
   } else {
-    const partnersHtml = await Promise.all(partnerUids.map(async uid => {
+    const parts = await Promise.all(partnerUids.map(async uid => {
       const pd = partnersData[uid] || {};
-      const partnerDoc = await db.collection('users').doc(uid).get();
-      const pdd = partnerDoc.exists ? partnerDoc.data() : {};
+      const pdoc = await db.collection('users').doc(uid).get();
+      const pdd = pdoc.exists ? pdoc.data() : {};
       const pairedAt = d.pairedAt?.toDate
         ? d.pairedAt.toDate().toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})
         : 'Date inconnue';
-      return `
-        <div style="border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:12px;">
-          <div class="partner-linked">
-            <div style="font-size:28px;">${pd.avatar || '🌱'}</div>
-            <div>
-              <div style="font-weight:700;font-size:15px;">${pd.name || 'Partenaire'}</div>
-              <div style="font-size:12px;color:var(--text-3);">${pdd.email || ''}</div>
-            </div>
+      return `<div style="border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:12px;">
+        <div class="partner-linked">
+          <div style="font-size:28px;">${pd.avatar || '🌱'}</div>
+          <div>
+            <div style="font-weight:700;font-size:15px;">${pd.name || 'Partenaire'}</div>
+            <div style="font-size:12px;color:var(--text-3);">${pdd.email || ''}</div>
           </div>
-          <div class="profil-row">
-            <span class="profil-row-label">Lié depuis</span>
-            <span class="profil-row-val">${pairedAt}</span>
-          </div>
-          <button onclick="confirmUnpair('${uid}')" class="btn" style="
-            width:100%;margin-top:8px;font-size:12px;
-            background:var(--red-light);color:var(--red-dark);
-            border:1px solid var(--red);">
-            🔗 Dissocier ${pd.name || 'ce partenaire'}
-          </button>
-        </div>`;
-    }));
-
-    partnerBox.innerHTML = partnersHtml.join('');
-
-    if (partnerUids.length < 5) {
-      partnerBox.innerHTML += `
-        <p style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Ajouter un partenaire (${partnerUids.length}/5) :</p>
-        <div class="pair-input-row">
-          <input id="pair-code-profil" type="text" placeholder="ex: 4729" maxlength="6"/>
-          <button class="btn btn-primary" onclick="doPairFromProfil()">Lier</button>
         </div>
-        <div id="pair-profil-error" style="font-size:12px;color:var(--red);margin-top:6px;"></div>`;
-    }
+        <div class="profil-row"><span class="profil-row-label">Lié depuis</span><span class="profil-row-val">${pairedAt}</span></div>
+        <button onclick="confirmUnpair('${uid}')" class="btn" style="width:100%;margin-top:8px;font-size:12px;
+          background:var(--red-light);color:var(--red-dark);border:1px solid var(--red);">
+          🔗 Dissocier ${pd.name || 'ce partenaire'}
+        </button>
+      </div>`;
+    }));
+    html = parts.join('');
   }
+
+  if (partnerUids.length < 5) {
+    html += `<p style="font-size:12px;color:var(--text-3);margin-bottom:8px;">
+      ${partnerUids.length > 0 ? `Ajouter un partenaire (${partnerUids.length}/5) :` : 'Entrez le code de jumelage de votre proche :'}
+    </p>
+    <div class="pair-input-row">
+      <input id="pair-code-profil" type="text" placeholder="ex: 4729" maxlength="6"/>
+      <button class="btn btn-primary" onclick="doPairFromProfil()">Lier</button>
+    </div>
+    <div id="pair-profil-error" style="font-size:12px;color:var(--red);margin-top:6px;"></div>`;
+  }
+  box.innerHTML = html;
+}
+
+function renderParametres() {
+  // Objectifs
+  const data = myData;
+  document.getElementById('parametres-goals').innerHTML = `
+    <div class="goal-row">
+      <span class="goal-label">🥗 Repas sains / semaine</span>
+      <div class="goal-ctrl">
+        <button onclick="adjustGoal('repas',-1);renderParametres()">−</button>
+        <span class="goal-val">${data.goals.repas}</span>
+        <button onclick="adjustGoal('repas',1);renderParametres()">+</button>
+      </div>
+    </div>
+    <div class="goal-row">
+      <span class="goal-label">🏃 Jours sport / semaine</span>
+      <div class="goal-ctrl">
+        <button onclick="adjustGoal('sport',-1);renderParametres()">−</button>
+        <span class="goal-val">${data.goals.sport}</span>
+        <button onclick="adjustGoal('sport',1);renderParametres()">+</button>
+      </div>
+    </div>`;
+
+  // Activités
+  const disabled = myData.disabledActs || [];
+  const custom = myData.activities.filter(a => !DEFAULT_ACTS.includes(a));
+  const customCount = custom.length;
+
+  const defaultRows = DEFAULT_ACTS.map(a => {
+    const isOff = disabled.includes(a);
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+      <span style="font-size:13px;${isOff ? 'color:var(--text-3);text-decoration:line-through;' : ''}">${a}</span>
+      <button onclick="toggleDefaultAct('${a}')" style="font-size:12px;padding:3px 10px;border-radius:99px;cursor:pointer;font-family:'Nunito',sans-serif;
+        border:1.5px solid ${isOff ? 'var(--border)' : 'var(--teal)'};
+        background:${isOff ? 'var(--gray-light)' : 'var(--teal-light)'};
+        color:${isOff ? 'var(--text-3)' : 'var(--teal-dark)'};">
+        ${isOff ? 'Activé' : 'Actif'}
+      </button>
+    </div>`;
+  }).join('');
+
+  const customRows = custom.map(a => `
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);">
+      <span style="font-size:13px;">${a}</span>
+      <button onclick="deleteCustomAct('${a}')" style="font-size:16px;background:none;border:none;cursor:pointer;color:var(--text-3);padding:0 4px;">✕</button>
+    </div>`).join('');
+
+  const addRow = customCount < 10
+    ? `<div class="add-row" style="margin-top:10px;">
+        <input id="new-act-params" placeholder="Nouvelle activité..." style="font-family:'Nunito',sans-serif;font-size:13px;"/>
+        <button class="btn btn-primary" style="padding:9px 14px;" onclick="addCustomAct()">+</button>
+      </div>
+      <div id="act-error" style="font-size:12px;color:var(--red);margin-top:4px;"></div>`
+    : `<p style="font-size:12px;color:var(--text-3);margin-top:8px;">Maximum 10 activités personnalisées atteint.</p>`;
+
+  document.getElementById('parametres-acts').innerHTML = defaultRows + customRows + addRow;
+}
+
+function toggleDefaultAct(act) {
+  const disabled = myData.disabledActs || [];
+  const idx = disabled.indexOf(act);
+  if (idx >= 0) disabled.splice(idx, 1);
+  else disabled.push(act);
+  myData.disabledActs = disabled;
+  saveProfile();
+  renderParametres();
+}
+
+function deleteCustomAct(act) {
+  myData.activities = myData.activities.filter(a => a !== act);
+  saveProfile();
+  renderParametres();
+}
+
+function addCustomAct() {
+  const inp = document.getElementById('new-act-params');
+  const val = inp.value.trim();
+  const errEl = document.getElementById('act-error');
+  errEl.textContent = '';
+  if (!val) return;
+  const custom = myData.activities.filter(a => !DEFAULT_ACTS.includes(a));
+  if (custom.length >= 10) { errEl.textContent = 'Maximum 10 activités personnalisées.'; return; }
+  if (myData.activities.includes(val)) { errEl.textContent = 'Cette activité existe déjà.'; return; }
+  myData.activities.push(val);
+  inp.value = '';
+  saveProfile();
+  renderParametres();
 }
 
 
@@ -2437,8 +2567,8 @@ async function doPairFromProfil() {
     subscribeToPartner(partnerDoc.id);
     activePartnerUid = activePartnerUid || partnerDoc.id;
     updatePartnerPill();
-    renderProfil();
-    
+    renderPartenaires();
+
   } catch(e) { errEl.textContent = e.message; }
 }
 
@@ -2467,7 +2597,7 @@ async function doUnpair(uid) {
       if (!activePartnerUid) setUser('me');
     }
     updatePartnerPill();
-    renderProfil();
+    renderPartenaires();
   } catch(e) {
     console.error(e);
     const errEl = document.getElementById('unpair-error');
@@ -2506,41 +2636,8 @@ function renderObjectifs() {
   fills.forEach((el, i) => requestAnimationFrame(() => requestAnimationFrame(() => { el.style.width = targets[i] + '%'; })));
 }
 
-function renderGoalsModal() {
-  const data = myData;
-  document.getElementById('goals-modal-list').innerHTML = `
-    <div class="goal-row">
-      <span class="goal-label">🥗 Repas sains / semaine</span>
-      <div class="goal-ctrl">
-        <button onclick="adjustGoal('repas',-1)">−</button>
-        <span class="goal-val">${data.goals.repas}</span>
-        <button onclick="adjustGoal('repas',1)">+</button>
-      </div>
-    </div>
-    <div class="goal-row">
-      <span class="goal-label">🏃 Jours sport / semaine</span>
-      <div class="goal-ctrl">
-        <button onclick="adjustGoal('sport',-1)">−</button>
-        <span class="goal-val">${data.goals.sport}</span>
-        <button onclick="adjustGoal('sport',1)">+</button>
-      </div>
-    </div>`;
-}
-
-function openGoalsModal() {
-  document.getElementById('profil-dropdown').style.display = 'none';
-  renderGoalsModal();
-  document.getElementById('goals-modal').style.display = 'block';
-}
-
-function closeGoalsModal(e) {
-  if (!e || e.target === document.getElementById('goals-modal'))
-    document.getElementById('goals-modal').style.display = 'none';
-}
-
 function adjustGoal(type, d) {
   myData.goals[type] = Math.max(1, myData.goals[type] + d);
-  renderGoalsModal();
   renderObjectifs();
   saveProfile();
 }
