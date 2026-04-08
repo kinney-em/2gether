@@ -628,15 +628,14 @@
         <span id="week-lbl" style="font-size:14px;font-weight:700;color:var(--text-2);white-space:nowrap;text-align:center;flex:1;overflow:hidden;text-overflow:ellipsis;">Cette semaine</span>
         <button onclick="changeWeek(1)" class="week-nav-btn" id="week-nav-next">›</button>
       </div>
-      <button id="btn-motivate" onclick="openMotivate(event)" title="Envoyer un message">💌</button>
     </div>
     <!-- Row 2: segmented switcher (hidden until partner exists) -->
-    <div id="user-switcher" style="display:none;flex-direction:row;">
-      <button class="seg-btn me active" id="pill-me" onclick="setUser('me')">
+    <div id="user-switcher" style="display:none;flex-direction:row;align-items:center;gap:4px;">
+      <button class="seg-btn me active" id="pill-me" onclick="setUser('me')" style="flex:1;">
         <span class="seg-avatar" id="pill-me-avatar">🌱</span>
         <span class="seg-name" id="pill-me-name">Moi</span>
       </button>
-      <button class="seg-btn partner" id="pill-partner"
+      <button class="seg-btn partner" id="pill-partner" style="flex:1;"
         onclick="togglePartnerPill(event)"
         ontouchstart="startPartnerLongPress(event)"
         ontouchend="cancelPartnerLongPress()"
@@ -650,6 +649,7 @@
           <span id="pill-partner-more" style="display:none;font-size:11px;letter-spacing:3px;opacity:0.9;line-height:1;font-weight:900;">···</span>
         </span>
       </button>
+      <button id="btn-motivate" onclick="openMotivate(event)" title="Envoyer un message">💌</button>
     </div>
     <!-- Row 3: readonly banner -->
     <div id="readonly-banner" style="
@@ -834,7 +834,19 @@ if (!CONFIGURED) {
 
 // Service Worker
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js').catch(err => console.warn('SW:', err));
+  let swReloading = false;
+
+  navigator.serviceWorker.register('/sw.js').then(reg => {
+    // Vérifie les mises à jour quand l'app reprend le focus (iOS PWA ne refait pas de navigation)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') reg.update();
+    });
+  }).catch(err => console.warn('SW:', err));
+
+  // Recharge quand un nouveau SW prend le contrôle
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!swReloading) { swReloading = true; window.location.reload(); }
+  });
 }
 
 // Init Firebase
