@@ -30,6 +30,11 @@
   }
 
   @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes readonly-flash {
+    0%   { background: var(--amber); color: white; transform: scale(1.02); }
+    100% { background: var(--amber-light); color: var(--amber-dark); transform: scale(1); }
+  }
+  .readonly-flash { animation: readonly-flash .5s ease-out; }
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -1390,6 +1395,15 @@ function setWeekNavColor(color) {
   if (next) next.style.borderColor = color;
 }
 
+function flashReadonlyBanner() {
+  const b = document.getElementById('readonly-banner');
+  if (!b) return;
+  b.classList.remove('readonly-flash');
+  void b.offsetWidth; // reflow pour relancer l'animation
+  b.classList.add('readonly-flash');
+  b.addEventListener('animationend', () => b.classList.remove('readonly-flash'), { once: true });
+}
+
 function setUser(who, uid) {
   const banner = document.getElementById('readonly-banner');
   if (who === 'me') {
@@ -1677,7 +1691,7 @@ function changeWeek(d) {
 let mealLongPressTimer = null, mealLongPressEl = null, mealLongPressHandled = false;
 
 function startMealLongPress(type, day, el) {
-  if (viewingPartner) return;
+  if (viewingPartner) { flashReadonlyBanner(); return; }
   mealLongPressHandled = false;
   mealLongPressEl = el;
   el.classList.add('long-pressing');
@@ -1707,7 +1721,7 @@ function getMeal(type, day) {
 }
 
 function cycleMeal(type, day) {
-  if (viewingPartner) return;
+  if (viewingPartner) { flashReadonlyBanner(); return; }
   if (mealLongPressHandled) { mealLongPressHandled = false; return; }
   const wk = getWeekKey();
   if (!myData.meals[wk]) myData.meals[wk] = {};
@@ -1824,7 +1838,7 @@ const { sain, mal, correct } = countMeals(getData(), wk);
 let sportLongPressTimer = null, sportLongPressEl = null, sportLongPressHandled = false;
 
 function startSportLongPress(dayIdx, el) {
-  if (viewingPartner) return;
+  if (viewingPartner) { flashReadonlyBanner(); return; }
   sportLongPressHandled = false;
   sportLongPressEl = el;
   el.classList.add('long-pressing');
@@ -1927,7 +1941,7 @@ function renderActList() {
 }
 
 function toggleAct(act) {
-  if (viewingPartner) return;
+  if (viewingPartner) { flashReadonlyBanner(); return; }
   const wk = getWeekKey();
   if (!myData.sports[wk]) myData.sports[wk] = {};
   if (!myData.sports[wk][activeDayIdx]) myData.sports[wk][activeDayIdx] = [];
