@@ -870,7 +870,7 @@ let unsubscribeMe = null;
 let partnerUids = [];
 let partnersData = {};
 let activePartnerUid = null;
-let lastPartnerUid = null;
+let lastPartnerUid = localStorage.getItem('lastPartnerUid') || null;
 let unsubscribePartners = {};
 
 // ---- AUTH ----
@@ -1038,7 +1038,10 @@ async function loadUserProfile() {
     partnersData[uid] = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
     await loadPartnerProfile(uid);
   }
-  activePartnerUid = partnerUids[0] || null;
+  // Restaure le dernier partenaire sélectionné si il est toujours dans la liste
+  activePartnerUid = (lastPartnerUid && partnerUids.includes(lastPartnerUid))
+    ? lastPartnerUid
+    : (partnerUids[0] || null);
   updatePartnerPill();
   subscribeToData();
 
@@ -1361,7 +1364,7 @@ function setUser(who, uid) {
   } else {
     viewingPartner = true;
     activePartnerUid = uid || lastPartnerUid || partnerUids[0] || null;
-    if (activePartnerUid) lastPartnerUid = activePartnerUid;
+    if (activePartnerUid) { lastPartnerUid = activePartnerUid; localStorage.setItem('lastPartnerUid', activePartnerUid); }
     document.getElementById('pill-me').className = 'seg-btn me';
     document.getElementById('pill-partner').className = 'seg-btn partner active';
     setWeekNavColor('var(--coral)');
@@ -1370,7 +1373,7 @@ function setUser(who, uid) {
       banner.innerHTML = `🔗 Vous n'avez pas encore ajouté de partenaire. Votre code de jumelage est disponible sur votre <span onclick="openProfilPanel()" style="text-decoration:underline;cursor:pointer;">profil utilisateur</span>.`;
     } else {
       const name = partnersData[activePartnerUid]?.name || 'ce partenaire';
-      banner.innerHTML = `👁️ Vous consultez les données de ${name} — lecture seule`;
+      banner.innerHTML = `👀 Vous consultez les données de ${name} — lecture seule`;
     }
     banner.style.display = 'block';
   }
