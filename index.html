@@ -298,14 +298,14 @@
 
   /* --- SPORT MODAL --- */
   .modal-overlay {
-    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 50;
+    display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 400;
     align-items: flex-end; justify-content: center;
   }
   .modal-overlay.show { display: flex; }
   .modal-sheet {
     background: var(--surface);
     border-radius: 20px 20px 0 0;
-    padding: 20px 16px 32px;
+    padding: 20px 16px calc(32px + env(safe-area-inset-bottom));
     width: 100%; max-width: 500px;
     max-height: 70vh; overflow-y: auto;
   }
