@@ -681,7 +681,7 @@
     <div id="tab-repas" class="screen active">
       <div class="score-strip" id="food-scores"></div>
       <div id="meal-ratio-bar" style="display:flex;visibility:hidden;height:20px;border-radius:99px;overflow:hidden;margin-bottom:6px;border:1px solid var(--border);"></div>
-      <p style="font-size:11px;color:var(--text-3);margin-bottom:6px;">Tapez pour cycler : vide → <b>✔</b> sain → <b>≈</b> correct → <b>✖</b> malbouffe <br>· Appui long pour remettre à zéro</p>
+      <p style="font-size:13px;color:var(--text-3);margin-bottom:6px;">Tapez pour cycler : vide → <b>✔</b> sain → <b>≈</b> correct → <b>✖</b> malbouffe <br>· Appui long pour remettre à zéro</p>
       <div id="meal-table"></div>
       <div id="meal-empty-state" style="display:none;text-align:center;padding:20px 16px 8px;">
         <div style="display:flex;align-items:flex-end;justify-content:center;gap:6px;margin-bottom:10px;">
@@ -699,7 +699,7 @@
     <!-- SPORT -->
     <div id="tab-sport" class="screen">
       <div class="score-strip" id="sport-scores"></div>
-      <p style="font-size:11px;color:var(--text-3);margin-bottom:6px;">Activités par jour — tapez pour sélectionner · Appui long pour remettre à zéro</p>
+      <p style="font-size:13px;color:var(--text-3);margin-bottom:6px;">Activités par jour — tapez pour sélectionner · Appui long pour remettre à zéro</p>
       <div class="week-grid" id="grid-sport"></div>
       <div id="sport-empty-state" style="display:none;text-align:center;padding:20px 16px 8px;">
         <div style="display:flex;align-items:flex-end;justify-content:center;gap:6px;margin-bottom:10px;">
@@ -2170,8 +2170,8 @@ function renderStats() {
           stroke-dasharray="${dash} ${circ}" style="transition:stroke-dasharray .6s cubic-bezier(.4,0,.2,1);"/>
       </svg>
       <div style="margin-top:-18px;font-size:26px;font-weight:800;color:${gaugeColor};">${ratio}%</div>
-      <div style="font-size:11px;color:var(--text-2);font-weight:600;margin-top:4px;">Ratio repas sains (tous temps)</div>
-      <div style="font-size:11px;color:var(--text-3);margin-top:2px;">${sain} repas sains au total</div>
+      <div style="font-size:13px;color:var(--text-2);font-weight:600;margin-top:4px;">Ratio repas sains (tous temps)</div>
+      <div style="font-size:13px;color:var(--text-3);margin-top:2px;">${sain} repas sains au total</div>
     </div>`;
 
   const partnerLabel = partnerUids.length === 0 ? 'vos proches'
@@ -2221,9 +2221,9 @@ function renderCompare() {
     </div>`).join('');
 
   document.getElementById('compare-section').innerHTML = `
-    <p style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Repas sains (total)</p>
+    <p style="font-size:13px;color:var(--text-3);margin-bottom:8px;">Repas sains (total)</p>
     ${makeRows(allSain, maxSain)}
-    <p style="font-size:12px;color:var(--text-3);margin-bottom:8px;margin-top:12px;">Jours de sport (semaine en cours)</p>
+    <p style="font-size:13px;color:var(--text-3);margin-bottom:8px;margin-top:12px;">Jours de sport (semaine en cours)</p>
     ${makeRows(allSport, maxSport)}`;
 }
 
