@@ -665,7 +665,7 @@
           <span id="pill-partner-more" style="display:none;font-size:11px;letter-spacing:3px;opacity:0.9;line-height:1;font-weight:900;">···</span>
         </span>
       </button>
-      <button id="btn-motivate" onclick="openMotivate(event)" title="Envoyer un message">💌</button>
+      <button id="btn-motivate" onclick="openMotivate(event)" title="Envoyer un message" style="display:none;">💌</button>
     </div>
     <!-- Row 3: readonly banner -->
     <div id="readonly-banner" style="
@@ -808,6 +808,10 @@
       <button onclick="closeParametresPanel()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-2);">✕</button>
     </div>
     <div class="sec-label">Apparence</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);">
+      <span style="font-size:14px;">Langue / Language</span>
+      <span style="font-size:12px;font-weight:700;color:var(--text-3);letter-spacing:.04em;">COMING SOON</span>
+    </div>
     <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;">
       <span style="font-size:14px;">Thème sombre</span>
       <button id="theme-toggle-btn" onclick="toggleTheme();updateThemeToggle()" style="
@@ -1190,7 +1194,7 @@ function updatePartnerPill() {
   const switcher = document.getElementById('user-switcher');
   if (switcher) switcher.style.display = partnerUids.length > 0 ? 'flex' : 'none';
   const btn = document.getElementById('btn-motivate');
-  if (btn) btn.style.display = partnerUids.length > 0 ? 'flex' : 'none';
+  if (btn) btn.style.display = (viewingPartner && activePartnerUid) ? 'flex' : 'none';
   // Indicateur appui long si plusieurs partenaires
   const partnerNameEl = document.getElementById('pill-partner-name');
   if (partnerNameEl && partnerUids.length > 1) {
