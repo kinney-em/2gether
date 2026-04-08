@@ -825,6 +825,42 @@
   </div>
 </div>
 
+<!-- MOTIVATE SHEET -->
+<div id="motivate-sheet" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0.35);" onclick="closeMotivate(event)">
+  <div onclick="event.stopPropagation()" style="
+    position:absolute;bottom:0;left:0;right:0;
+    background:var(--surface);border-radius:20px 20px 0 0;
+    padding:20px 16px calc(24px + env(safe-area-inset-bottom));
+    max-width:500px;margin:0 auto;">
+    <div style="width:36px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 16px;"></div>
+    <div style="font-size:15px;font-weight:700;margin-bottom:12px;">💌 Envoyer un message</div>
+    <div id="motivate-partner-name" style="font-size:13px;color:var(--text-2);margin-bottom:12px;"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+      <button onclick="setMotivatePreset('🫡 Yo !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;">🫡 Yo !</button>
+      <button onclick="setMotivatePreset('🥗 Super effort cette semaine !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;">🥗 Super effort cette semaine !</button>
+      <button onclick="setMotivatePreset('🔥 Tu assures !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;">🔥 Tu assures !</button>
+      <button onclick="setMotivatePreset('😉 Bravo, continue comme ça !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;">😉 Bravo, continue comme ça !</button>
+      <button onclick="setMotivatePreset('💜 Je pense à toi')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;">💜 Je pense à toi</button>
+    </div>
+    <textarea id="motivate-text" rows="3" placeholder="Écris ton message d'encouragement..." style="
+      width:100%;box-sizing:border-box;font-family:'Nunito',sans-serif;font-size:14px;
+      border:1.5px solid var(--border);border-radius:var(--radius-sm);
+      padding:10px 12px;background:var(--bg);color:var(--text);resize:none;"></textarea>
+    <div id="motivate-error" style="font-size:12px;color:var(--red);margin-top:4px;min-height:16px;"></div>
+    <button class="btn btn-primary" onclick="sendMotivate()" style="width:100%;margin-top:10px;">Envoyer 💌</button>
+  </div>
+</div>
+
+<!-- MOTIVATE BANNER (réception in-app) -->
+<div id="motivate-banner" style="
+  display:none;position:fixed;top:16px;left:50%;transform:translateX(-50%);
+  z-index:500;background:var(--surface);border-radius:var(--radius);
+  box-shadow:0 4px 20px rgba(0,0,0,0.15);padding:12px 16px;
+  max-width:320px;width:90%;border-left:4px solid var(--teal);">
+  <div style="font-size:13px;font-weight:700;margin-bottom:4px;" id="motivate-banner-from"></div>
+  <div style="font-size:13px;color:var(--text);" id="motivate-banner-msg"></div>
+</div>
+
 <!-- SPORT MODAL  -->
 <div class="modal-overlay" id="sport-modal-overlay" onclick="closeSportModal(event)">
   <div class="modal-sheet" id="sport-sheet">
@@ -1250,6 +1286,20 @@ function subscribeToData() {
   for (const uid of partnerUids) {
     subscribeToPartner(uid);
   }
+
+  // Listener messages de motivation entrants (l'expéditeur écrit sur son propre doc)
+  for (const uid of partnerUids) {
+    db.collection('users').doc(uid).onSnapshot(snap => {
+      const d = snap.data();
+      if (!d?.outbox) return;
+      const ob = d.outbox;
+      if (ob.to === currentUid && ob.ts && ob.ts !== (window._lastMotivatTs || 0)) {
+        window._lastMotivatTs = ob.ts;
+        const senderName = partnersData[uid]?.name || 'Ton partenaire';
+        showMotivateBanner(senderName, ob.msg || '');
+      }
+    });
+  }
 }
 
 function subscribeToPartner(uid) {
@@ -1406,12 +1456,14 @@ function flashReadonlyBanner() {
 
 function setUser(who, uid) {
   const banner = document.getElementById('readonly-banner');
+  const btnMotivate = document.getElementById('btn-motivate');
   if (who === 'me') {
     viewingPartner = false;
     activePartnerUid = null;
     document.getElementById('pill-me').className = 'seg-btn me active';
     document.getElementById('pill-partner').className = 'seg-btn partner';
     banner.style.display = 'none';
+    if (btnMotivate) btnMotivate.style.display = 'none';
     setWeekNavColor('var(--teal)');
   } else {
     viewingPartner = true;
@@ -1419,6 +1471,7 @@ function setUser(who, uid) {
     if (activePartnerUid) { lastPartnerUid = activePartnerUid; localStorage.setItem('lastPartnerUid', activePartnerUid); }
     document.getElementById('pill-me').className = 'seg-btn me';
     document.getElementById('pill-partner').className = 'seg-btn partner active';
+    if (btnMotivate) btnMotivate.style.display = activePartnerUid ? 'flex' : 'none';
     setWeekNavColor('var(--coral)');
     updatePartnerPill();
     if (!activePartnerUid) {
@@ -1512,6 +1565,50 @@ function closeProfilSheet(e) {
 }
 
 function closeDropdown() { closeProfilSheet(); }
+
+// ---- MOTIVATE ----
+function openMotivate(e) {
+  if (e) { e.stopPropagation(); e.preventDefault(); }
+  if (!activePartnerUid) return;
+  const partner = partnersData[activePartnerUid] || {};
+  document.getElementById('motivate-partner-name').textContent = `À : ${partner.name || 'ton partenaire'}`;
+  document.getElementById('motivate-text').value = '';
+  document.getElementById('motivate-error').textContent = '';
+  document.getElementById('motivate-sheet').style.display = 'block';
+  setTimeout(() => document.getElementById('motivate-text').focus(), 100);
+}
+
+function setMotivatePreset(text) {
+  document.getElementById('motivate-text').value = text;
+}
+
+function closeMotivate(e) {
+  if (e && e.target !== document.getElementById('motivate-sheet')) return;
+  document.getElementById('motivate-sheet').style.display = 'none';
+}
+
+async function sendMotivate() {
+  const msg = document.getElementById('motivate-text').value.trim();
+  if (!msg) { document.getElementById('motivate-error').textContent = 'Écris un message avant d\'envoyer.'; return; }
+  const senderName = document.getElementById('pill-me-name').textContent || 'Ton partenaire';
+  try {
+    await db.collection('users').doc(currentUid).update({
+      outbox: { to: activePartnerUid, msg, from: senderName, ts: Date.now() }
+    });
+    document.getElementById('motivate-sheet').style.display = 'none';
+  } catch(err) {
+    document.getElementById('motivate-error').textContent = 'Erreur lors de l\'envoi.';
+  }
+}
+
+function showMotivateBanner(from, msg) {
+  const banner = document.getElementById('motivate-banner');
+  document.getElementById('motivate-banner-from').textContent = `💌 ${from}`;
+  document.getElementById('motivate-banner-msg').textContent = msg;
+  banner.style.display = 'block';
+  clearTimeout(banner._timer);
+  banner._timer = setTimeout(() => { banner.style.display = 'none'; }, 5000);
+}
 
 // ---- PROFIL PANEL ----
 function openProfilPanel() {
