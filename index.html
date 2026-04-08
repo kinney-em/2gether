@@ -32,7 +32,7 @@
   @keyframes spin { to { transform: rotate(360deg); } }
 
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme="light"]) {
       --bg: #1a1a18; --surface: #252523; --border: rgba(255,255,255,0.10);
       --text: #f0ede8; --text-2: #c8c5bc; --text-3: #888780;
       --green: #2EBD6E; --green-light: #0d2e1a; --green-dark: #7DDBA8;
@@ -43,6 +43,17 @@
       --gray-light: #2e2e2c;
       --shadow: 0 2px 12px rgba(0,0,0,0.25);
     }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1a1a18; --surface: #252523; --border: rgba(255,255,255,0.10);
+    --text: #f0ede8; --text-2: #c8c5bc; --text-3: #888780;
+    --green: #2EBD6E; --green-light: #0d2e1a; --green-dark: #7DDBA8;
+    --teal: #2AC492; --teal-light: #062318; --teal-dark: #7DE8C4;
+    --red: #FF6B35; --red-light: #2e1200; --red-dark: #FFAA85;
+    --amber: #E09030; --amber-light: #2a1e06; --amber-dark: #F5C97A;
+    --coral: #F08870; --coral-light: #2e1508;
+    --gray-light: #2e2e2c;
+    --shadow: 0 2px 12px rgba(0,0,0,0.25);
   }
 
   body {
@@ -791,7 +802,18 @@
       <span style="font-size:16px; font-weight:700;">Paramètres</span>
       <button onclick="closeParametresPanel()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text-2);">✕</button>
     </div>
-    <div class="sec-label">Objectifs hebdomadaires</div>
+    <div class="sec-label">Apparence</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;">
+      <span style="font-size:14px;">Thème sombre</span>
+      <button id="theme-toggle-btn" onclick="toggleTheme();updateThemeToggle()" style="
+        width:48px;height:28px;border-radius:14px;border:none;cursor:pointer;
+        background:var(--teal);position:relative;transition:background .2s;">
+        <span id="theme-toggle-knob" style="
+          position:absolute;top:3px;left:3px;width:22px;height:22px;
+          border-radius:50%;background:white;transition:transform .2s;"></span>
+      </button>
+    </div>
+    <div class="sec-label" style="margin-top:8px;">Objectifs hebdomadaires</div>
     <div id="parametres-goals"></div>
     <div class="sec-label" style="margin-top:16px;">Activités sportives</div>
     <div id="parametres-acts"></div>
@@ -827,6 +849,22 @@ const firebaseConfig = {
 // ============================================================
 
 const CONFIGURED = firebaseConfig.apiKey !== "VOTRE_API_KEY";
+
+// ---- THEME ----
+(function() {
+  const saved = localStorage.getItem('theme');
+  if (saved) document.documentElement.setAttribute('data-theme', saved);
+})();
+function setTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('theme', t);
+}
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const isDark = current === 'dark' ||
+    (!current && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  setTheme(isDark ? 'light' : 'dark');
+}
 
 if (!CONFIGURED) {
   document.getElementById('config-notice').style.display = 'block';
@@ -1484,10 +1522,21 @@ function closePartenairesPanel() {
 }
 
 // ---- PARAMETRES PANEL ----
+function updateThemeToggle() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark' ||
+    (!document.documentElement.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const knob = document.getElementById('theme-toggle-knob');
+  const btn = document.getElementById('theme-toggle-btn');
+  if (!knob || !btn) return;
+  knob.style.transform = isDark ? 'translateX(20px)' : 'translateX(0)';
+  btn.style.background = isDark ? 'var(--teal)' : 'var(--border)';
+}
+
 function openParametresPanel() {
   closeProfilSheet();
   document.getElementById('parametres-panel').style.display = 'block';
   renderParametres();
+  updateThemeToggle();
 }
 
 function closeParametresPanel() {
