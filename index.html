@@ -972,6 +972,9 @@ auth.onAuthStateChanged(user => {
     document.getElementById('loading-screen').style.display = 'none';
     document.getElementById('login-screen').style.display = 'flex';
     document.getElementById('app').style.display = 'none';
+    document.getElementById('bottom-nav').style.display = 'none';
+    document.getElementById('profil-sheet').style.display = 'none';
+    document.getElementById('user-switcher').style.display = 'none';
   }
 });
 
@@ -1058,6 +1061,7 @@ async function doPair() {
     loadUserProfile();
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app').style.display = 'block';
+    document.getElementById('bottom-nav').style.display = 'flex';
   } catch(e) {
     setError('pair-error', e.message);
   }
@@ -1066,6 +1070,7 @@ async function doPair() {
 function skipPair() {
   document.getElementById('login-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
+  document.getElementById('bottom-nav').style.display = 'flex';
   loadUserProfile();
 }
 /////////////////////////////:bouton reset mdp
@@ -1140,6 +1145,7 @@ async function loadUserProfile() {
   renderAll();
   document.getElementById('loading-screen').style.display = 'none';
   document.getElementById('app').style.display = 'block';
+  document.getElementById('bottom-nav').style.display = 'flex';
 
   window.addEventListener('offline', () => {
     _syncWasError = true;
@@ -2980,7 +2986,7 @@ function renderAll() {
 </div>
 
 <!-- BOTTOM NAV -->
-<nav class="bottom-nav">
+<nav class="bottom-nav" id="bottom-nav" style="display:none;">
   <button class="bottom-nav-item" id="nav-objectifs" onclick="showTab('objectifs')">
     <span class="nav-icon">📋</span>
     <span class="nav-label">Récap</span>
