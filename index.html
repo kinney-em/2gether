@@ -443,12 +443,10 @@
     text-align: center; font-size: 11px; color: var(--text-3);
     padding: 4px 0 2px; background: var(--bg);
   }
-  .sync-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--green); margin-right: 4px; vertical-align: middle; }
-  .sync-dot.off { background: var(--gray); }
 
   /* --- SYNC TOAST --- */
   #sync-toast {
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    position: fixed; bottom: calc(70px + env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%) translateY(80px);
     z-index: 9999; min-width: 220px; max-width: 90vw;
     padding: 10px 18px; border-radius: 24px;
     font-size: 13px; font-weight: 600; text-align: center;
@@ -1176,6 +1174,9 @@ async function loadUserProfile() {
   myData.goals = d.goals || { repas: 14, sport: 3 };
   myData.disabledActs = d.disabledActs || [];
   myData.avatar = d.avatar || '🌱';
+  myData.name = d.name || '';
+  myData.email = auth.currentUser?.email || '';
+  myData.pairCode = d.pairCode || '';
   const earned = d.badges || [];
   BADGES.forEach(b => { if (earned.includes(b.id)) b.earnedMe = true; });
 
@@ -1207,20 +1208,12 @@ async function loadUserProfile() {
   window.addEventListener('offline', () => {
     _syncWasError = true;
     showSyncToast('error', 'Hors ligne — modifications en attente de synchro');
-    const dot = document.getElementById('sync-dot');
-    const label = document.getElementById('sync-label');
-    if (dot) dot.style.background = 'var(--gray)';
-    if (label) label.innerHTML = `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gray);margin-right:4px;vertical-align:middle;"></span>Hors ligne`;
   });
   window.addEventListener('online', () => {
     if (_syncWasError) {
       _syncWasError = false;
       showSyncToast('ok', 'Connexion rétablie ✓');
     }
-    const dot = document.getElementById('sync-dot');
-    const label = document.getElementById('sync-label');
-    if (dot) dot.style.background = 'var(--green)';
-    if (label) label.innerHTML = `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--green);margin-right:4px;vertical-align:middle;"></span>Synchro ✓`;
   });
 }
 
@@ -1235,6 +1228,7 @@ async function loadPartnerProfile(uid) {
   partnersData[uid].avatar = d.avatar || '🌱';
   partnersData[uid].activities = d.activities || [...DEFAULT_ACTS];
   partnersData[uid].goals = d.goals || { repas: 14, sport: 3 };
+  partnersData[uid].pairedAt = d.pairedAt || null;
   const earned = d.badges || [];
   BADGES.forEach(b => { if (earned.includes(b.id)) { if(!b.earnedPartners) b.earnedPartners={}; b.earnedPartners[uid]=true; } });
 }
@@ -1346,7 +1340,7 @@ function subscribeToData() {
           if (d.sports) myData.sports[change.doc.id] = d.sports;
         }
       });
-      setSyncStatus(true);
+      if (navigator.onLine) setSyncStatus(true);
       renderAll();
     });
 
@@ -1396,6 +1390,7 @@ function subscribeToPartner(uid) {
     partnersData[uid].avatar = d.avatar || '🌱';
     partnersData[uid].activities = d.activities || [...DEFAULT_ACTS];
     partnersData[uid].goals = d.goals || { repas: 14, sport: 3 };
+    partnersData[uid].pairedAt = d.pairedAt || null;
     updatePartnerPill();
     if (viewingPartner && activePartnerUid === uid) renderAll();
   });
@@ -1428,14 +1423,6 @@ function hideSyncToast() {
 }
 
 function setSyncStatus(ok) {
-  const dot = document.getElementById('sync-dot');
-  const label = document.getElementById('sync-label');
-  if (dot) dot.style.background = ok ? 'var(--green)' : 'var(--gray)';
-  if (label) label.innerHTML = `
-    <span style="display:inline-block;width:6px;height:6px;border-radius:50%;
-      background:${ok ? 'var(--green)' : 'var(--gray)'};
-      margin-right:4px;vertical-align:middle;"></span>
-    ${ok ? 'Synchro ✓' : 'Hors ligne'}`;
   if (ok && _syncWasError) {
     _syncWasError = false;
     showSyncToast('ok', 'Synchronisation rétablie ✓');
@@ -1453,8 +1440,8 @@ async function saveEntry() {
       meals: myData.meals[wk] || {},
       sports: myData.sports[wk] || {}
     });
-    setSyncStatus(true);
-  } catch(e) { setSyncStatus(false); }
+    if (navigator.onLine) setSyncStatus(true);
+  } catch(e) { if (navigator.onLine) setSyncStatus(false); }
 }
 
 async function saveProfile() {
@@ -2715,6 +2702,7 @@ async function saveEditProfil() {
       avatar: selectedAvatar
     });
     myData.avatar = selectedAvatar;
+    myData.name = name;
     document.getElementById('pill-me-name').textContent = name;
     document.getElementById('pill-me-avatar').textContent = selectedAvatar;
     const navAv = document.getElementById('nav-profil-avatar');
@@ -2726,10 +2714,8 @@ async function saveEditProfil() {
   }
 }
 	
-async function renderProfil() {
-  const doc = await db.collection('users').doc(currentUid).get();
-  if (!doc.exists) return;
-  const d = doc.data();
+function renderProfil() {
+  const d = myData;
   const authUser = auth.currentUser;
   const createdAt = authUser?.metadata?.creationTime
     ? new Date(authUser.metadata.creationTime).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})
@@ -2754,13 +2740,6 @@ async function renderProfil() {
     <div class="profil-row">
       <span class="profil-row-label">Code de jumelage</span>
       <span class="profil-row-val" style="letter-spacing:3px;color:var(--teal);">${d.pairCode || '—'}</span>
-    </div>
-    <div class="profil-row">
-      <span class="profil-row-label">Synchronisation</span>
-      <span id="sync-label" style="font-size:12px;font-weight:600;">
-        <span id="sync-dot" style="display:inline-block;width:6px;height:6px;border-radius:50%;
-          background:var(--green);margin-right:4px;vertical-align:middle;"></span>Synchro ✓
-      </span>
     </div>
     <div style="margin-top:16px;">
       <div class="sec-label">Mot de passe</div>
@@ -2811,37 +2790,35 @@ async function changePassword() {
   }
 }
 
-async function renderPartenaires() {
-  const doc = await db.collection('users').doc(currentUid).get();
-  const d = doc.exists ? doc.data() : {};
+function renderPartenaires() {
+  const d = myData;
   const box = document.getElementById('partenaires-content');
 
   let html = '';
   if (partnerUids.length === 0) {
     html = `<p style="font-size:13px;color:var(--text-2);margin-bottom:4px;">Aucun partenaire lié pour le moment.</p>`;
   } else {
-    const parts = await Promise.all(partnerUids.map(async uid => {
+    const parts = partnerUids.map(uid => {
       const pd = partnersData[uid] || {};
-      const pdoc = await db.collection('users').doc(uid).get();
-      const pdd = pdoc.exists ? pdoc.data() : {};
-      const pairedAt = d.pairedAt?.toDate
-        ? d.pairedAt.toDate().toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})
-        : 'Date inconnue';
+      const pairedDate = pd.pairedAt?.toDate
+        ? pd.pairedAt.toDate().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+        : pd.pairedAt ? new Date(pd.pairedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+        : null;
       return `<div style="border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:12px;">
         <div class="partner-linked">
           <div style="font-size:28px;">${pd.avatar || '🌱'}</div>
           <div>
             <div style="font-weight:700;font-size:15px;">${pd.name || 'Partenaire'}</div>
-            <div style="font-size:12px;color:var(--text-3);">${pdd.email || ''}</div>
+            ${pd.email ? `<div style="font-size:11px;color:var(--text-3);">${pd.email}</div>` : ''}
+            ${pairedDate ? `<div style="font-size:11px;color:var(--text-3);">Jumelé le ${pairedDate}</div>` : ''}
           </div>
         </div>
-        <div class="profil-row"><span class="profil-row-label">Lié depuis</span><span class="profil-row-val">${pairedAt}</span></div>
         <button onclick="confirmUnpair('${uid}')" class="btn" style="width:100%;margin-top:8px;font-size:12px;
           background:var(--red-light);color:var(--red-dark);border:1px solid var(--red);">
           🔗 Dissocier ${pd.name || 'ce partenaire'}
         </button>
       </div>`;
-    }));
+    });
     html = parts.join('');
   }
 
