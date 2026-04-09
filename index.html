@@ -860,13 +860,17 @@
   <div onclick="event.stopPropagation()" style="
     position:absolute;bottom:0;left:0;right:0;max-width:500px;margin:0 auto;
     background:var(--surface);border-radius:20px 20px 0 0;
-    display:flex;flex-direction:column;max-height:85vh;">
+    display:flex;flex-direction:column;max-height:75vh;">
     <div style="padding:16px 16px 0;flex-shrink:0;">
       <div style="width:36px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 14px;"></div>
       <div style="font-size:15px;font-weight:700;margin-bottom:12px;">💬 Aide & Support</div>
+      <input id="faq-search" type="search" placeholder="🔍 Rechercher une question..." oninput="filterFaq(this.value)"
+        style="width:100%;box-sizing:border-box;font-family:'Nunito',sans-serif;font-size:14px;
+        border:1.5px solid var(--border);border-radius:var(--radius-sm);
+        padding:9px 12px;background:var(--bg);color:var(--text);">
     </div>
     <div id="faq-chat" style="overflow-y:auto;flex:1;padding:0 16px 8px;display:flex;flex-direction:column;gap:10px;"></div>
-    <div id="faq-questions" style="padding:12px 16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;flex-shrink:0;overflow-y:auto;max-height:40vh;"></div>
+    <div id="faq-questions" style="padding:12px 16px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px;flex-shrink:0;overflow-y:auto;max-height:270px;"></div>
     <div style="padding:12px 16px calc(12px + env(safe-area-inset-bottom));border-top:1px solid var(--border);flex-shrink:0;">
       <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSfH8v_aA-CHdZXKYIVWSl1phJCxirpgj-vifxHgoarmwqbN1Q/viewform','_blank')"
         style="width:100%;padding:11px;border-radius:var(--radius-sm);border:1.5px solid var(--border);
@@ -1615,6 +1619,7 @@ const FAQ = [
   { q: "Quelles langues sont disponibles ?", a: "Français uniquement pour l'instant. D'autres langues arrivent bientôt." },
   { q: "Comment modifier mon mot de passe ?", a: "Profil → Profil → section \"Modifier le mot de passe\"." },
   { q: "Comment contacter le support ?", a: "Tu n'as pas trouvé ta réponse ? Utilise le bouton \"Contacter un humain\" ci-dessous — on te répondra dès que possible." },
+  { q: "Je souhaite supprimer mes données", a: "Pour supprimer ton compte et toutes tes données, contacte-nous via le bouton \"Contacter un humain\" ci-dessous. Nous traiterons ta demande dans les meilleurs délais." },
 ];
 
 function openFaq() {
@@ -1627,6 +1632,7 @@ function openFaq() {
       border:1.5px solid var(--border);background:var(--bg);color:var(--text);
       font-family:'Nunito',sans-serif;font-size:13px;cursor:pointer;width:100%;">${f.q}</button>`
   ).join('');
+  document.getElementById('faq-search').value = '';
   document.getElementById('faq-sheet').style.display = 'block';
   document.getElementById('faq-questions').scrollTop = 0;
 }
@@ -1639,6 +1645,24 @@ function faqAnswer(i) {
     <div id="${anchor}" style="align-self:flex-end;background:var(--teal);color:white;padding:9px 13px;border-radius:14px 14px 2px 14px;font-size:13px;max-width:85%;">${f.q}</div>
     <div style="align-self:flex-start;background:var(--coral-light);border:1px solid var(--coral-light);padding:9px 13px;border-radius:14px 14px 14px 2px;font-size:13px;max-width:85%;line-height:1.5;">${f.a}</div>`;
   document.getElementById(anchor).scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function filterFaq(query) {
+  const q = query.toLowerCase().trim();
+  const qlist = document.getElementById('faq-questions');
+  const filtered = q ? FAQ.filter(f => f.q.toLowerCase().includes(q) || f.a.toLowerCase().includes(q)) : FAQ;
+  if (filtered.length === 0) {
+    qlist.innerHTML = `<div style="font-size:13px;color:var(--text-3);text-align:center;padding:8px;">Aucun résultat.</div>`;
+  } else {
+    qlist.innerHTML = filtered.map(f => {
+      const i = FAQ.indexOf(f);
+      return `<button onclick="faqAnswer(${i})" style="
+        text-align:left;padding:10px 12px;border-radius:var(--radius-sm);
+        border:1.5px solid var(--border);background:var(--bg);color:var(--text);
+        font-family:'Nunito',sans-serif;font-size:13px;cursor:pointer;width:100%;">${f.q}</button>`;
+    }).join('');
+  }
+  qlist.scrollTop = 0;
 }
 
 function closeFaq(e) {
