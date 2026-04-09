@@ -829,6 +829,20 @@
   </div>
 </div>
 
+<!-- UPDATE BANNER -->
+<div id="update-banner" style="
+  display:none;position:fixed;top:0;left:0;right:0;z-index:999;
+  background:var(--teal);color:white;
+  padding:10px 16px;display:none;
+  flex-direction:row;align-items:center;justify-content:space-between;
+  font-size:13px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.2);">
+  <span>🆕 Une mise à jour est disponible</span>
+  <button onclick="window.location.reload()" style="
+    background:white;color:var(--teal);border:none;border-radius:99px;
+    padding:5px 14px;font-family:'Nunito',sans-serif;font-size:13px;
+    font-weight:700;cursor:pointer;">Actualiser</button>
+</div>
+
 <!-- MOTIVATE SHEET -->
 <div id="motivate-sheet" style="display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,0.35);" onclick="closeMotivate(event)">
   <div onclick="event.stopPropagation()" style="
@@ -943,19 +957,27 @@ if (!CONFIGURED) {
 
 // Service Worker
 if ('serviceWorker' in navigator) {
-  let swReloading = false;
+  function showUpdateBanner() {
+    const b = document.getElementById('update-banner');
+    if (b) b.style.display = 'flex';
+  }
 
   navigator.serviceWorker.register('/sw.js').then(reg => {
-    // Vérifie les mises à jour quand l'app reprend le focus (iOS PWA ne refait pas de navigation)
+    // Vérifie les mises à jour quand l'app reprend le focus
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') reg.update();
     });
+    // Nouveau SW en attente dès l'enregistrement
+    if (reg.waiting) showUpdateBanner();
+    reg.addEventListener('updatefound', () => {
+      const newSW = reg.installing;
+      newSW.addEventListener('statechange', () => {
+        if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+          showUpdateBanner();
+        }
+      });
+    });
   }).catch(err => console.warn('SW:', err));
-
-  // Recharge quand un nouveau SW prend le contrôle
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!swReloading) { swReloading = true; window.location.reload(); }
-  });
 }
 
 // Init Firebase
@@ -1585,7 +1607,7 @@ function toggleProfilMenu(e) {
       ${_sheetMenuItem('<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><path fill="var(--teal)" d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1a7.37 7.37 0 0 0-1.69-.98l-.38-2.65A.49.49 0 0 0 14 2h-4a.49.49 0 0 0-.49.42l-.38 2.65a7.37 7.37 0 0 0-1.69.98l-2.49-1a.5.5 0 0 0-.61.22l-2 3.46a.49.49 0 0 0 .12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98L2.46 14.63a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .61.22l2.49-1c.52.38 1.08.7 1.69.98l.38 2.65c.07.24.28.42.49.42h4c.24 0 .44-.18.49-.42l.38-2.65a7.37 7.37 0 0 0 1.69-.98l2.49 1a.5.5 0 0 0 .61-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.65zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>', 'Paramètres', 'openParametresPanel()')}
     </div>
     <div style="margin:0 12px;border-top:1px solid var(--border);padding-top:8px;">
-      ${_sheetMenuItem('💬', 'Aide & Support', "closeProfilSheet();openFaq()")}
+      ${_sheetMenuItem('<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><path d="M9 3C5.686 3 3 5.686 3 9c0 1.614.627 3.078 1.647 4.168L3.5 15.5l2.668-.996A5.96 5.96 0 0 0 9 15c3.314 0 6-2.686 6-6s-2.686-6-6-6z" fill="none" stroke="var(--teal)" stroke-width="1.8" stroke-linejoin="round"/><circle cx="7" cy="9" r=".8" fill="var(--teal)"/><circle cx="9" cy="9" r=".8" fill="var(--teal)"/><circle cx="11" cy="9" r=".8" fill="var(--teal)"/><path d="M15 8.5c2.76.44 5 2.7 5 5.5 0 1.02-.28 1.98-.77 2.8L20.5 19.5l-2.33-.78A5.96 5.96 0 0 1 15 19c-2.76 0-5.1-1.86-5.78-4.36" fill="none" stroke="var(--teal)" stroke-width="1.8" stroke-linejoin="round"/></svg>', 'Aide & Support', "closeProfilSheet();openFaq()")}
       ${_sheetMenuItem('<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><rect x="2" y="2" width="20" height="20" rx="4" fill="none" stroke="var(--coral)" stroke-width="1.8"/><path fill="var(--coral)" d="M10.09 15.59L11.5 17l5-5-5-5-1.41 1.41L12.67 11H3v2h9.67l-2.58 2.59z"/><path fill="var(--coral)" d="M19 3H5a2 2 0 0 0-2 2v4h2V5h14v14H5v-4H3v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2z"/></svg>', 'Se déconnecter', 'doLogout()', 'var(--red)')}
     </div>`;
 
