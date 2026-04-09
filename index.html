@@ -2745,13 +2745,16 @@ async function renderProfil() {
       <div id="change-pwd-form">
         <input id="pwd-current" type="password" placeholder="Mot de passe actuel"
           style="width:100%;box-sizing:border-box;padding:8px 10px;border-radius:var(--radius-sm);
-          border:1px solid var(--border);font-family:'Nunito',sans-serif;font-size:13px;margin-bottom:6px;"/>
+          border:1px solid var(--border);font-family:'Nunito',sans-serif;font-size:13px;margin-bottom:6px;
+          background:var(--bg);color:var(--text);"/>
         <input id="pwd-new" type="password" placeholder="Nouveau mot de passe (8 car. min.)"
           style="width:100%;box-sizing:border-box;padding:8px 10px;border-radius:var(--radius-sm);
-          border:1px solid var(--border);font-family:'Nunito',sans-serif;font-size:13px;margin-bottom:6px;"/>
+          border:1px solid var(--border);font-family:'Nunito',sans-serif;font-size:13px;margin-bottom:6px;
+          background:var(--bg);color:var(--text);"/>
         <input id="pwd-confirm" type="password" placeholder="Confirmer le nouveau mot de passe"
           style="width:100%;box-sizing:border-box;padding:8px 10px;border-radius:var(--radius-sm);
-          border:1px solid var(--border);font-family:'Nunito',sans-serif;font-size:13px;margin-bottom:8px;"/>
+          border:1px solid var(--border);font-family:'Nunito',sans-serif;font-size:13px;margin-bottom:8px;
+          background:var(--bg);color:var(--text);"/>
         <button class="btn btn-primary" style="width:100%;" onclick="changePassword()">Modifier le mot de passe</button>
         <div id="pwd-error" style="font-size:12px;color:var(--red);text-align:center;margin-top:6px;"></div>
         <div id="pwd-ok" style="font-size:12px;color:var(--green);text-align:center;margin-top:6px;"></div>
