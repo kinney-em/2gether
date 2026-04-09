@@ -1600,6 +1600,7 @@ function closeDropdown() { closeProfilSheet(); }
 
 // ---- FAQ ----
 const FAQ = [
+  { q: "Comment utiliser cette appli ? Quel est le principe ?", a: "DuoMotiv te permet de suivre tes habitudes alimentaires et sportives à deux, sans jugement. Chaque jour, tu enregistres tes repas à ta façon : sain, correct, ou malbouffe — c'est toi qui décides ce qui entre dans quelle catégorie, sans comptage de calories ni obligation de tout saisir. Seuls les repas sains comptent dans tes objectifs, les autres sont là si tu veux les noter, pas pour te culpabiliser. Pour le sport, chaque activité compte — qu'il s'agisse de yoga, de hula hoop, de danse ou de musculation — sans notion de durée minimale. Tu peux personnaliser ta liste d'activités à l'infini. Enfin, tu peux consulter les données de ton partenaire, vous comparer dans le récap, et vous envoyer des messages d'encouragement. L'objectif : vous motiver mutuellement, avec bienveillance." },
   { q: "Comment jumeler avec un partenaire ?", a: "Ouvre Profil → Partenaires. Donne ton code à ton partenaire ou entre le sien. Une fois jumelés, vous pouvez consulter vos données mutuellement." },
   { q: "Comment réinitialiser un repas ?", a: "Fais un appui long sur la case du repas — elle repasse à vide." },
   { q: "Comment changer mon avatar ?", a: "Les avatars sont des emojis. Ouvre Profil → Profil et choisis ton emoji dans la liste." },
@@ -1619,7 +1620,7 @@ const FAQ = [
 function openFaq() {
   const chat = document.getElementById('faq-chat');
   const qlist = document.getElementById('faq-questions');
-  chat.innerHTML = '<div style="font-size:14px;color:var(--text-2);text-align:center;padding:8px 0;">Bonjour 👋 Sur quoi puis-je t\'aider ?</div>';
+  chat.innerHTML = '<div style="font-size:14px;color:var(--text-2);text-align:center;padding:8px 0;">Bonjour 👋🏾 Sur quoi puis-je t\'aider ?</div>';
   qlist.innerHTML = FAQ.map((f, i) =>
     `<button onclick="faqAnswer(${i})" style="
       text-align:left;padding:10px 12px;border-radius:var(--radius-sm);
@@ -1627,15 +1628,17 @@ function openFaq() {
       font-family:'Nunito',sans-serif;font-size:13px;cursor:pointer;width:100%;">${f.q}</button>`
   ).join('');
   document.getElementById('faq-sheet').style.display = 'block';
+  document.getElementById('faq-questions').scrollTop = 0;
 }
 
 function faqAnswer(i) {
   const f = FAQ[i];
   const chat = document.getElementById('faq-chat');
+  const anchor = `faq-q-${Date.now()}`;
   chat.innerHTML += `
-    <div style="align-self:flex-end;background:var(--teal);color:white;padding:9px 13px;border-radius:14px 14px 2px 14px;font-size:13px;max-width:85%;">${f.q}</div>
-    <div style="align-self:flex-start;background:var(--bg);border:1px solid var(--border);padding:9px 13px;border-radius:14px 14px 14px 2px;font-size:13px;max-width:85%;line-height:1.5;">${f.a}</div>`;
-  chat.scrollTop = chat.scrollHeight;
+    <div id="${anchor}" style="align-self:flex-end;background:var(--teal);color:white;padding:9px 13px;border-radius:14px 14px 2px 14px;font-size:13px;max-width:85%;">${f.q}</div>
+    <div style="align-self:flex-start;background:var(--coral-light);border:1px solid var(--coral-light);padding:9px 13px;border-radius:14px 14px 14px 2px;font-size:13px;max-width:85%;line-height:1.5;">${f.a}</div>`;
+  document.getElementById(anchor).scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function closeFaq(e) {
