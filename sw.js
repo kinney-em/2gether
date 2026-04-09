@@ -1,10 +1,12 @@
-const CACHE = 'duomotiv-v6';
+const CACHE = 'duomotiv-v13';
 const STATIC = ['/LOGO_habits.png', '/manifest.json'];
 
 self.addEventListener('install', e => {
-  e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(STATIC)).then(() => self.skipWaiting())
-  );
+  e.waitUntil(caches.open(CACHE).then(c => c.addAll(STATIC)));
+});
+
+self.addEventListener('message', e => {
+  if (e.data === 'skipWaiting') self.skipWaiting();
 });
 
 self.addEventListener('activate', e => {

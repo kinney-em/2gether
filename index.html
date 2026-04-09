@@ -829,13 +829,13 @@
 
 <!-- UPDATE BANNER -->
 <div id="update-banner" style="
-  display:none;position:fixed;top:0;left:0;right:0;z-index:999;
+  display:none;position:fixed;top:0;left:0;right:0;z-index:9999;
   background:var(--teal);color:white;
-  padding:10px 16px;display:none;
+  padding:10px 16px;
   flex-direction:row;align-items:center;justify-content:space-between;
   font-size:13px;font-weight:600;box-shadow:0 2px 8px rgba(0,0,0,0.2);">
   <span>🆕 Une mise à jour est disponible</span>
-  <button onclick="window.location.reload()" style="
+  <button onclick="applyUpdate()" style="
     background:white;color:var(--teal);border:none;border-radius:99px;
     padding:5px 14px;font-family:'Nunito',sans-serif;font-size:13px;
     font-weight:700;cursor:pointer;">Actualiser</button>
@@ -960,11 +960,33 @@ if ('serviceWorker' in navigator) {
     if (b) b.style.display = 'flex';
   }
 
+  function applyUpdate() {
+    navigator.serviceWorker.getRegistration().then(reg => {
+      if (reg?.waiting) {
+        reg.waiting.postMessage('skipWaiting');
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          window.location.reload();
+        }, { once: true });
+      } else {
+        window.location.reload();
+      }
+    });
+  }
+
   navigator.serviceWorker.register('/sw.js').then(reg => {
     // Vérifie les mises à jour quand l'app reprend le focus
     document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible') reg.update();
+      if (document.visibilityState === 'visible') {
+        reg.update();
+        if (reg.waiting) showUpdateBanner();
+      }
     });
+    window.addEventListener('pageshow', (e) => {
+      if (e.persisted && reg.waiting) showUpdateBanner();
+    });
+    setInterval(() => {
+      if (reg.waiting) showUpdateBanner();
+    }, 20000);
     // Nouveau SW en attente dès l'enregistrement
     if (reg.waiting) showUpdateBanner();
     reg.addEventListener('updatefound', () => {
@@ -2809,8 +2831,8 @@ function renderPartenaires() {
           <div style="font-size:28px;">${pd.avatar || '🌱'}</div>
           <div>
             <div style="font-weight:700;font-size:15px;">${pd.name || 'Partenaire'}</div>
-            ${pd.email ? `<div style="font-size:11px;color:var(--text-3);">${pd.email}</div>` : ''}
-            ${pairedDate ? `<div style="font-size:11px;color:var(--text-3);">Jumelé le ${pairedDate}</div>` : ''}
+            ${pairedDate ? `<div style="font-size:13px;color:var(--text-2);">Jumelé le ${pairedDate}</div>` : ''}
+            ${pd.email ? `<div style="font-size:12px;color:var(--text-3);">${pd.email}</div>` : ''}
           </div>
         </div>
         <button onclick="confirmUnpair('${uid}')" class="btn" style="width:100%;margin-top:8px;font-size:12px;
@@ -3050,7 +3072,7 @@ function renderAll() {
 
 
 <div id="edit-profil-overlay" onclick="closeEditProfil(event)" style="
-  display:none; position:fixed; inset:0; z-index:300;
+  display:none; position:fixed; inset:0; z-index:700;
   background:rgba(0,0,0,0.4);
   align-items:center; justify-content:center;">
   <div onclick="event.stopPropagation()" style="
