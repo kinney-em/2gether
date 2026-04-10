@@ -1232,6 +1232,7 @@ async function loadUserProfile() {
   myData.name = d.name || '';
   myData.email = auth.currentUser?.email || '';
   myData.pairCode = d.pairCode || '';
+  db.collection('users').doc(currentUid).update({ lastSeen: new Date() });
   const earned = d.badges || [];
   BADGES.forEach(b => { if (earned.includes(b.id)) b.earnedMe = true; });
 
@@ -1284,6 +1285,7 @@ async function loadPartnerProfile(uid) {
   partnersData[uid].activities = d.activities || [...DEFAULT_ACTS];
   partnersData[uid].goals = d.goals || { repas: 14, sport: 3 };
   partnersData[uid].pairedAt = d.pairedAt || null;
+  partnersData[uid].lastSeen = d.lastSeen || null;
   const earned = d.badges || [];
   BADGES.forEach(b => { if (earned.includes(b.id)) { if(!b.earnedPartners) b.earnedPartners={}; b.earnedPartners[uid]=true; } });
 }
@@ -1446,6 +1448,7 @@ function subscribeToPartner(uid) {
     partnersData[uid].activities = d.activities || [...DEFAULT_ACTS];
     partnersData[uid].goals = d.goals || { repas: 14, sport: 3 };
     partnersData[uid].pairedAt = d.pairedAt || null;
+    partnersData[uid].lastSeen = d.lastSeen || null;
     updatePartnerPill();
     if (viewingPartner && activePartnerUid === uid) renderAll();
   });
@@ -2870,16 +2873,20 @@ function renderPartenaires() {
   } else {
     const parts = partnerUids.map(uid => {
       const pd = partnersData[uid] || {};
-      const pairedDate = pd.pairedAt?.toDate
-        ? pd.pairedAt.toDate().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
-        : pd.pairedAt ? new Date(pd.pairedAt).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
-        : null;
+      const fmtDate = (raw) => {
+        if (!raw) return null;
+        const d = raw.toDate ? raw.toDate() : new Date(raw);
+        return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+      };
+      const pairedDate = fmtDate(pd.pairedAt);
+      const lastSeenDate = fmtDate(pd.lastSeen);
       return `<div style="border-bottom:1px solid var(--border);padding-bottom:12px;margin-bottom:12px;">
         <div class="partner-linked">
           <div style="font-size:28px;">${pd.avatar || '🌱'}</div>
           <div>
             <div style="font-weight:700;font-size:15px;">${pd.name || 'Partenaire'}</div>
-            ${pairedDate ? `<div style="font-size:13px;color:var(--text-2);">Jumelé le ${pairedDate}</div>` : ''}
+            ${pairedDate ? `<div style="font-size:13px;color:var(--teal);">Jumelé le ${pairedDate}</div>` : ''}
+            ${lastSeenDate ? `<div style="font-size:12px;color:var(--text-3);">Dernière connexion le ${lastSeenDate}</div>` : ''}
             ${pd.email ? `<div style="font-size:12px;color:var(--text-3);">${pd.email}</div>` : ''}
           </div>
         </div>
