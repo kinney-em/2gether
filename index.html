@@ -827,6 +827,17 @@
   </div>
 </div>
 
+<!-- CONFIRM MODAL -->
+<div id="confirm-modal" style="display:none;position:fixed;inset:0;z-index:800;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;">
+  <div style="background:var(--surface);border-radius:var(--radius);padding:24px 20px;margin:16px;max-width:320px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.18);">
+    <div id="confirm-modal-msg" style="font-size:14px;color:var(--text);line-height:1.5;margin-bottom:20px;"></div>
+    <div style="display:flex;gap:10px;">
+      <button onclick="confirmModalResolve(false)" class="btn" style="flex:1;font-size:13px;">Annuler</button>
+      <button onclick="confirmModalResolve(true)" class="btn" style="flex:1;font-size:13px;background:var(--red-light);color:var(--red-dark);border-color:var(--red);">Confirmer</button>
+    </div>
+  </div>
+</div>
+
 <!-- UPDATE BANNER -->
 <div id="update-banner" style="
   display:none;position:fixed;top:0;left:0;right:0;z-index:9999;
@@ -2974,11 +2985,22 @@ async function doPairFromProfil() {
   } catch(e) { errEl.textContent = e.message; }
 }
 
-function confirmUnpair(uid) {
+let confirmModalResolve = null;
+
+function showConfirm(msg) {
+  return new Promise(resolve => {
+    document.getElementById('confirm-modal-msg').textContent = msg;
+    document.getElementById('confirm-modal').style.display = 'flex';
+    confirmModalResolve = (result) => {
+      document.getElementById('confirm-modal').style.display = 'none';
+      resolve(result);
+    };
+  });
+}
+
+async function confirmUnpair(uid) {
   const name = partnersData[uid]?.name || 'ce partenaire';
-  const confirmed = window.confirm(
-    `Voulez-vous vraiment dissocier ${name} ?\n\nVos données restent sauvegardées, mais vous ne verrez plus les siennes et vice-versa.`
-  );
+  const confirmed = await showConfirm(`Voulez-vous vraiment dissocier ${name} ? Vos données restent sauvegardées, mais vous ne verrez plus les siennes et vice-versa.`);
   if (confirmed) doUnpair(uid);
 }
 
