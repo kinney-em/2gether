@@ -1,0 +1,25 @@
+{
+  "name": "DuoMotiv",
+  "short_name": "DuoMotiv",
+  "description": "Suivez vos habitudes alimentaires et sportives à deux",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F7F9F8",
+  "theme_color": "#1D9E75",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "LOGO_habits.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "LOGO_habits.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
