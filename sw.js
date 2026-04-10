@@ -1,4 +1,4 @@
-const CACHE = 'duomotiv-v16';
+const CACHE = 'duomotiv-v17';
 const STATIC = ['/LOGO_habits.png', '/manifest.json'];
 
 self.addEventListener('install', e => {
