@@ -1052,6 +1052,48 @@ let statsChart = null;
 let myData = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 }, disabledActs: [] };
 let unsubscribeMe = null;
 let partnerUids = [];
+let partnerSort = localStorage.getItem('partnerSort') || 'date-desc';
+
+function getSortedPartnerUids() {
+  return [...partnerUids].sort((a, b) => {
+    const pa = partnersData[a] || {}, pb = partnersData[b] || {};
+    switch (partnerSort) {
+      case 'alpha-asc':  return (pa.name || '').localeCompare(pb.name || '', 'fr');
+      case 'alpha-desc': return (pb.name || '').localeCompare(pa.name || '', 'fr');
+      case 'seen-desc': {
+        const ta = pa.lastSeen?.toDate ? pa.lastSeen.toDate() : pa.lastSeen ? new Date(pa.lastSeen) : new Date(0);
+        const tb = pb.lastSeen?.toDate ? pb.lastSeen.toDate() : pb.lastSeen ? new Date(pb.lastSeen) : new Date(0);
+        return tb - ta;
+      }
+      case 'seen-asc': {
+        const ta = pa.lastSeen?.toDate ? pa.lastSeen.toDate() : pa.lastSeen ? new Date(pa.lastSeen) : new Date(0);
+        const tb = pb.lastSeen?.toDate ? pb.lastSeen.toDate() : pb.lastSeen ? new Date(pb.lastSeen) : new Date(0);
+        return ta - tb;
+      }
+      case 'date-asc': {
+        const ta = pa.pairedAt?.toDate ? pa.pairedAt.toDate() : pa.pairedAt ? new Date(pa.pairedAt) : new Date(0);
+        const tb = pb.pairedAt?.toDate ? pb.pairedAt.toDate() : pb.pairedAt ? new Date(pb.pairedAt) : new Date(0);
+        return ta - tb;
+      }
+      case 'initiated': {
+        const ai = (myData.initiatedPairings || []).includes(a) ? 0 : 1;
+        const bi = (myData.initiatedPairings || []).includes(b) ? 0 : 1;
+        return ai - bi;
+      }
+      default: { // date-desc
+        const ta = pa.pairedAt?.toDate ? pa.pairedAt.toDate() : pa.pairedAt ? new Date(pa.pairedAt) : new Date(0);
+        const tb = pb.pairedAt?.toDate ? pb.pairedAt.toDate() : pb.pairedAt ? new Date(pb.pairedAt) : new Date(0);
+        return tb - ta;
+      }
+    }
+  });
+}
+
+function setPartnerSort(val) {
+  partnerSort = val;
+  localStorage.setItem('partnerSort', val);
+  renderPartenaires();
+}
 let partnersData = {};
 let activePartnerUid = null;
 let lastPartnerUid = localStorage.getItem('lastPartnerUid') || null;
@@ -1335,7 +1377,7 @@ function openPartnerSheet(e) {
   const sheet = document.getElementById('partner-sheet');
   if (sheet.style.display === 'flex') { sheet.style.display = 'none'; return; }
 
-  document.getElementById('partner-sheet-content').innerHTML = partnerUids.map(uid => {
+  document.getElementById('partner-sheet-content').innerHTML = getSortedPartnerUids().map(uid => {
     const p = partnersData[uid] || {};
     const isActive = activePartnerUid === uid && viewingPartner;
     return `<div onclick="selectPartner('${uid}')" style="
@@ -2872,7 +2914,19 @@ function renderPartenaires() {
   if (partnerUids.length === 0) {
     html = `<p style="font-size:13px;color:var(--text-2);margin-bottom:4px;">Aucun partenaire lié pour le moment.</p>`;
   } else {
-    const parts = partnerUids.map(uid => {
+    html += `<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+      <span style="font-size:12px;color:var(--text-3);white-space:nowrap;">Trier par</span>
+      <select onchange="setPartnerSort(this.value)" style="flex:1;font-size:12px;padding:4px 6px;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--surface);color:var(--text);font-family:'Nunito',sans-serif;">
+        <option value="date-desc" ${partnerSort==='date-desc'?'selected':''}>Date d'ajout (récent)</option>
+        <option value="date-asc"  ${partnerSort==='date-asc' ?'selected':''}>Date d'ajout (ancien)</option>
+        <option value="alpha-asc" ${partnerSort==='alpha-asc'?'selected':''}>Alphabétique A→Z</option>
+        <option value="alpha-desc"${partnerSort==='alpha-desc'?'selected':''}>Alphabétique Z→A</option>
+        <option value="seen-desc" ${partnerSort==='seen-desc'?'selected':''}>Dernière connexion (récente)</option>
+        <option value="seen-asc"  ${partnerSort==='seen-asc' ?'selected':''}>Dernière connexion (ancienne)</option>
+        <option value="initiated"  ${partnerSort==='initiated' ?'selected':''}>Mes ajouts en premier</option>
+      </select>
+    </div>`;
+    const parts = getSortedPartnerUids().map(uid => {
       const pd = partnersData[uid] || {};
       const fmtDate = (raw) => {
         if (!raw) return null;
@@ -2892,13 +2946,13 @@ function renderPartenaires() {
             ${pd.email ? `<div style="font-size:12px;color:var(--text-3);">${pd.email}</div>` : ''}
           </div>
         </div>
-        <button onclick="confirmUnpair('${uid}')" class="btn" style="width:100%;margin-top:8px;font-size:12px;
+        <button onclick="confirmUnpair('${uid}')" class="btn" style="margin-top:6px;font-size:11px;padding:5px 10px;
           background:var(--red-light);color:var(--red-dark);border:1px solid var(--red);">
-          🔗 Dissocier ${pd.name || 'ce partenaire'}
+          🔗 Dissocier
         </button>
       </div>`;
     });
-    html = parts.join('');
+    html += parts.join('');
   }
 
   if (partnerUids.length < 5) {
