@@ -1455,10 +1455,15 @@ function subscribeToData() {
       const d = snap.data();
       if (!d?.outbox) return;
       const ob = d.outbox;
-      if (ob.to === currentUid && ob.ts && ob.ts !== (window._lastMotivatTs || 0)) {
-        window._lastMotivatTs = ob.ts;
+      if (ob.to === currentUid && ob.ts && ob.ts !== +(localStorage.getItem('lastMotivatTs_' + uid) || 0)) {
+        localStorage.setItem('lastMotivatTs_' + uid, ob.ts);
         const senderName = partnersData[uid]?.name || 'Ton partenaire';
-        showMotivateBanner(senderName, ob.msg || '');
+        const sheetOpen = document.getElementById('motivate-sheet').style.display === 'flex';
+        if (sheetOpen && activePartnerUid === uid) {
+          loadMotivateHistory(uid);
+        } else {
+          showMotivateBanner(senderName, ob.msg || '');
+        }
       }
     });
   }
@@ -1875,13 +1880,13 @@ async function sendMotivate() {
     document.getElementById('motivate-error').textContent = '';
     await loadMotivateHistory(activePartnerUid);
   } catch(err) {
-    document.getElementById('motivate-error').textContent = 'Erreur lors de l\'envoi.';
+    document.getElementById('motivate-error').textContent = 'Erreur : ' + (err.code || err.message || err);
   }
 }
 
 function showMotivateBanner(from, msg) {
   const banner = document.getElementById('motivate-banner');
-  document.getElementById('motivate-banner-from').textContent = `💌 ${from}`;
+  document.getElementById('motivate-banner-from').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:middle;margin-right:5px;flex-shrink:0;"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z" stroke="var(--teal)"/><path d="M7.5 9.5c0 .687.265 1.383.697 1.844l3.009 3.264a1.14 1.14 0 0 0 .407.314 1 1 0 0 0 .783-.004 1.14 1.14 0 0 0 .398-.31l3.008-3.264A2.77 2.77 0 0 0 16.5 9.5 2.5 2.5 0 0 0 12 8a2.5 2.5 0 0 0-4.5 1.5" stroke="var(--coral)" fill="var(--coral-light, #f9d0c8)"/></svg>${from}`;
   document.getElementById('motivate-banner-msg').textContent = msg;
   banner.style.display = 'block';
   clearTimeout(banner._timer);
