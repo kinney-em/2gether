@@ -881,12 +881,12 @@
     <div id="motivate-partner-name" style="font-size:13px;color:var(--text-2);margin-bottom:8px;flex-shrink:0;"></div>
     <div id="motivate-history" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;min-height:80px;max-height:260px;padding:4px 0;"></div>
     <div style="height:1px;background:var(--border);margin:12px 0;flex-shrink:0;"></div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;flex-shrink:0;">
-      <button onclick="setMotivatePreset('🫡 Yo !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;">🫡 Yo !</button>
-      <button onclick="setMotivatePreset('🥗 Super effort cette semaine !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;">🥗 Super effort cette semaine !</button>
-      <button onclick="setMotivatePreset('🔥 Tu assures !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;">🔥 Tu assures !</button>
-      <button onclick="setMotivatePreset('😉 Bravo, continue comme ça !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;">😉 Bravo, continue comme ça !</button>
-      <button onclick="setMotivatePreset('💜 Je pense à toi')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;">💜 Je pense à toi</button>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-shrink:0;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none;">
+      <button onclick="setMotivatePreset('🫡 Yo !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap;flex-shrink:0;">🫡 Yo !</button>
+      <button onclick="setMotivatePreset('🥗 Super effort cette semaine !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap;flex-shrink:0;">🥗 Super effort cette semaine !</button>
+      <button onclick="setMotivatePreset('🔥 Tu assures !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap;flex-shrink:0;">🔥 Tu assures !</button>
+      <button onclick="setMotivatePreset('😉 Bravo, continue comme ça !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap;flex-shrink:0;">😉 Bravo, continue comme ça !</button>
+      <button onclick="setMotivatePreset('💜 Je pense à toi')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap;flex-shrink:0;">💜 Je pense à toi</button>
     </div>
     <textarea id="motivate-text" rows="3" placeholder="Écris ton message d'encouragement..." style="
       width:100%;box-sizing:border-box;font-family:'Nunito',sans-serif;font-size:14px;
@@ -1847,10 +1847,24 @@ async function loadMotivateHistory(partnerUid) {
       .get();
     if (snap.empty) { histEl.innerHTML = '<span style="font-size:12px;color:var(--text-3);text-align:center;display:block;">Aucun message pour l\'instant.</span>'; return; }
     const msgs = snap.docs.map(d => d.data()).reverse();
+    const today = new Date(); today.setHours(0,0,0,0);
+    const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+    const dayLabel = (ts) => {
+      const d = new Date(ts); d.setHours(0,0,0,0);
+      if (d.getTime() === today.getTime()) return 'Aujourd\'hui';
+      if (d.getTime() === yesterday.getTime()) return 'Hier';
+      return new Date(ts).toLocaleDateString('fr-FR', { day:'numeric', month:'long' });
+    };
+    let lastDay = null;
     histEl.innerHTML = msgs.map(m => {
       const sent = m.direction === 'sent';
-      const time = m.ts ? new Date(m.ts).toLocaleDateString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
-      return `<div style="display:flex;flex-direction:column;align-items:${sent ? 'flex-end' : 'flex-start'};">
+      const d = new Date(m.ts || 0); d.setHours(0,0,0,0);
+      const currentDay = d.getTime();
+      const showHeader = currentDay !== lastDay;
+      lastDay = currentDay;
+      const time = m.ts ? new Date(m.ts).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' }) : '';
+      return `${showHeader ? `<div style="text-align:center;font-size:11px;color:var(--text-3);margin:6px 0;">${dayLabel(m.ts)}</div>` : ''}
+      <div style="display:flex;flex-direction:column;align-items:${sent ? 'flex-end' : 'flex-start'};">
         <div style="max-width:78%;padding:8px 12px;border-radius:${sent ? '14px 14px 4px 14px' : '14px 14px 14px 4px'};
           background:${sent ? 'var(--teal)' : 'var(--coral-light, #f9d0c8)'};
           color:${sent ? 'white' : 'var(--text)'};font-size:13px;line-height:1.4;">
@@ -1859,7 +1873,7 @@ async function loadMotivateHistory(partnerUid) {
         <span style="font-size:10px;color:var(--text-3);margin-top:2px;">${time}</span>
       </div>`;
     }).join('');
-    histEl.scrollTop = histEl.scrollHeight;
+    requestAnimationFrame(() => { histEl.scrollTop = histEl.scrollHeight; });
   } catch(err) {
     histEl.innerHTML = '<span style="font-size:12px;color:var(--text-3);text-align:center;display:block;">Impossible de charger l\'historique.</span>';
   }
