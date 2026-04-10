@@ -1232,6 +1232,7 @@ async function loadUserProfile() {
   myData.name = d.name || '';
   myData.email = auth.currentUser?.email || '';
   myData.pairCode = d.pairCode || '';
+  myData.initiatedPairings = d.initiatedPairings || [];
   db.collection('users').doc(currentUid).update({ lastSeen: new Date() });
   const earned = d.badges || [];
   BADGES.forEach(b => { if (earned.includes(b.id)) b.earnedMe = true; });
@@ -2886,6 +2887,7 @@ function renderPartenaires() {
           <div>
             <div style="font-weight:700;font-size:15px;">${pd.name || 'Partenaire'}</div>
             ${pairedDate ? `<div style="font-size:13px;color:var(--teal);">Jumelé le ${pairedDate}</div>` : ''}
+            <div style="font-size:12px;color:var(--text-3);">${(myData.initiatedPairings || []).includes(uid) ? '(vous l\'avez ajouté.e)' : '(vous a ajouté.e)'}</div>
             ${lastSeenDate ? `<div style="font-size:12px;color:var(--text-3);">Dernière connexion le ${lastSeenDate}</div>` : ''}
             ${pd.email ? `<div style="font-size:12px;color:var(--text-3);">${pd.email}</div>` : ''}
           </div>
@@ -3027,7 +3029,7 @@ async function doPairFromProfil() {
     const theirData = partnerDoc.data();
     const theirUids = theirData.partnerIds || (theirData.partnerId ? [theirData.partnerId] : []);
     const newTheirUids = [...theirUids, currentUid];
-    await db.collection('users').doc(currentUid).update({ partnerIds: newMyUids, pairedAt: now });
+    await db.collection('users').doc(currentUid).update({ partnerIds: newMyUids, pairedAt: now, initiatedPairings: firebase.firestore.FieldValue.arrayUnion(partnerDoc.id) });
     await db.collection('users').doc(partnerDoc.id).update({ partnerIds: newTheirUids, pairedAt: now });
     partnerUids = newMyUids;
     partnersData[partnerDoc.id] = { meals: {}, sports: {}, activities: [...DEFAULT_ACTS], goals: { repas: 14, sport: 3 } };
