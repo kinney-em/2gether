@@ -679,6 +679,14 @@
         <span id="motivate-unread-dot" style="display:none;position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:var(--red);"></span>
       </button>
     </div>
+    <!-- Coach mark appui long partenaire -->
+    <div id="longpress-coach" style="display:none;margin:4px 0 -2px;">
+      <div style="width:12px;height:6px;background:var(--text);clip-path:polygon(0% 100%,50% 0%,100% 100%);margin-left:calc(75% - 6px);margin-bottom:-1px;"></div>
+      <div style="background:var(--text);color:var(--surface);font-size:12px;font-weight:600;border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <span>💡 Appuie longuement sur le bouton partenaire pour switcher entre tes proches</span>
+        <button onclick="dismissLongPressCoach()" style="background:none;border:none;cursor:pointer;color:var(--surface);font-size:12px;font-weight:800;white-space:nowrap;padding:0;">OK</button>
+      </div>
+    </div>
     <!-- Row 3: readonly banner -->
     <div id="readonly-banner" style="
       display:none; margin: 4px -12px -6px;
@@ -1304,6 +1312,12 @@ async function loadUserProfile() {
   updatePartnerPill();
   subscribeToData();
   updateUnreadIndicators();
+  if (partnerUids.length >= 2 && !localStorage.getItem('longPressCoachDone')) {
+    setTimeout(() => {
+      const coach = document.getElementById('longpress-coach');
+      if (coach) coach.style.display = 'block';
+    }, 1200);
+  }
 
 	///////verification de l'email
 	const currentUser = auth.currentUser;
@@ -1900,6 +1914,12 @@ function updateUnreadIndicators() {
   if (dot) dot.style.display = hasActive ? 'block' : 'none';
   const pillDot = document.getElementById('pill-unread-dot');
   if (pillDot) pillDot.style.display = hasAny ? 'block' : 'none';
+}
+
+function dismissLongPressCoach() {
+  localStorage.setItem('longPressCoachDone', 'true');
+  const coach = document.getElementById('longpress-coach');
+  if (coach) coach.style.display = 'none';
 }
 
 function setMotivatePreset(text) {
@@ -3201,6 +3221,12 @@ async function doPairFromProfil() {
     activePartnerUid = activePartnerUid || partnerDoc.id;
     updatePartnerPill();
     renderPartenaires();
+    if (partnerUids.length >= 2 && !localStorage.getItem('longPressCoachDone')) {
+      setTimeout(() => {
+        const coach = document.getElementById('longpress-coach');
+        if (coach) coach.style.display = 'block';
+      }, 800);
+    }
 
   } catch(e) { errEl.textContent = e.message; }
 }
