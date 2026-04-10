@@ -213,6 +213,7 @@
   .bottom-nav-item .nav-icon svg { width: 24px; height: 24px; }
   .bottom-nav-item .nav-label { font-size: 10px; font-weight: 700; letter-spacing: .02em; }
   .bottom-nav-item.active { color: var(--teal); }
+  .bottom-nav.partner-view .bottom-nav-item.active { color: var(--coral); }
 
   /* Legacy .tab still used by showTab JS — keep minimal */
   .tab { display: none; }
@@ -1573,6 +1574,7 @@ function setUser(who, uid) {
     banner.style.display = 'none';
     if (btnMotivate) btnMotivate.style.display = 'none';
     setWeekNavColor('var(--teal)');
+    document.getElementById('bottom-nav').classList.remove('partner-view');
   } else {
     viewingPartner = true;
     activePartnerUid = uid || lastPartnerUid || partnerUids[0] || null;
@@ -1581,6 +1583,7 @@ function setUser(who, uid) {
     document.getElementById('pill-partner').className = 'seg-btn partner active';
     if (btnMotivate) btnMotivate.style.display = activePartnerUid ? 'flex' : 'none';
     setWeekNavColor('var(--coral)');
+    document.getElementById('bottom-nav').classList.add('partner-view');
     updatePartnerPill();
     if (!activePartnerUid) {
       banner.innerHTML = `🔗 Vous n'avez pas encore ajouté de partenaire. Votre code de jumelage est disponible sur votre <span onclick="openProfilPanel()" style="text-decoration:underline;cursor:pointer;">profil utilisateur</span>.`;
