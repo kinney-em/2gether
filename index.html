@@ -1730,7 +1730,7 @@ const FAQ = [
   { q: "Comment switcher entre différents partenaires ?", a: "Fais un appui long sur le bouton partenaire en haut de l'écran pour voir la liste de tes partenaires et en sélectionner un autre." },
   { q: "Combien de partenaires puis-je ajouter ?", a: "Tu peux en ajouter jusqu'à 5. Mais si d'autres utilisateurs t'ajoutent de leur côté, ils apparaîtront aussi dans ta liste — ton total peut donc dépasser 5." },
   { q: "Pourquoi mon nombre de partenaires liés dépasse 5 ?", a: "Tu ne peux en ajouter que 5 toi-même, mais si quelqu'un d'autre t'ajoute de son côté, il apparaît dans ta liste sans que tu l'aies initié. C'est normal." },
-  { q: "Pourquoi je ne peux plus ajouter de partenaires ?", a: "Tu as atteint la limite de 5 partenaires ajoutés de ton côté. Dissocie un partenaire existant pour en ajouter un nouveau." },
+  { q: "Pourquoi je ne peux plus ajouter de partenaires ?", a: "Chaque utilisateur peut avoir au maximum 10 partenaires. Ce quota s'applique dans les deux sens : si tu as atteint 10 proches, ou si la personne que tu essaies d'ajouter en a déjà 10 de son côté. Dissocie un partenaire existant pour en ajouter un nouveau." },
   { q: "Comment réinitialiser un repas ?", a: "Fais un appui long sur la case du repas — elle repasse à vide." },
   { q: "Comment changer mon avatar ?", a: "Les avatars sont des emojis. Ouvre Profil → Profil et choisis ton emoji dans la liste." },
   { q: "Mes données sont-elles partagées avec mon partenaire ?", a: "Ton partenaire voit tes repas et activités, mais ne peut pas les modifier. Le jumelage partage uniquement les scores — tes données restent les tiennes." },
@@ -2955,9 +2955,9 @@ function renderPartenaires() {
     html += parts.join('');
   }
 
-  if (partnerUids.length < 5) {
+  if (partnerUids.length < 10) {
     html += `<p style="font-size:12px;color:var(--text-3);margin-bottom:8px;">
-      ${partnerUids.length > 0 ? `Ajouter un partenaire (${partnerUids.length}/5) :` : 'Entrez le code de jumelage de votre proche :'}
+      ${partnerUids.length > 0 ? `Ajouter un partenaire (${partnerUids.length}/10) :` : 'Entrez le code de jumelage de votre proche :'}
     </p>
     <div class="pair-input-row">
       <input id="pair-code-profil" type="text" placeholder="ex: 4729" maxlength="6"/>
@@ -3076,12 +3076,13 @@ async function doPairFromProfil() {
     if (snap.empty) { errEl.textContent = 'Code introuvable'; return; }
     const partnerDoc = snap.docs[0];
     if (partnerDoc.id === currentUid) { errEl.textContent = 'Ce code est le vôtre !'; return; }
-    if (partnerUids.length >= 5) { errEl.textContent = 'Maximum 5 partenaires atteint'; return; }
+    if (partnerUids.length >= 10) { errEl.textContent = 'Maximum 10 partenaires atteint'; return; }
     if (partnerUids.includes(partnerDoc.id)) { errEl.textContent = 'Ce partenaire est déjà lié !'; return; }
     const now = firebase.firestore.FieldValue.serverTimestamp();
     const newMyUids = [...partnerUids, partnerDoc.id];
     const theirData = partnerDoc.data();
     const theirUids = theirData.partnerIds || (theirData.partnerId ? [theirData.partnerId] : []);
+    if (theirUids.length >= 10) { errEl.textContent = `${theirData.name || 'Ce proche'} a déjà atteint son maximum de 10 partenaires`; return; }
     const newTheirUids = [...theirUids, currentUid];
     await db.collection('users').doc(currentUid).update({ partnerIds: newMyUids, pairedAt: now, initiatedPairings: firebase.firestore.FieldValue.arrayUnion(partnerDoc.id) });
     await db.collection('users').doc(partnerDoc.id).update({ partnerIds: newTheirUids, pairedAt: now });
