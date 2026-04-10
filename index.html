@@ -209,9 +209,11 @@
     -webkit-tap-highlight-color: transparent; gap: 3px;
     transition: color .15s;
   }
-  .bottom-nav-item .nav-icon { font-size: 22px; line-height: 1; }
+  .bottom-nav-item .nav-icon { font-size: 22px; line-height: 1; display:flex; align-items:center; justify-content:center; }
+  .bottom-nav-item .nav-icon svg { width: 24px; height: 24px; }
   .bottom-nav-item .nav-label { font-size: 10px; font-weight: 700; letter-spacing: .02em; }
   .bottom-nav-item.active { color: var(--teal); }
+  .bottom-nav.partner-view .bottom-nav-item.active { color: var(--coral); }
 
   /* Legacy .tab still used by showTab JS — keep minimal */
   .tab { display: none; }
@@ -663,7 +665,12 @@
           <span id="pill-partner-more" style="display:none;font-size:11px;letter-spacing:3px;opacity:0.9;line-height:1;font-weight:900;">···</span>
         </span>
       </button>
-      <button id="btn-motivate" onclick="openMotivate(event)" title="Envoyer un message" style="display:none;">💌</button>
+      <button id="btn-motivate" onclick="openMotivate(event)" title="Envoyer un message" style="display:none;background:none;border:none;cursor:pointer;padding:4px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/>
+          <path d="M7.5 9.5c0 .687.265 1.383.697 1.844l3.009 3.264a1.14 1.14 0 0 0 .407.314 1 1 0 0 0 .783-.004 1.14 1.14 0 0 0 .398-.31l3.008-3.264A2.77 2.77 0 0 0 16.5 9.5 2.5 2.5 0 0 0 12 8a2.5 2.5 0 0 0-4.5 1.5" stroke="var(--coral)" fill="var(--coral-light, #f9d0c8)"/>
+        </svg>
+      </button>
     </div>
     <!-- Row 3: readonly banner -->
     <div id="readonly-banner" style="
@@ -860,7 +867,13 @@
     padding:20px 16px calc(24px + env(safe-area-inset-bottom));
     max-width:500px;margin:0 auto;">
     <div style="width:36px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 16px;"></div>
-    <div style="font-size:15px;font-weight:700;margin-bottom:12px;">💌 Envoyer un message</div>
+    <div style="font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+        <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/>
+        <path d="M7.5 9.5c0 .687.265 1.383.697 1.844l3.009 3.264a1.14 1.14 0 0 0 .407.314 1 1 0 0 0 .783-.004 1.14 1.14 0 0 0 .398-.31l3.008-3.264A2.77 2.77 0 0 0 16.5 9.5 2.5 2.5 0 0 0 12 8a2.5 2.5 0 0 0-4.5 1.5" stroke="var(--coral)" fill="var(--coral-light, #f9d0c8)"/>
+      </svg>
+      Envoyer un message
+    </div>
     <div id="motivate-partner-name" style="font-size:13px;color:var(--text-2);margin-bottom:12px;"></div>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
       <button onclick="setMotivatePreset('🫡 Yo !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;">🫡 Yo !</button>
@@ -874,7 +887,7 @@
       border:1.5px solid var(--border);border-radius:var(--radius-sm);
       padding:10px 12px;background:var(--bg);color:var(--text);resize:none;"></textarea>
     <div id="motivate-error" style="font-size:12px;color:var(--red);margin-top:4px;min-height:16px;"></div>
-    <button class="btn btn-primary" onclick="sendMotivate()" style="width:100%;margin-top:10px;">Envoyer 💌</button>
+    <button class="btn btn-primary" onclick="sendMotivate()" style="width:100%;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:6px;">Envoyer <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0;"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z" stroke="white"/><path d="M7.5 9.5c0 .687.265 1.383.697 1.844l3.009 3.264a1.14 1.14 0 0 0 .407.314 1 1 0 0 0 .783-.004 1.14 1.14 0 0 0 .398-.31l3.008-3.264A2.77 2.77 0 0 0 16.5 9.5 2.5 2.5 0 0 0 12 8a2.5 2.5 0 0 0-4.5 1.5" stroke="var(--coral)" fill="var(--coral-light, #f9d0c8)"/></svg></button>
   </div>
 </div>
 
@@ -886,7 +899,16 @@
     display:flex;flex-direction:column;max-height:75vh;">
     <div style="padding:16px 16px 0;flex-shrink:0;">
       <div style="width:36px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 14px;"></div>
-      <div style="font-size:15px;font-weight:700;margin-bottom:12px;">💬 Aide & Support</div>
+      <div style="font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" style="flex-shrink:0;">
+          <path d="M9 3C5.686 3 3 5.686 3 9c0 1.614.627 3.078 1.647 4.168L3.5 15.5l2.668-.996A5.96 5.96 0 0 0 9 15c3.314 0 6-2.686 6-6s-2.686-6-6-6z" fill="none" stroke="var(--teal)" stroke-width="1.8" stroke-linejoin="round"/>
+          <circle cx="7" cy="9" r=".8" fill="var(--teal)"/>
+          <circle cx="9" cy="9" r=".8" fill="var(--teal)"/>
+          <circle cx="11" cy="9" r=".8" fill="var(--teal)"/>
+          <path d="M15 8.5c2.76.44 5 2.7 5 5.5 0 1.02-.28 1.98-.77 2.8L20.5 19.5l-2.33-.78A5.96 5.96 0 0 1 15 19c-2.76 0-5.1-1.86-5.78-4.36" fill="none" stroke="var(--teal)" stroke-width="1.8" stroke-linejoin="round"/>
+        </svg>
+        Aide & Support
+      </div>
       <input id="faq-search" type="search" placeholder="🔍 Rechercher une question..." oninput="filterFaq(this.value)"
         style="width:100%;box-sizing:border-box;font-family:'Nunito',sans-serif;font-size:14px;
         border:1.5px solid var(--border);border-radius:var(--radius-sm);
@@ -898,7 +920,7 @@
       <button onclick="window.open('https://docs.google.com/forms/d/e/1FAIpQLSfH8v_aA-CHdZXKYIVWSl1phJCxirpgj-vifxHgoarmwqbN1Q/viewform','_blank')"
         style="width:100%;padding:11px;border-radius:var(--radius-sm);border:1.5px solid var(--border);
         background:var(--bg);color:var(--text-2);font-family:'Nunito',sans-serif;font-size:14px;font-weight:600;cursor:pointer;">
-        ✉️ Contacter un humain
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;vertical-align:middle;margin-right:6px;"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>Contacter un humain
       </button>
     </div>
   </div>
@@ -1552,6 +1574,7 @@ function setUser(who, uid) {
     banner.style.display = 'none';
     if (btnMotivate) btnMotivate.style.display = 'none';
     setWeekNavColor('var(--teal)');
+    document.getElementById('bottom-nav').classList.remove('partner-view');
   } else {
     viewingPartner = true;
     activePartnerUid = uid || lastPartnerUid || partnerUids[0] || null;
@@ -1560,6 +1583,7 @@ function setUser(who, uid) {
     document.getElementById('pill-partner').className = 'seg-btn partner active';
     if (btnMotivate) btnMotivate.style.display = activePartnerUid ? 'flex' : 'none';
     setWeekNavColor('var(--coral)');
+    document.getElementById('bottom-nav').classList.add('partner-view');
     updatePartnerPill();
     if (!activePartnerUid) {
       banner.innerHTML = `🔗 Vous n'avez pas encore ajouté de partenaire. Votre code de jumelage est disponible sur votre <span onclick="openProfilPanel()" style="text-decoration:underline;cursor:pointer;">profil utilisateur</span>.`;
@@ -1624,7 +1648,7 @@ function toggleProfilMenu(e) {
     <div style="padding:0 12px 8px;">
       ${_sheetMenuItem('<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="var(--teal)" stroke-width="1.8"/><circle cx="12" cy="9.5" r="3.5" fill="var(--teal)"/><path d="M5.5 19.5c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6" fill="var(--teal)"/></svg>', 'Mon compte', 'openProfilPanel()')}
       ${_sheetMenuItem('<svg xmlns="http://www.w3.org/2000/svg" width="22" height="16" viewBox="0 0 22 16"><g transform="scale(0.667)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" fill="var(--teal)"/></g><g transform="translate(6,0) scale(0.667)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z" fill="var(--coral)"/></g></svg>', `Partenaires (${partnerUids.length}/5)`, 'openPartenairesPanel()')}
-      ${_sheetMenuItem('<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><path fill="var(--teal)" d="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65a.5.5 0 0 0 .12-.64l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1a7.37 7.37 0 0 0-1.69-.98l-.38-2.65A.49.49 0 0 0 14 2h-4a.49.49 0 0 0-.49.42l-.38 2.65a7.37 7.37 0 0 0-1.69.98l-2.49-1a.5.5 0 0 0-.61.22l-2 3.46a.49.49 0 0 0 .12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98L2.46 14.63a.5.5 0 0 0-.12.64l2 3.46a.5.5 0 0 0 .61.22l2.49-1c.52.38 1.08.7 1.69.98l.38 2.65c.07.24.28.42.49.42h4c.24 0 .44-.18.49-.42l.38-2.65a7.37 7.37 0 0 0 1.69-.98l2.49 1a.5.5 0 0 0 .61-.22l2-3.46a.5.5 0 0 0-.12-.64l-2.11-1.65zM12 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg>', 'Paramètres', 'openParametresPanel()')}
+      ${_sheetMenuItem('<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915"/><circle cx="12" cy="12" r="3"/></svg>', 'Paramètres', 'openParametresPanel()')}
     </div>
     <div style="margin:0 12px;border-top:1px solid var(--border);padding-top:8px;">
       ${_sheetMenuItem('<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"><path d="M9 3C5.686 3 3 5.686 3 9c0 1.614.627 3.078 1.647 4.168L3.5 15.5l2.668-.996A5.96 5.96 0 0 0 9 15c3.314 0 6-2.686 6-6s-2.686-6-6-6z" fill="none" stroke="var(--teal)" stroke-width="1.8" stroke-linejoin="round"/><circle cx="7" cy="9" r=".8" fill="var(--teal)"/><circle cx="9" cy="9" r=".8" fill="var(--teal)"/><circle cx="11" cy="9" r=".8" fill="var(--teal)"/><path d="M15 8.5c2.76.44 5 2.7 5 5.5 0 1.02-.28 1.98-.77 2.8L20.5 19.5l-2.33-.78A5.96 5.96 0 0 1 15 19c-2.76 0-5.1-1.86-5.78-4.36" fill="none" stroke="var(--teal)" stroke-width="1.8" stroke-linejoin="round"/></svg>', 'Aide & Support', "closeProfilSheet();openFaq()")}
@@ -2770,9 +2794,14 @@ function renderProfil() {
         <div style="font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.name || '—'}</div>
         <div style="font-size:11px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${d.email || '—'}</div>
       </div>
-      <button onclick="openEditProfil()" style="flex-shrink:0;padding:5px 10px;border-radius:var(--radius-sm);
-        border:1px solid var(--border);background:var(--bg);cursor:pointer;font-size:11px;font-weight:600;
-        color:var(--text-2);font-family:'Nunito',sans-serif;">✏️</button>
+      <button onclick="openEditProfil()" style="flex-shrink:0;padding:5px 8px;border-radius:var(--radius-sm);
+        border:1px solid var(--border);background:var(--bg);cursor:pointer;
+        color:var(--text-2);display:flex;align-items:center;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;">
+          <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>
+          <path d="m15 5 4 4"/>
+        </svg>
+      </button>
     </div>
     <div class="profil-row">
       <span class="profil-row-label">Membre depuis</span>
@@ -3157,15 +3186,30 @@ function renderAll() {
 <!-- BOTTOM NAV -->
 <nav class="bottom-nav" id="bottom-nav" style="display:none;">
   <button class="bottom-nav-item" id="nav-objectifs" onclick="showTab('objectifs')">
-    <span class="nav-icon">📋</span>
+    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 3v16a2 2 0 0 0 2 2h16"/>
+      <rect x="7" y="5" width="12" height="4" rx="1"/>
+      <rect x="7" y="13" width="9" height="4" rx="1"/>
+    </svg></span>
     <span class="nav-label">Récap</span>
   </button>
   <button class="bottom-nav-item active" id="nav-repas" onclick="showTab('repas')">
-    <span class="nav-icon">🥗</span>
+    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"/>
+      <path d="M7 21h10"/>
+      <path d="M19.5 12 22 6"/>
+      <path d="M16.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.73 1.62"/>
+      <path d="M11.25 3c.27.1.8.53.74 1.36-.05.83-.93 1.2-.98 2.02-.06.78.33 1.24.72 1.62"/>
+      <path d="M6.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.74 1.62"/>
+    </svg></span>
     <span class="nav-label">Repas</span>
   </button>
   <button class="bottom-nav-item" id="nav-sport" onclick="showTab('sport')">
-    <span class="nav-icon">🏃</span>
+    <span class="nav-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m15 10.42 4.8-5.07"/>
+      <path d="M19 18h3"/>
+      <path d="M9.5 22 21.414 9.415A2 2 0 0 0 21.2 6.4l-5.61-4.208A1 1 0 0 0 14 3v2a2 2 0 0 1-1.394 1.906L8.677 8.053A1 1 0 0 0 8 9c-.155 6.393-2.082 9-4 9a2 2 0 0 0 0 4h14"/>
+    </svg></span>
     <span class="nav-label">Sport</span>
   </button>
   <button class="bottom-nav-item" id="nav-profil" onclick="toggleProfilMenu(event)">
