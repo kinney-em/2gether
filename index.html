@@ -2989,7 +2989,7 @@ let confirmModalResolve = null;
 
 function showConfirm(msg) {
   return new Promise(resolve => {
-    document.getElementById('confirm-modal-msg').textContent = msg;
+    document.getElementById('confirm-modal-msg').innerHTML = msg;
     document.getElementById('confirm-modal').style.display = 'flex';
     confirmModalResolve = (result) => {
       document.getElementById('confirm-modal').style.display = 'none';
@@ -3000,7 +3000,7 @@ function showConfirm(msg) {
 
 async function confirmUnpair(uid) {
   const name = partnersData[uid]?.name || 'ce partenaire';
-  const confirmed = await showConfirm(`Voulez-vous vraiment dissocier ${name} ? Vos données restent sauvegardées, mais vous ne verrez plus les siennes et vice-versa.`);
+  const confirmed = await showConfirm(`Voulez-vous vraiment dissocier ${name} ?<br><br>Vos données restent sauvegardées, mais vous ne verrez plus les siennes et vice-versa.`);
   if (confirmed) doUnpair(uid);
 }
 
