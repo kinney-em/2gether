@@ -865,17 +865,18 @@
     position:absolute;bottom:0;left:0;right:0;
     background:var(--surface);border-radius:20px 20px 0 0;
     padding:20px 16px calc(24px + env(safe-area-inset-bottom));
-    max-width:500px;margin:0 auto;">
-    <div style="width:36px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 16px;"></div>
-    <div style="font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+    max-width:500px;margin:0 auto;max-height:90vh;display:flex;flex-direction:column;">
+    <div style="width:36px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 16px;flex-shrink:0;"></div>
+    <div style="font-size:15px;font-weight:700;margin-bottom:4px;display:flex;align-items:center;gap:8px;flex-shrink:0;">
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
         <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/>
         <path d="M7.5 9.5c0 .687.265 1.383.697 1.844l3.009 3.264a1.14 1.14 0 0 0 .407.314 1 1 0 0 0 .783-.004 1.14 1.14 0 0 0 .398-.31l3.008-3.264A2.77 2.77 0 0 0 16.5 9.5 2.5 2.5 0 0 0 12 8a2.5 2.5 0 0 0-4.5 1.5" stroke="var(--coral)" fill="var(--coral-light, #f9d0c8)"/>
       </svg>
       Envoyer un message
     </div>
-    <div id="motivate-partner-name" style="font-size:13px;color:var(--text-2);margin-bottom:12px;"></div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+    <div id="motivate-partner-name" style="font-size:13px;color:var(--text-2);margin-bottom:8px;flex-shrink:0;"></div>
+    <div id="motivate-history" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:12px;min-height:80px;max-height:260px;padding:4px 0;"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;flex-shrink:0;">
       <button onclick="setMotivatePreset('🫡 Yo !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;">🫡 Yo !</button>
       <button onclick="setMotivatePreset('🥗 Super effort cette semaine !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;">🥗 Super effort cette semaine !</button>
       <button onclick="setMotivatePreset('🔥 Tu assures !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;">🔥 Tu assures !</button>
@@ -1454,10 +1455,15 @@ function subscribeToData() {
       const d = snap.data();
       if (!d?.outbox) return;
       const ob = d.outbox;
-      if (ob.to === currentUid && ob.ts && ob.ts !== (window._lastMotivatTs || 0)) {
-        window._lastMotivatTs = ob.ts;
+      if (ob.to === currentUid && ob.ts && ob.ts !== +(localStorage.getItem('lastMotivatTs_' + uid) || 0)) {
+        localStorage.setItem('lastMotivatTs_' + uid, ob.ts);
         const senderName = partnersData[uid]?.name || 'Ton partenaire';
-        showMotivateBanner(senderName, ob.msg || '');
+        const sheetOpen = document.getElementById('motivate-sheet').style.display === 'flex';
+        if (sheetOpen && activePartnerUid === uid) {
+          loadMotivateHistory(uid);
+        } else {
+          showMotivateBanner(senderName, ob.msg || '');
+        }
       }
     });
   }
@@ -1800,15 +1806,45 @@ function closeFaq(e) {
 }
 
 // ---- MOTIVATE ----
-function openMotivate(e) {
+async function openMotivate(e) {
   if (e) { e.stopPropagation(); e.preventDefault(); }
   if (!activePartnerUid) return;
   const partner = partnersData[activePartnerUid] || {};
-  document.getElementById('motivate-partner-name').textContent = `À : ${partner.name || 'ton partenaire'}`;
+  document.getElementById('motivate-partner-name').textContent = `${partner.name || 'ton partenaire'}`;
   document.getElementById('motivate-text').value = '';
   document.getElementById('motivate-error').textContent = '';
-  document.getElementById('motivate-sheet').style.display = 'block';
+  document.getElementById('motivate-history').innerHTML = '<span style="font-size:12px;color:var(--text-3);text-align:center;">Chargement...</span>';
+  document.getElementById('motivate-sheet').style.display = 'flex';
   setTimeout(() => document.getElementById('motivate-text').focus(), 100);
+  await loadMotivateHistory(activePartnerUid);
+}
+
+async function loadMotivateHistory(partnerUid) {
+  const histEl = document.getElementById('motivate-history');
+  try {
+    const snap = await db.collection('users').doc(currentUid).collection('messages')
+      .where('partnerId', '==', partnerUid)
+      .orderBy('ts', 'desc')
+      .limit(50)
+      .get();
+    if (snap.empty) { histEl.innerHTML = '<span style="font-size:12px;color:var(--text-3);text-align:center;display:block;">Aucun message pour l\'instant.</span>'; return; }
+    const msgs = snap.docs.map(d => d.data()).reverse();
+    histEl.innerHTML = msgs.map(m => {
+      const sent = m.direction === 'sent';
+      const time = m.ts ? new Date(m.ts).toLocaleDateString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
+      return `<div style="display:flex;flex-direction:column;align-items:${sent ? 'flex-end' : 'flex-start'};">
+        <div style="max-width:78%;padding:8px 12px;border-radius:${sent ? '14px 14px 4px 14px' : '14px 14px 14px 4px'};
+          background:${sent ? 'var(--teal)' : 'var(--coral-light, #f9d0c8)'};
+          color:${sent ? 'white' : 'var(--text)'};font-size:13px;line-height:1.4;">
+          ${m.msg}
+        </div>
+        <span style="font-size:10px;color:var(--text-3);margin-top:2px;">${time}</span>
+      </div>`;
+    }).join('');
+    histEl.scrollTop = histEl.scrollHeight;
+  } catch(err) {
+    histEl.innerHTML = '<span style="font-size:12px;color:var(--text-3);text-align:center;display:block;">Impossible de charger l\'historique.</span>';
+  }
 }
 
 function setMotivatePreset(text) {
@@ -1824,19 +1860,33 @@ async function sendMotivate() {
   const msg = document.getElementById('motivate-text').value.trim();
   if (!msg) { document.getElementById('motivate-error').textContent = 'Écris un message avant d\'envoyer.'; return; }
   const senderName = document.getElementById('pill-me-name').textContent || 'Ton partenaire';
+  const ts = Date.now();
   try {
-    await db.collection('users').doc(currentUid).update({
-      outbox: { to: activePartnerUid, msg, from: senderName, ts: Date.now() }
+    const batch = db.batch();
+    // Bannière temps réel (mécanisme existant)
+    batch.update(db.collection('users').doc(currentUid), {
+      outbox: { to: activePartnerUid, msg, from: senderName, ts }
     });
-    document.getElementById('motivate-sheet').style.display = 'none';
+    // Historique côté expéditeur
+    batch.set(db.collection('users').doc(currentUid).collection('messages').doc(), {
+      partnerId: activePartnerUid, msg, direction: 'sent', ts
+    });
+    // Historique côté destinataire
+    batch.set(db.collection('users').doc(activePartnerUid).collection('messages').doc(), {
+      partnerId: currentUid, msg, direction: 'received', ts, fromName: senderName
+    });
+    await batch.commit();
+    document.getElementById('motivate-text').value = '';
+    document.getElementById('motivate-error').textContent = '';
+    await loadMotivateHistory(activePartnerUid);
   } catch(err) {
-    document.getElementById('motivate-error').textContent = 'Erreur lors de l\'envoi.';
+    document.getElementById('motivate-error').textContent = 'Erreur : ' + (err.code || err.message || err);
   }
 }
 
 function showMotivateBanner(from, msg) {
   const banner = document.getElementById('motivate-banner');
-  document.getElementById('motivate-banner-from').textContent = `💌 ${from}`;
+  document.getElementById('motivate-banner-from').innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:middle;margin-right:5px;flex-shrink:0;"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z" stroke="var(--teal)"/><path d="M7.5 9.5c0 .687.265 1.383.697 1.844l3.009 3.264a1.14 1.14 0 0 0 .407.314 1 1 0 0 0 .783-.004 1.14 1.14 0 0 0 .398-.31l3.008-3.264A2.77 2.77 0 0 0 16.5 9.5 2.5 2.5 0 0 0 12 8a2.5 2.5 0 0 0-4.5 1.5" stroke="var(--coral)" fill="var(--coral-light, #f9d0c8)"/></svg>${from}`;
   document.getElementById('motivate-banner-msg').textContent = msg;
   banner.style.display = 'block';
   clearTimeout(banner._timer);
