@@ -664,7 +664,12 @@
           <span id="pill-partner-more" style="display:none;font-size:11px;letter-spacing:3px;opacity:0.9;line-height:1;font-weight:900;">···</span>
         </span>
       </button>
-      <button id="btn-motivate" onclick="openMotivate(event)" title="Envoyer un message" style="display:none;">💌</button>
+      <button id="btn-motivate" onclick="openMotivate(event)" title="Envoyer un message" style="display:none;background:none;border:none;cursor:pointer;padding:4px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/>
+          <path d="M7.5 9.5c0 .687.265 1.383.697 1.844l3.009 3.264a1.14 1.14 0 0 0 .407.314 1 1 0 0 0 .783-.004 1.14 1.14 0 0 0 .398-.31l3.008-3.264A2.77 2.77 0 0 0 16.5 9.5 2.5 2.5 0 0 0 12 8a2.5 2.5 0 0 0-4.5 1.5" stroke="var(--coral)" fill="var(--coral-light, #f9d0c8)"/>
+        </svg>
+      </button>
     </div>
     <!-- Row 3: readonly banner -->
     <div id="readonly-banner" style="
@@ -861,7 +866,13 @@
     padding:20px 16px calc(24px + env(safe-area-inset-bottom));
     max-width:500px;margin:0 auto;">
     <div style="width:36px;height:4px;background:var(--border);border-radius:99px;margin:0 auto 16px;"></div>
-    <div style="font-size:15px;font-weight:700;margin-bottom:12px;">💌 Envoyer un message</div>
+    <div style="font-size:15px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;">
+        <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/>
+        <path d="M7.5 9.5c0 .687.265 1.383.697 1.844l3.009 3.264a1.14 1.14 0 0 0 .407.314 1 1 0 0 0 .783-.004 1.14 1.14 0 0 0 .398-.31l3.008-3.264A2.77 2.77 0 0 0 16.5 9.5 2.5 2.5 0 0 0 12 8a2.5 2.5 0 0 0-4.5 1.5" stroke="var(--coral)" fill="var(--coral-light, #f9d0c8)"/>
+      </svg>
+      Envoyer un message
+    </div>
     <div id="motivate-partner-name" style="font-size:13px;color:var(--text-2);margin-bottom:12px;"></div>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
       <button onclick="setMotivatePreset('🫡 Yo !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;">🫡 Yo !</button>
@@ -875,7 +886,7 @@
       border:1.5px solid var(--border);border-radius:var(--radius-sm);
       padding:10px 12px;background:var(--bg);color:var(--text);resize:none;"></textarea>
     <div id="motivate-error" style="font-size:12px;color:var(--red);margin-top:4px;min-height:16px;"></div>
-    <button class="btn btn-primary" onclick="sendMotivate()" style="width:100%;margin-top:10px;">Envoyer 💌</button>
+    <button class="btn btn-primary" onclick="sendMotivate()" style="width:100%;margin-top:10px;display:flex;align-items:center;justify-content:center;gap:6px;">Envoyer <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;flex-shrink:0;"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z" stroke="white"/><path d="M7.5 9.5c0 .687.265 1.383.697 1.844l3.009 3.264a1.14 1.14 0 0 0 .407.314 1 1 0 0 0 .783-.004 1.14 1.14 0 0 0 .398-.31l3.008-3.264A2.77 2.77 0 0 0 16.5 9.5 2.5 2.5 0 0 0 12 8a2.5 2.5 0 0 0-4.5 1.5" stroke="var(--coral)" fill="var(--coral-light, #f9d0c8)"/></svg></button>
   </div>
 </div>
 
