@@ -3061,7 +3061,8 @@ function renderObjectifs() {
 }
 
 function adjustGoal(type, d) {
-  myData.goals[type] = Math.max(1, myData.goals[type] + d);
+  const max = type === 'repas' ? 28 : 7;
+  myData.goals[type] = Math.min(max, Math.max(1, myData.goals[type] + d));
   renderObjectifs();
   saveProfile();
 }
