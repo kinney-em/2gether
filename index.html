@@ -601,7 +601,10 @@
     <h2>🔗 Lier avec un proche</h2>
     <p style="font-size:13px;color:var(--text-2);margin-bottom:12px;">Une fois jumelés, vous pouvez comparer vos habitudes et vous motiver ensemble. Chacun garde ses propres données — le jumelage partage uniquement les scores.</p>
     <p style="font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Votre code</p>
-    <div class="pair-code-display" id="my-pair-code">——</div>
+    <div style="display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:4px;">
+      <div class="pair-code-display" id="my-pair-code">——</div>
+      <button onclick="navigator.clipboard.writeText(document.getElementById('my-pair-code').textContent).then(()=>{this.textContent='✓ Copié';setTimeout(()=>{this.textContent='Copier'},1500)})" style="font-size:12px;padding:5px 10px;border-radius:99px;border:1.5px solid var(--teal);background:none;color:var(--teal);cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;white-space:nowrap;">Copier</button>
+    </div>
     <div class="pair-hint">Transmettez ce code à votre proche (SMS, oral…)</div>
     <div class="login-sep">— votre proche a déjà un code ? —</div>
     <div class="field"><label>Entrez son code</label><input type="text" id="pair-code-input" placeholder="ex: 4729" maxlength="6" style="text-align:center;letter-spacing:4px;font-size:18px;"/></div>
@@ -876,7 +879,7 @@
         <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/>
         <path d="M7.5 9.5c0 .687.265 1.383.697 1.844l3.009 3.264a1.14 1.14 0 0 0 .407.314 1 1 0 0 0 .783-.004 1.14 1.14 0 0 0 .398-.31l3.008-3.264A2.77 2.77 0 0 0 16.5 9.5 2.5 2.5 0 0 0 12 8a2.5 2.5 0 0 0-4.5 1.5" stroke="var(--coral)" fill="var(--coral-light, #f9d0c8)"/>
       </svg>
-      Envoyer un message
+      Messages
     </div>
     <div id="motivate-partner-name" style="font-size:13px;color:var(--text-2);margin-bottom:8px;flex-shrink:0;"></div>
     <div id="motivate-history" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;min-height:80px;max-height:260px;padding:4px 0;"></div>
@@ -2946,7 +2949,10 @@ function renderProfil() {
     </div>
     <div class="profil-row">
       <span class="profil-row-label">Code de jumelage</span>
-      <span class="profil-row-val" style="letter-spacing:3px;color:var(--teal);">${d.pairCode || '—'}</span>
+      <span style="display:flex;align-items:center;gap:8px;">
+        <span class="profil-row-val" style="letter-spacing:3px;color:var(--teal);">${d.pairCode || '—'}</span>
+        ${d.pairCode ? `<button onclick="navigator.clipboard.writeText('${d.pairCode}').then(()=>{this.textContent='✓';setTimeout(()=>{this.textContent='Copier'},1500)})" style="font-size:11px;padding:3px 8px;border-radius:99px;border:1.5px solid var(--teal);background:none;color:var(--teal);cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;">Copier</button>` : ''}
+      </span>
     </div>
     <div style="margin-top:16px;">
       <div class="sec-label">Mot de passe</div>
