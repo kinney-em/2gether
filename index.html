@@ -601,7 +601,10 @@
     <h2>🔗 Lier avec un proche</h2>
     <p style="font-size:13px;color:var(--text-2);margin-bottom:12px;">Une fois jumelés, vous pouvez comparer vos habitudes et vous motiver ensemble. Chacun garde ses propres données — le jumelage partage uniquement les scores.</p>
     <p style="font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;">Votre code</p>
-    <div class="pair-code-display" id="my-pair-code">——</div>
+    <div style="display:flex;align-items:center;gap:10px;justify-content:center;margin-bottom:4px;">
+      <div class="pair-code-display" id="my-pair-code">——</div>
+      <button onclick="navigator.clipboard.writeText(document.getElementById('my-pair-code').textContent).then(()=>{this.textContent='✓ Copié';setTimeout(()=>{this.textContent='Copier'},1500)})" style="font-size:12px;padding:5px 10px;border-radius:99px;border:1.5px solid var(--teal);background:none;color:var(--teal);cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;white-space:nowrap;">Copier</button>
+    </div>
     <div class="pair-hint">Transmettez ce code à votre proche (SMS, oral…)</div>
     <div class="login-sep">— votre proche a déjà un code ? —</div>
     <div class="field"><label>Entrez son code</label><input type="text" id="pair-code-input" placeholder="ex: 4729" maxlength="6" style="text-align:center;letter-spacing:4px;font-size:18px;"/></div>
@@ -659,18 +662,30 @@
         onmousedown="startPartnerLongPress(event)"
         onmouseup="cancelPartnerLongPress()"
         onmouseleave="cancelPartnerLongPress()">
-        <span class="seg-avatar" id="pill-partner-avatar">🌱</span>
+        <span style="position:relative;display:inline-flex;">
+          <span class="seg-avatar" id="pill-partner-avatar">🌱</span>
+          <span id="pill-unread-dot" style="display:none;position:absolute;top:0;right:0;width:8px;height:8px;border-radius:50%;background:var(--red);"></span>
+        </span>
         <span style="display:flex;flex-direction:column;align-items:flex-start;gap:1px;">
           <span class="seg-name" id="pill-partner-name">Proche</span>
           <span id="pill-partner-more" style="display:none;font-size:11px;letter-spacing:3px;opacity:0.9;line-height:1;font-weight:900;">···</span>
         </span>
       </button>
-      <button id="btn-motivate" onclick="openMotivate(event)" title="Envoyer un message" style="display:none;background:none;border:none;cursor:pointer;padding:4px;">
+      <button id="btn-motivate" onclick="openMotivate(event)" title="Envoyer un message" style="display:none;background:none;border:none;cursor:pointer;padding:4px;position:relative;">
         <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/>
           <path d="M7.5 9.5c0 .687.265 1.383.697 1.844l3.009 3.264a1.14 1.14 0 0 0 .407.314 1 1 0 0 0 .783-.004 1.14 1.14 0 0 0 .398-.31l3.008-3.264A2.77 2.77 0 0 0 16.5 9.5 2.5 2.5 0 0 0 12 8a2.5 2.5 0 0 0-4.5 1.5" stroke="var(--coral)" fill="var(--coral-light, #f9d0c8)"/>
         </svg>
+        <span id="motivate-unread-dot" style="display:none;position:absolute;top:2px;right:2px;width:8px;height:8px;border-radius:50%;background:var(--red);"></span>
       </button>
+    </div>
+    <!-- Coach mark appui long partenaire -->
+    <div id="longpress-coach" style="display:none;margin:4px 0 -2px;">
+      <div style="width:12px;height:6px;background:var(--text);clip-path:polygon(0% 100%,50% 0%,100% 100%);margin-left:calc(75% - 6px);margin-bottom:-1px;"></div>
+      <div style="background:var(--text);color:var(--surface);font-size:12px;font-weight:600;border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px;">
+        <span>💡 Appuie longuement sur le bouton partenaire pour switcher entre tes proches</span>
+        <button onclick="dismissLongPressCoach()" style="background:none;border:none;cursor:pointer;color:var(--surface);font-size:12px;font-weight:800;white-space:nowrap;padding:0;">OK</button>
+      </div>
     </div>
     <!-- Row 3: readonly banner -->
     <div id="readonly-banner" style="
@@ -686,7 +701,7 @@
     <div id="tab-repas" class="screen active">
       <div class="score-strip" id="food-scores"></div>
       <div id="meal-ratio-bar" style="display:flex;visibility:hidden;height:20px;border-radius:99px;overflow:hidden;margin-bottom:6px;border:1px solid var(--border);"></div>
-      <p style="font-size:13px;color:var(--text-3);margin-bottom:6px;">Tapez pour cycler : vide → <b>✔</b> sain → <b>≈</b> correct → <b>✖</b> malbouffe <br>· Appui long pour remettre à zéro</p>
+      <p id="meal-hint" style="font-size:13px;color:var(--text-3);margin-bottom:6px;">Tapez pour cycler : vide → <b>✔</b> sain → <b>≈</b> correct → <b>✖</b> malbouffe <br>· Appui long pour remettre à zéro</p>
       <div id="meal-table"></div>
       <div id="meal-empty-state" style="display:none;text-align:center;padding:20px 16px 8px;">
         <div style="display:flex;align-items:flex-end;justify-content:center;gap:6px;margin-bottom:10px;">
@@ -704,7 +719,7 @@
     <!-- SPORT -->
     <div id="tab-sport" class="screen">
       <div class="score-strip" id="sport-scores"></div>
-      <p style="font-size:13px;color:var(--text-3);margin-bottom:6px;">Activités par jour — tapez pour sélectionner · Appui long pour remettre à zéro</p>
+      <p id="sport-hint" style="font-size:13px;color:var(--text-3);margin-bottom:6px;">Activités par jour — tapez pour sélectionner · Appui long pour remettre à zéro</p>
       <div class="week-grid" id="grid-sport"></div>
       <div id="sport-empty-state" style="display:none;text-align:center;padding:20px 16px 8px;">
         <div style="display:flex;align-items:flex-end;justify-content:center;gap:6px;margin-bottom:10px;">
@@ -872,16 +887,17 @@
         <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/>
         <path d="M7.5 9.5c0 .687.265 1.383.697 1.844l3.009 3.264a1.14 1.14 0 0 0 .407.314 1 1 0 0 0 .783-.004 1.14 1.14 0 0 0 .398-.31l3.008-3.264A2.77 2.77 0 0 0 16.5 9.5 2.5 2.5 0 0 0 12 8a2.5 2.5 0 0 0-4.5 1.5" stroke="var(--coral)" fill="var(--coral-light, #f9d0c8)"/>
       </svg>
-      Envoyer un message
+      Messages
     </div>
     <div id="motivate-partner-name" style="font-size:13px;color:var(--text-2);margin-bottom:8px;flex-shrink:0;"></div>
-    <div id="motivate-history" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:12px;min-height:80px;max-height:260px;padding:4px 0;"></div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;flex-shrink:0;">
-      <button onclick="setMotivatePreset('🫡 Yo !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;">🫡 Yo !</button>
-      <button onclick="setMotivatePreset('🥗 Super effort cette semaine !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;">🥗 Super effort cette semaine !</button>
-      <button onclick="setMotivatePreset('🔥 Tu assures !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;">🔥 Tu assures !</button>
-      <button onclick="setMotivatePreset('😉 Bravo, continue comme ça !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;">😉 Bravo, continue comme ça !</button>
-      <button onclick="setMotivatePreset('💜 Je pense à toi')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;">💜 Je pense à toi</button>
+    <div id="motivate-history" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;min-height:80px;max-height:260px;padding:4px 0;"></div>
+    <div style="height:1px;background:var(--border);margin:12px 0;flex-shrink:0;"></div>
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-shrink:0;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;scrollbar-width:none;">
+      <button onclick="setMotivatePreset('🫡 Yo !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap;flex-shrink:0;">🫡 Yo !</button>
+      <button onclick="setMotivatePreset('🥗 Super effort cette semaine !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap;flex-shrink:0;">🥗 Super effort cette semaine !</button>
+      <button onclick="setMotivatePreset('🔥 Tu assures !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap;flex-shrink:0;">🔥 Tu assures !</button>
+      <button onclick="setMotivatePreset('😉 Bravo, continue comme ça !')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap;flex-shrink:0;">😉 Bravo, continue comme ça !</button>
+      <button onclick="setMotivatePreset('💜 Je pense à toi')" style="font-size:13px;padding:6px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--bg);color:var(--text);cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap;flex-shrink:0;">💜 Je pense à toi</button>
     </div>
     <textarea id="motivate-text" rows="3" placeholder="Écris ton message d'encouragement..." style="
       width:100%;box-sizing:border-box;font-family:'Nunito',sans-serif;font-size:14px;
@@ -931,10 +947,15 @@
 <div id="motivate-banner" style="
   display:none;position:fixed;top:16px;left:50%;transform:translateX(-50%);
   z-index:500;background:var(--surface);border-radius:var(--radius);
-  box-shadow:0 4px 20px rgba(0,0,0,0.15);padding:12px 16px;
+  box-shadow:0 4px 20px rgba(0,0,0,0.15);padding:12px 16px 12px 16px;
   max-width:320px;width:90%;border-left:4px solid var(--teal);">
-  <div style="font-size:13px;font-weight:700;margin-bottom:4px;" id="motivate-banner-from"></div>
-  <div style="font-size:13px;color:var(--text);" id="motivate-banner-msg"></div>
+  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">
+    <div>
+      <div style="font-size:13px;font-weight:700;margin-bottom:4px;" id="motivate-banner-from"></div>
+      <div style="font-size:13px;color:var(--text);" id="motivate-banner-msg"></div>
+    </div>
+    <button onclick="document.getElementById('motivate-banner').style.display='none'" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:16px;line-height:1;padding:0;flex-shrink:0;">✕</button>
+  </div>
 </div>
 
 <!-- SPORT MODAL  -->
@@ -1290,6 +1311,13 @@ async function loadUserProfile() {
     : (partnerUids[0] || null);
   updatePartnerPill();
   subscribeToData();
+  updateUnreadIndicators();
+  if (partnerUids.length >= 2 && !localStorage.getItem('longPressCoachDone')) {
+    setTimeout(() => {
+      const coach = document.getElementById('longpress-coach');
+      if (coach) coach.style.display = 'block';
+    }, 1200);
+  }
 
 	///////verification de l'email
 	const currentUser = auth.currentUser;
@@ -1392,6 +1420,7 @@ function openPartnerSheet(e) {
         ${p.avatar || '🌱'}
       </div>
       <span style="font-weight:700;font-size:16px;flex:1;color:var(--text);">${p.name || 'Partenaire'}</span>
+      ${localStorage.getItem('unread_' + uid) === 'true' ? '<span style="width:8px;height:8px;border-radius:50%;background:var(--red);display:inline-block;margin-right:6px;"></span>' : ''}
       ${isActive ? '<span style="font-size:18px;">✓</span>' : '<span style="font-size:18px;color:var(--text-3);">›</span>'}
     </div>`;
   }).join('');
@@ -1462,6 +1491,8 @@ function subscribeToData() {
         if (sheetOpen && activePartnerUid === uid) {
           loadMotivateHistory(uid);
         } else {
+          localStorage.setItem('unread_' + uid, 'true');
+          updateUnreadIndicators();
           showMotivateBanner(senderName, ob.msg || '');
         }
       }
@@ -1609,10 +1640,14 @@ function setWeekNavColor(color) {
 function flashReadonlyBanner() {
   const b = document.getElementById('readonly-banner');
   if (!b) return;
+  const name = partnersData[activePartnerUid]?.name || 'ce partenaire';
+  b.innerHTML = `👀 Vous consultez les données de ${name} — lecture seule`;
+  b.style.display = 'block';
   b.classList.remove('readonly-flash');
-  void b.offsetWidth; // reflow pour relancer l'animation
+  void b.offsetWidth;
   b.classList.add('readonly-flash');
-  b.addEventListener('animationend', () => b.classList.remove('readonly-flash'), { once: true });
+  clearTimeout(b._hideTimer);
+  b._hideTimer = setTimeout(() => { b.style.display = 'none'; }, 2500);
 }
 
 function setUser(who, uid) {
@@ -1627,6 +1662,10 @@ function setUser(who, uid) {
     if (btnMotivate) btnMotivate.style.display = 'none';
     setWeekNavColor('var(--teal)');
     document.getElementById('bottom-nav').classList.remove('partner-view');
+    const mealHint = document.getElementById('meal-hint');
+    if (mealHint) mealHint.style.display = '';
+    const sportHint = document.getElementById('sport-hint');
+    if (sportHint) sportHint.style.display = '';
   } else {
     viewingPartner = true;
     activePartnerUid = uid || lastPartnerUid || partnerUids[0] || null;
@@ -1636,14 +1675,18 @@ function setUser(who, uid) {
     if (btnMotivate) btnMotivate.style.display = activePartnerUid ? 'flex' : 'none';
     setWeekNavColor('var(--coral)');
     document.getElementById('bottom-nav').classList.add('partner-view');
+    const mealHint = document.getElementById('meal-hint');
+    if (mealHint) mealHint.style.display = 'none';
+    const sportHint = document.getElementById('sport-hint');
+    if (sportHint) sportHint.style.display = 'none';
     updatePartnerPill();
+    updateUnreadIndicators();
     if (!activePartnerUid) {
       banner.innerHTML = `🔗 Vous n'avez pas encore ajouté de partenaire. Votre code de jumelage est disponible sur votre <span onclick="openProfilPanel()" style="text-decoration:underline;cursor:pointer;">profil utilisateur</span>.`;
+      banner.style.display = 'block';
     } else {
-      const name = partnersData[activePartnerUid]?.name || 'ce partenaire';
-      banner.innerHTML = `👀 Vous consultez les données de ${name} — lecture seule`;
+      banner.style.display = 'none';
     }
-    banner.style.display = 'block';
   }
   renderAll();
 }
@@ -1753,6 +1796,7 @@ const FAQ = [
   { q: "Puis-je personnaliser ma liste d'activités sportives ?", a: "Oui ! Profil → Paramètres → Activités sportives. Active, désactive ou ajoute tes propres activités (yoga, hula hoop, danse, etc.)." },
   { q: "Quelles langues sont disponibles ?", a: "Français uniquement pour l'instant. D'autres langues arrivent bientôt." },
   { q: "Comment modifier mon mot de passe ?", a: "Profil → Profil → section \"Modifier le mot de passe\"." },
+  { q: "Comment savoir si j'ai reçu un message de motivation ?", a: "Quand un partenaire t'envoie un message alors que l'app est ouverte, une bannière apparaît en haut de l'écran. Un point rouge s'affiche aussi sur l'avatar de ton partenaire (pill en haut) et sur l'icône d'enveloppe quand tu consultes ses données. Le point disparaît une fois que tu ouvres la conversation. L'historique des messages est accessible en appuyant sur l'icône d'enveloppe à côté du nom de ton partenaire." },
   { q: "Comment contacter le support ?", a: "Tu n'as pas trouvé ta réponse ? Utilise le bouton \"Contacter un humain\" ci-dessous — on te répondra dès que possible." },
   { q: "Je souhaite supprimer mes données", a: "Pour supprimer ton compte et toutes tes données, contacte-nous via le bouton \"Contacter un humain\" ci-dessous. Nous traiterons ta demande dans les meilleurs délais." },
 ];
@@ -1816,6 +1860,8 @@ async function openMotivate(e) {
   document.getElementById('motivate-history').innerHTML = '<span style="font-size:12px;color:var(--text-3);text-align:center;">Chargement...</span>';
   document.getElementById('motivate-sheet').style.display = 'flex';
   setTimeout(() => document.getElementById('motivate-text').focus(), 100);
+  localStorage.removeItem('unread_' + activePartnerUid);
+  updateUnreadIndicators();
   await loadMotivateHistory(activePartnerUid);
 }
 
@@ -1829,10 +1875,24 @@ async function loadMotivateHistory(partnerUid) {
       .get();
     if (snap.empty) { histEl.innerHTML = '<span style="font-size:12px;color:var(--text-3);text-align:center;display:block;">Aucun message pour l\'instant.</span>'; return; }
     const msgs = snap.docs.map(d => d.data()).reverse();
+    const today = new Date(); today.setHours(0,0,0,0);
+    const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
+    const dayLabel = (ts) => {
+      const d = new Date(ts); d.setHours(0,0,0,0);
+      if (d.getTime() === today.getTime()) return 'Aujourd\'hui';
+      if (d.getTime() === yesterday.getTime()) return 'Hier';
+      return new Date(ts).toLocaleDateString('fr-FR', { day:'numeric', month:'long' });
+    };
+    let lastDay = null;
     histEl.innerHTML = msgs.map(m => {
       const sent = m.direction === 'sent';
-      const time = m.ts ? new Date(m.ts).toLocaleDateString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' }) : '';
-      return `<div style="display:flex;flex-direction:column;align-items:${sent ? 'flex-end' : 'flex-start'};">
+      const d = new Date(m.ts || 0); d.setHours(0,0,0,0);
+      const currentDay = d.getTime();
+      const showHeader = currentDay !== lastDay;
+      lastDay = currentDay;
+      const time = m.ts ? new Date(m.ts).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' }) : '';
+      return `${showHeader ? `<div style="text-align:center;font-size:11px;color:var(--text-3);margin:6px 0;">${dayLabel(m.ts)}</div>` : ''}
+      <div style="display:flex;flex-direction:column;align-items:${sent ? 'flex-end' : 'flex-start'};">
         <div style="max-width:78%;padding:8px 12px;border-radius:${sent ? '14px 14px 4px 14px' : '14px 14px 14px 4px'};
           background:${sent ? 'var(--teal)' : 'var(--coral-light, #f9d0c8)'};
           color:${sent ? 'white' : 'var(--text)'};font-size:13px;line-height:1.4;">
@@ -1841,10 +1901,25 @@ async function loadMotivateHistory(partnerUid) {
         <span style="font-size:10px;color:var(--text-3);margin-top:2px;">${time}</span>
       </div>`;
     }).join('');
-    histEl.scrollTop = histEl.scrollHeight;
+    requestAnimationFrame(() => { histEl.scrollTop = histEl.scrollHeight; });
   } catch(err) {
     histEl.innerHTML = '<span style="font-size:12px;color:var(--text-3);text-align:center;display:block;">Impossible de charger l\'historique.</span>';
   }
+}
+
+function updateUnreadIndicators() {
+  const hasAny = partnerUids.some(uid => localStorage.getItem('unread_' + uid) === 'true');
+  const hasActive = activePartnerUid && localStorage.getItem('unread_' + activePartnerUid) === 'true';
+  const dot = document.getElementById('motivate-unread-dot');
+  if (dot) dot.style.display = hasActive ? 'block' : 'none';
+  const pillDot = document.getElementById('pill-unread-dot');
+  if (pillDot) pillDot.style.display = hasAny ? 'block' : 'none';
+}
+
+function dismissLongPressCoach() {
+  localStorage.setItem('longPressCoachDone', 'true');
+  const coach = document.getElementById('longpress-coach');
+  if (coach) coach.style.display = 'none';
 }
 
 function setMotivatePreset(text) {
@@ -2905,7 +2980,10 @@ function renderProfil() {
     </div>
     <div class="profil-row">
       <span class="profil-row-label">Code de jumelage</span>
-      <span class="profil-row-val" style="letter-spacing:3px;color:var(--teal);">${d.pairCode || '—'}</span>
+      <span style="display:flex;align-items:center;gap:8px;">
+        <span class="profil-row-val" style="letter-spacing:3px;color:var(--teal);">${d.pairCode || '—'}</span>
+        ${d.pairCode ? `<button onclick="navigator.clipboard.writeText('${d.pairCode}').then(()=>{this.textContent='✓';setTimeout(()=>{this.textContent='Copier'},1500)})" style="font-size:11px;padding:3px 8px;border-radius:99px;border:1.5px solid var(--teal);background:none;color:var(--teal);cursor:pointer;font-family:'Nunito',sans-serif;font-weight:700;">Copier</button>` : ''}
+      </span>
     </div>
     <div style="margin-top:16px;">
       <div class="sec-label">Mot de passe</div>
@@ -3143,6 +3221,12 @@ async function doPairFromProfil() {
     activePartnerUid = activePartnerUid || partnerDoc.id;
     updatePartnerPill();
     renderPartenaires();
+    if (partnerUids.length >= 2 && !localStorage.getItem('longPressCoachDone')) {
+      setTimeout(() => {
+        const coach = document.getElementById('longpress-coach');
+        if (coach) coach.style.display = 'block';
+      }, 800);
+    }
 
   } catch(e) { errEl.textContent = e.message; }
 }
