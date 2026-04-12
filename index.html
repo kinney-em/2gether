@@ -123,6 +123,12 @@
   .btn-secondary { background: var(--gray-light); color: var(--text-2); }
   .btn:hover { opacity: 0.88; }
   .login-sep { text-align: center; font-size: 12px; color: var(--text-3); }
+  @media (max-height: 680px) {
+    #login-screen { gap: 10px; }
+    .login-card { gap: 8px; }
+    #login-pitch { gap: 6px !important; margin-bottom: 0 !important; }
+    .btn { padding: 8px 20px; }
+  }
   .pair-code-display {
     background: var(--teal-light);
     border-radius: var(--radius-sm);
@@ -556,7 +562,8 @@
 
   <div id="login-pitch" style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:340px;margin-bottom:4px;">
     <div style="display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);">
-      <span style="font-size:20px;">🥗</span><span style="font-size:20px;">📊</span>
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;flex-shrink:0;"><path d="M12 21a9 9 0 0 0 9-9H3a9 9 0 0 0 9 9Z"/><path d="M7 21h10"/><path d="M19.5 12 22 6"/><path d="M16.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.73 1.62"/><path d="M11.25 3c.27.1.8.53.74 1.36-.05.83-.93 1.2-.98 2.02-.06.78.33 1.24.72 1.62"/><path d="M6.25 3c.27.1.8.53.75 1.36-.06.83-.93 1.2-1 2.02-.05.78.34 1.24.74 1.62"/></svg>
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--teal)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:20px;height:20px;flex-shrink:0;"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><rect x="7" y="5" width="12" height="4" rx="1"/><rect x="7" y="13" width="9" height="4" rx="1"/></svg>
       <span style="font-size:13px;color:var(--text-2);">Notez repas &amp; sport, visualisez vos tendances</span>
     </div>
     <div style="display:flex;align-items:center;gap:10px;background:var(--surface);border-radius:var(--radius);padding:10px 14px;box-shadow:var(--shadow);border-left:3px solid var(--teal);">
@@ -926,7 +933,7 @@
         </svg>
         Aide & Support
       </div>
-      <input id="faq-search" type="search" placeholder="🔍 Rechercher une question..." oninput="filterFaq(this.value)"
+      <input id="faq-search" type="search" placeholder="🔍 Rechercher un mot-clé..." oninput="filterFaq(this.value)"
         style="width:100%;box-sizing:border-box;font-family:'Nunito',sans-serif;font-size:14px;
         border:1.5px solid var(--border);border-radius:var(--radius-sm);
         padding:9px 12px;background:var(--bg);color:var(--text);">
@@ -1787,7 +1794,7 @@ const FAQ = [
   { q: "Comment modifier ma liste d'activités sportives ?", a: "Profil → Paramètres → Activités sportives. Active, désactive ou ajoute tes propres activités." },
   { q: "Comment supprimer une activité sportive ?", a: "Profil → Paramètres → Activités sportives. Appuie sur ✕ pour les activités personnalisées. Les activités par défaut peuvent être désactivées mais pas supprimées." },
   { q: "Comment mettre à jour mes objectifs ?", a: "Profil → Paramètres → Objectifs hebdomadaires. Utilise les boutons + et − pour ajuster." },
-  { q: "Comment contacter mon partenaire ?", a: "En vue partenaire, appuie sur le bouton 💌 à côté de son nom pour lui envoyer un message." },
+  { q: "Comment contacter mon partenaire ?", a: "En vue partenaire, appuie sur le bouton <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"width:14px;height:14px;vertical-align:middle;\"><path d=\"M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z\" stroke=\"var(--teal)\"/><path d=\"M7.5 9.5c0 .687.265 1.383.697 1.844l3.009 3.264a1.14 1.14 0 0 0 .407.314 1 1 0 0 0 .783-.004 1.14 1.14 0 0 0 .398-.31l3.008-3.264A2.77 2.77 0 0 0 16.5 9.5 2.5 2.5 0 0 0 12 8a2.5 2.5 0 0 0-4.5 1.5\" stroke=\"var(--coral)\" fill=\"var(--coral-light, #f9d0c8)\"/></svg> à côté de son nom pour lui envoyer un message." },
   { q: "Comment supprimer un partenaire ?", a: "Profil → Partenaires → appuie sur \"Dissocier\" le partenaire et confirme la suppression." },
   { q: "J'ai oublié de saisir un repas, que faire ?", a: "Ce n'est pas grave ! Avec ton partenaire, l'objectif c'est de se motiver — pas d'être parfait. Tu peux saisir les jours précédents en navigant dans le calendrier, mais surtout : pas de pression." },
   { q: "Peut-on commenter un repas ?", a: "Pas encore, mais on réfléchit à une façon de l'implémenter. Stay tuned !" },
@@ -1804,7 +1811,8 @@ const FAQ = [
 function openFaq() {
   const chat = document.getElementById('faq-chat');
   const qlist = document.getElementById('faq-questions');
-  chat.innerHTML = '<div style="font-size:14px;color:var(--text-2);text-align:center;padding:8px 0;">Bonjour 👋🏾 Sur quoi puis-je t\'aider ?</div>';
+  const faqGreetName = (myData && myData.name) ? ` ${myData.name}` : '';
+  chat.innerHTML = `<div style="font-size:15px;font-weight:700;color:var(--text);text-align:center;padding:8px 0;"><span style="color:var(--teal);">Bonjour${faqGreetName}</span> 👋🏾 <br>Comment puis-je t'aider ?</div>`;
   qlist.innerHTML = FAQ.map((f, i) =>
     `<button onclick="faqAnswer(${i})" style="
       text-align:left;padding:10px 12px;border-radius:var(--radius-sm);
